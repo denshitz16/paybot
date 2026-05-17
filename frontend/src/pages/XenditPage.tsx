@@ -45,6 +45,8 @@ const EWALLET_PROVIDERS = [
   { value: 'PH_SHOPEEPAY', label: 'ShopeePay' },
 ];
 
+const QR_GATEWAY_IMAGE = '/images/qr-gateway.svg';
+
 const DEFAULT_BANKS = [
   { code: 'BDO', name: 'BDO Unibank' },
   { code: 'BPI', name: 'Bank of the Philippine Islands' },
@@ -346,6 +348,9 @@ export default function XenditPage() {
     const url = (result.invoice_url || result.payment_link_url || result.checkout_url) as string | undefined;
     const qr = result.qr_string as string | undefined;
     const acct = result.account_number as string | undefined;
+    const qrImageLink = qr
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`
+      : undefined;
 
     return (
       <div className="mt-4 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-3">
@@ -360,7 +365,7 @@ export default function XenditPage() {
             <div className="flex items-center gap-2">
               <code className="flex-1 text-xs bg-slate-900 p-2 rounded break-all">{url}</code>
               <Button size="icon" variant="ghost" onClick={() => copy(url)}><Copy className="h-4 w-4" /></Button>
-              <a href={url} target="_blank" rel="noopener noreferrer">
+              <a href={url} target="_blank" rel="noopener noreferrer" title="Open payment URL">
                 <Button size="icon" variant="ghost"><ExternalLink className="h-4 w-4" /></Button>
               </a>
             </div>
@@ -368,11 +373,40 @@ export default function XenditPage() {
         )}
 
         {qr && (
-          <div className="space-y-1">
-            <p className="text-xs text-slate-400">QR String</p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs bg-slate-900 p-2 rounded break-all">{qr}</code>
-              <Button size="icon" variant="ghost" onClick={() => copy(qr)}><Copy className="h-4 w-4" /></Button>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <p className="text-xs text-slate-400">QR Code Payload</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs bg-slate-900 p-2 rounded break-all">{qr}</code>
+                <Button size="icon" variant="ghost" onClick={() => copy(qr)}><Copy className="h-4 w-4" /></Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-[1fr_auto] items-start">
+              <div className="rounded-xl border border-slate-700 bg-slate-950/80 p-4 text-center">
+                <img
+                  src={QR_GATEWAY_IMAGE}
+                  alt="QR gateway image"
+                  className="mx-auto max-h-64 w-full max-w-[320px] object-contain rounded-lg"
+                />
+              </div>
+              <div className="space-y-2">
+                {qrImageLink && (
+                  <>
+                    <p className="text-xs text-slate-400">QR Image Link</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-xs bg-slate-900 p-2 rounded break-all">{qrImageLink}</code>
+                      <Button size="icon" variant="ghost" onClick={() => copy(qrImageLink)}><Copy className="h-4 w-4" /></Button>
+                      <a href={qrImageLink} target="_blank" rel="noopener noreferrer" title="Open QR image">
+                        <Button size="icon" variant="ghost"><ExternalLink className="h-4 w-4" /></Button>
+                      </a>
+                    </div>
+                  </>
+                )}
+                <p className="text-xs text-slate-400">
+                  This QR code image is shown only after you enter the amount and create the QR Code payment.
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -538,6 +572,9 @@ export default function XenditPage() {
                 </p>
                 <AmountField />
                 <DescriptionField />
+                <p className="text-xs text-slate-400">
+                  Enter the amount first, then click Create QR Code to display the gateway image and generated QR link.
+                </p>
                 <Button onClick={handleCreate} disabled={loading} className="w-full bg-purple-600 hover:bg-purple-700">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <QrCode className="h-4 w-4 mr-2" />}
                   Create QR Code

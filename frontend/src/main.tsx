@@ -11,9 +11,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   render() {
     if (this.state.error) {
       return (
-        <div style={{ fontFamily: 'monospace', padding: '2rem', background: '#0a0f1e', color: '#f87171', minHeight: '100vh' }}>
-          <h1 style={{ color: '#ef4444', marginBottom: '1rem' }}>Application Error</h1>
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#fca5a5' }}>
+        <div className="app-error-boundary">
+          <h1 className="app-error-boundary-heading">Application Error</h1>
+          <pre className="app-error-boundary-stack">
             {this.state.error.message}
             {'\n\n'}
             {this.state.error.stack}
