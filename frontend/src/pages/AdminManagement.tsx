@@ -954,6 +954,7 @@ function UsdWalletsTab({ onError }: { onError: (msg: string) => void }) {
   const handleAdjust = async (userId: string, isCredit: boolean) => {
     const rawAmt = parseFloat(adjustAmount[userId] || '0');
     if (!rawAmt || rawAmt <= 0) { onError('Enter a valid positive amount'); return; }
+    if (!confirm(`Confirm ${isCredit ? 'credit' : 'debit'} of ${rawAmt} for ${userId}?`)) return;
     const amount = isCredit ? rawAmt : -rawAmt;
     setAdjusting(userId);
     try {
@@ -1099,6 +1100,7 @@ function PhpWalletsTab({ onError }: { onError: (msg: string) => void }) {
   const handleAdjust = async (userId: string, isCredit: boolean) => {
     const rawAmt = parseFloat(adjustAmount[userId] || '0');
     if (!rawAmt || rawAmt <= 0) { onError('Enter a valid positive amount'); return; }
+    if (!confirm(`Confirm ${isCredit ? 'credit' : 'debit'} of ${rawAmt} for ${userId}?`)) return;
     const amount = isCredit ? rawAmt : -rawAmt;
     setAdjusting(userId);
     try {
