@@ -120,7 +120,7 @@ The frontend is served directly by the backend as a static SPA, so no separate f
 
 ## 3. GitHub Actions Secrets Setup
 
-The GitHub Actions deployment workflow (`deploy.yml`) deploys to Railway automatically on every push to `main`. It requires a Railway project token configured as a GitHub secret.
+The GitHub Actions deployment workflow (`deploy-railway.yml`) deploys to Railway automatically on every push to `main`. It requires a Railway project token configured as a GitHub secret.
 
 ### 3.1 Generate a Railway Project Token
 
@@ -155,10 +155,38 @@ The workflow uses the `production` environment in GitHub Actions. You can add se
 
 | Secret Name | Description |
 |-------------|-------------|
-| `RAILWAY_TOKEN` | Railway project token (see [step 3.1](#31-generate-a-railway-project-token)) |
-| `RAILWAY_SERVICE` | Exact name of the Railway service to deploy (e.g. `backend`) |
+| `RAILWAY_API_KEY` | Railway project API key (see [step 3.1](#31-generate-a-railway-project-token)) |
+| `RAILWAY_PROJECT_ID` | Railway project ID used for direct GHCR image deploy |
+| `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key used by the frontend login page |
+| `CLOUDFLARE_TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key used by backend verification |
 
-> **Note:** If either `RAILWAY_TOKEN` or `RAILWAY_SERVICE` is missing or empty, the deployment step will be skipped with a warning message pointing to this guide. To find your service name, open your Railway project dashboard and note the name shown on the service card.
+**Optional secrets:**
+
+| Secret Name | Description |
+|-------------|-------------|
+| `CF_API_TOKEN` | Cloudflare API token with `Cache Purge` permission to clear cache after deploy |
+| `CF_ZONE_ID` | Cloudflare Zone ID for your routed domain |
+| `VITE_TELEGRAM_BOT_USERNAME` | Telegram bot username used by the frontend login widget (optional if backend supplies it) |
+| `PYTHON_BACKEND_URL` | Optional backend URL when using a Cloudflare-proxied custom domain |
+
+### ✅ GitHub Secrets Checklist
+
+Use these exact repository/environment secret names when configuring the `production` environment for GitHub Actions.
+
+- `RAILWAY_API_KEY` — Railway project API key for production deployments.
+- `RAILWAY_PROJECT_ID` — Railway project ID used by the action to deploy the built GHCR image.
+- `VITE_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key injected into the frontend build.
+- `CLOUDFLARE_TURNSTILE_SECRET_KEY` — Cloudflare Turnstile secret key used by backend runtime verification.
+- `CF_API_TOKEN` — Cloudflare API token for optional cache purge after deploy.
+- `CF_ZONE_ID` — Cloudflare Zone ID for optional cache purge after deploy.
+- `VITE_TELEGRAM_BOT_USERNAME` — Optional Telegram bot username for the frontend login widget.
+- `PYTHON_BACKEND_URL` — Optional backend public URL for Telegram webhook / Cloudflare proxied domains.
+
+> `CLOUDFLARE_TURNSTILE_SECRET_KEY` must be set in Railway environment variables (or your production host), not just in frontend build secrets.
+
+> If `RAILWAY_API_KEY` or `RAILWAY_PROJECT_ID` is missing or empty, the deployment step will fail. If `VITE_TURNSTILE_SITE_KEY` is not set, the Cloudflare Turnstile widget will not render in the frontend login flow.
+>
+> `CLOUDFLARE_TURNSTILE_SECRET_KEY` is a backend runtime secret and must be set in Railway or your production environment variables so the app can verify Turnstile responses.
 
 ---
 
@@ -350,24 +378,23 @@ railway logs
 
 ### Common Issues
 
-#### Invalid or Missing RAILWAY_TOKEN
+#### Invalid or Missing RAILWAY_API_KEY
 
-**Error**: `Invalid RAILWAY_TOKEN. Please check that it is valid and has access to the resource you're trying to use.`
+**Error**: `Invalid RAILWAY_API_KEY. Please check that it is valid and has access to the project.`
 
 **Solution**:
-1. Generate a Railway project token: **Project Settings** → **Tokens** → **New Token** (select the **production** environment)
-2. Add it as a GitHub secret named `RAILWAY_TOKEN` (see [GitHub Actions Secrets Setup](#3-github-actions-secrets-setup) for detailed instructions)
+1. Generate a Railway project API key: **Project Settings** → **Tokens** → **New Token** (select the **production** environment)
+2. Add it as a GitHub secret named `RAILWAY_API_KEY` (see [GitHub Actions Secrets Setup](#3-github-actions-secrets-setup) for detailed instructions)
 3. Verify the secret is added to the correct scope: the deploy workflow uses the `production` environment, so the secret should be an **environment secret** under the `production` environment, or a **repository secret**
 4. If the token was previously set but is now expired or revoked, generate a new token and update the secret
 
-#### Multiple Services Found / Missing RAILWAY_SERVICE
+#### Missing RAILWAY_PROJECT_ID
 
-**Error**: `Multiple services found. Please specify a service via the --service flag.`
+**Error**: `RAILWAY_PROJECT_ID is required for deployment.`
 
 **Solution**:
-1. Find your Railway service name by opening your Railway project dashboard and noting the name on the service card (e.g. `backend`)
-2. Add it as a GitHub secret named `RAILWAY_SERVICE` (see [GitHub Actions Secrets Setup](#3-github-actions-secrets-setup))
-3. If `RAILWAY_SERVICE` is missing or empty, the deploy step will be skipped with a warning rather than failing the workflow
+1. Find your Railway project ID from your Railway project settings or from the Railway dashboard URL
+2. Add it as a GitHub secret named `RAILWAY_PROJECT_ID` (see [GitHub Actions Secrets Setup](#3-github-actions-secrets-setup))
 
 #### Database Connection Errors
 

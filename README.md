@@ -343,7 +343,20 @@ docker run -p 8000:8000 --env-file .env paybot
 
 Railway is the only supported production deployment for this repository.
 
-The GitHub Actions workflow in `.github/workflows/deploy.yml` runs on every push to `main` and deploys the app to Railway when `RAILWAY_TOKEN` and `RAILWAY_SERVICE_ID` are configured.
+The GitHub Actions workflow in `.github/workflows/deploy-railway.yml` runs on every push to `main` and deploys the app to Railway when these secrets are configured.
+
+GitHub Secrets checklist:
+
+- `RAILWAY_API_KEY`
+- `RAILWAY_PROJECT_ID`
+- `VITE_TURNSTILE_SITE_KEY`
+- `CLOUDFLARE_TURNSTILE_SECRET_KEY`
+- `CF_API_TOKEN` (optional)
+- `CF_ZONE_ID` (optional)
+- `VITE_TELEGRAM_BOT_USERNAME` (optional)
+- `PYTHON_BACKEND_URL` (optional)
+
+For Cloudflare Turnstile support, add `VITE_TURNSTILE_SITE_KEY` to GitHub Secrets and configure `CLOUDFLARE_TURNSTILE_SECRET_KEY` in your production environment.
 
 To deploy:
 

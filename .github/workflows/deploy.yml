@@ -1,8 +1,8 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch: {}
+  # NOTE: Automatic push deploys are now handled by `.github/workflows/deploy-railway.yml`.
 
 jobs:
   test-backend:

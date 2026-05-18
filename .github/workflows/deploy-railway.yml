@@ -12,6 +12,8 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,3 +79,15 @@ jobs:
           railway login --apiKey "$RAILWAY_API_KEY"
           # Deploy the previously pushed GHCR image directly to Railway
           railway up --project "$RAILWAY_PROJECT_ID" --environment production --image ghcr.io/${{ github.repository }}:latest --detach --yes
+
+      - name: Purge Cloudflare cache
+        if: ${{ secrets.CF_API_TOKEN != '' && secrets.CF_ZONE_ID != '' }}
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+        run: |
+          echo "Purging Cloudflare cache for zone $CF_ZONE_ID"
+          curl -sSf -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
