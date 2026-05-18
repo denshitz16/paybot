@@ -1109,7 +1109,7 @@ async def admin_adjust_usd_wallet(
     )
 
 
-@router.get("/admin/php-wallets", response_model=AdminPhpWalletListResponse)
+@router.get("/admin/php-wallets", response_model=List[AdminUsdWalletEntry])
 async def admin_list_php_wallets(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -1119,27 +1119,34 @@ async def admin_list_php_wallets(
     if not perms or not perms.is_super_admin:
         raise HTTPException(status_code=403, detail="Super admin access required.")
 
+    # Get all PHP wallets
     result = await db.execute(
         select(Wallets).where(Wallets.currency == "PHP").order_by(Wallets.id)
     )
     wallets = result.scalars().all()
 
-    items: List[AdminPhpWalletEntry] = []
+    # Build response enriched with telegram_username from AdminUser table
+    items: List[AdminUsdWalletEntry] = []
     for w in wallets:
-        admin_username = await _get_admin_username(db, w.user_id)
-        items.append(AdminPhpWalletEntry(
+        # The wallet user_id is a telegram_id for PHP wallets
+        tg_id = w.user_id
+        admin_res = await db.execute(
+            select(AdminUser).where(AdminUser.telegram_id == tg_id)
+        )
+        admin = admin_res.scalar_one_or_none()
+        items.append(AdminUsdWalletEntry(
             user_id=w.user_id,
-            telegram_username=admin_username,
+            telegram_username=admin.telegram_username if admin else None,
             balance=w.balance,
             wallet_id=w.id,
         ))
 
-    return AdminPhpWalletListResponse(items=items, total=len(items))
+    return items
 
 
-@router.post("/admin/php-wallets/{wallet_user_id:path}/adjust", response_model=WalletActionResponse)
+@router.post("/admin/php-wallets/{user_id}/adjust", response_model=WalletActionResponse)
 async def admin_adjust_php_wallet(
-    wallet_user_id: str,
+    user_id: str,
     data: AdminWalletAdjustRequest,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -1152,7 +1159,7 @@ async def admin_adjust_php_wallet(
     if data.amount == 0:
         raise HTTPException(status_code=400, detail="Amount must be non-zero")
 
-    wallet = await get_or_create_wallet(db, wallet_user_id, "PHP")
+    wallet = await get_or_create_wallet(db, user_id, "PHP")
     now = datetime.now()
     balance_before = wallet.balance
     txn_type = "admin_credit" if data.amount > 0 else "admin_debit"
@@ -1161,11 +1168,11 @@ async def admin_adjust_php_wallet(
     if data.amount < 0 and wallet.balance < adj_amount:
         raise HTTPException(status_code=400, detail=f"Insufficient balance (₱{wallet.balance:,.2f})")
 
-    wallet.balance = round(max(0.0, wallet.balance + data.amount), 2)
+    wallet.balance = max(0.0, wallet.balance + data.amount)
     wallet.updated_at = now
 
     txn = Wallet_transactions(
-        user_id=wallet_user_id,
+        user_id=user_id,
         wallet_id=wallet.id,
         transaction_type=txn_type,
         amount=adj_amount,
@@ -1180,16 +1187,16 @@ async def admin_adjust_php_wallet(
     await db.commit()
     await db.refresh(txn)
 
-    publish_wallet_event(wallet_user_id, wallet, txn_type, adj_amount, txn.id)
+    publish_wallet_event(user_id, wallet, txn_type, adj_amount, txn.id)
     logger.info(
-        "Admin PHP wallet adjust: admin=%s target=%s amount=%s new_balance=%s",
-        current_user.id, wallet_user_id, data.amount, wallet.balance,
+        "Admin wallet adjust: admin=%s target=%s amount=%s new_balance=%s",
+        current_user.id, user_id, data.amount, wallet.balance,
     )
 
     action = "credited" if data.amount > 0 else "debited"
     return WalletActionResponse(
         success=True,
-        message=f"Successfully {action} ₱{adj_amount:,.2f} PHP for {wallet_user_id}",
+        message=f"Successfully {action} ₱{adj_amount:,.2f} PHP for {user_id}",
         balance=wallet.balance,
         transaction_id=txn.id,
     )
