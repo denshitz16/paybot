@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRouter
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 
 # MODULE_IMPORTS_START
 from services.database import initialize_database, close_database
@@ -299,6 +300,36 @@ def include_routers_from_package(app: FastAPI, package_name: str = "routers") ->
 # Setup logging before router discovery
 setup_logging()
 include_routers_from_package(app, "routers")
+
+
+# Enforce Cloudflare Turnstile verification for SPA routes when configured.
+@app.middleware("http")
+async def enforce_turnstile_middleware(request: Request, call_next):
+    # Only enforce for GET requests to SPA routes (non-API, non-static)
+    path = request.url.path or "/"
+    if request.method == "GET":
+        # Allowlist prefixes that should bypass turnstile
+        allow_prefixes = (
+            "/api/",
+            "/assets",
+            "/images",
+            "/uploads",
+            "/favicon.ico",
+            "/health",
+            "/auth/",
+            "/login",
+            "/register",
+            "/robots.txt",
+        )
+        if not any(path.startswith(p) for p in allow_prefixes):
+            # If server is configured with a Turnstile secret, require cookie
+            turnstile_secret = str(getattr(settings, "cloudflare_turnstile_secret_key", "") or "")
+            if turnstile_secret:
+                cookie = request.cookies.get("turnstile_verified")
+                if not cookie:
+                    # redirect to login where the Turnstile widget is shown
+                    return RedirectResponse(url="/login")
+    return await call_next(request)
 
 
 # Add exception handler for all exceptions except HTTPException

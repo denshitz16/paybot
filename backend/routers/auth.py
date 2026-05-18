@@ -22,8 +22,8 @@ from core.auth import (
 from core.config import settings
 from core.database import get_db
 from dependencies.auth import get_current_user
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
+from fastapi.responses import RedirectResponse, JSONResponse
 from models.auth import User
 from models.admin_users import AdminUser
 from models.bot_settings import Bot_settings
@@ -221,7 +221,7 @@ async def telegram_login_legacy_disabled():
 
 
 @router.post("/telegram-login-widget", response_model=TokenExchangeResponse)
-async def telegram_login_widget(payload: TelegramWidgetLoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def telegram_login_widget(payload: TelegramWidgetLoginRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
     """Telegram Login Widget admin login with Telegram-signed payload validation."""
     bot_token = str(getattr(settings, "telegram_bot_token", "") or "")
     allowed_admin_ids, allowed_admin_usernames = _get_allowed_telegram_admin_ids()
@@ -397,7 +397,38 @@ async def telegram_login_widget(payload: TelegramWidgetLoginRequest, request: Re
         )
 
     logger.info("[telegram-login-widget] Bot admin authenticated: %s", telegram_user_id)
+    # Set a short-lived cookie to mark Turnstile verification for this session
+    try:
+        secure = os.getenv("ENVIRONMENT", "prod").lower() not in ("dev", "development", "local")
+        # cookie lasts 1 day
+        response.set_cookie(key="turnstile_verified", value="1", httponly=True, secure=secure, max_age=86400, path="/")
+    except Exception:
+        pass
     return TokenExchangeResponse(token=app_token)
+
+
+class TurnstileVerifyRequest(BaseModel):
+    token: str
+
+
+@router.post("/turnstile/verify")
+async def turnstile_verify(payload: TurnstileVerifyRequest, request: Request, response: Response):
+    """Verify a Cloudflare Turnstile token and set a verification cookie on success."""
+    secret = str(getattr(settings, "cloudflare_turnstile_secret_key", "") or "")
+    if not secret:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Turnstile not configured on server")
+    token = payload.token
+    if not token:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing turnstile token")
+    cf_ip = request.headers.get("CF-Connecting-IP")
+    client_ip = request.client.host if request.client else None
+    remote_ip = cf_ip or client_ip
+    valid = await _verify_turnstile_token(token, secret, remote_ip)
+    if not valid:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Turnstile verification failed")
+    secure = os.getenv("ENVIRONMENT", "prod").lower() not in ("dev", "development", "local")
+    response.set_cookie(key="turnstile_verified", value="1", httponly=True, secure=secure, max_age=86400, path="/")
+    return JSONResponse({"success": True})
 
 
 @router.get("/telegram-login-config")
