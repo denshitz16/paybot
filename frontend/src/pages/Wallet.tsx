@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
+import { walletApi } from '@/api/wallet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -228,6 +229,13 @@ export default function Wallet() {
   const [sendUsdAmount, setSendUsdAmount] = useState('');
   const [sendUsdNote, setSendUsdNote] = useState('');
   const [sendUsdLoading, setSendUsdLoading] = useState(false);
+
+  // Internal wallet transfer state
+  const [transferRecipientUserId, setTransferRecipientUserId] = useState('');
+  const [transferCurrency, setTransferCurrency] = useState<'PHP' | 'USD'>('PHP');
+  const [transferAmount, setTransferAmount] = useState('');
+  const [transferNote, setTransferNote] = useState('');
+  const [transferLoading, setTransferLoading] = useState(false);
 
   const fetchWalletData = useCallback(async () => {
     if (!user) return;
@@ -466,6 +474,35 @@ export default function Wallet() {
     } finally { setSendUsdLoading(false); }
   };
 
+  const handleTransfer = async () => {
+    const amount = parseFloat(transferAmount);
+    if (!amount || amount <= 0) {
+      toast.error('Enter a valid amount');
+      return;
+    }
+
+    const recipientUserId = transferRecipientUserId.trim();
+    if (!recipientUserId) {
+      toast.error('Enter the recipient user ID');
+      return;
+    }
+
+    setTransferLoading(true);
+    try {
+      const data = await walletApi.transfer(recipientUserId, amount, transferCurrency, transferNote);
+      toast.success(data.message || `Transferred ${amount.toFixed(2)} ${transferCurrency} to ${recipientUserId}`);
+      setTransferRecipientUserId('');
+      setTransferAmount('');
+      setTransferNote('');
+      await fetchWalletData();
+    } catch (err) {
+      console.error('Wallet transfer failed:', err);
+      toast.error((err as Error)?.message || 'Wallet transfer failed');
+    } finally {
+      setTransferLoading(false);
+    }
+  };
+
   const handleCopyAddress = () => {
     if (cryptoDepositInfo?.address) {
       navigator.clipboard.writeText(cryptoDepositInfo.address).then(() => {
@@ -593,6 +630,13 @@ export default function Wallet() {
                 >
                   <Send className="h-4 w-4 shrink-0" />
                   <span className="hidden sm:inline">Send USD</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="transfer"
+                  className="flex-1 h-full rounded-none data-[state=active]:bg-card data-[state=active]:text-blue-400 text-muted-foreground flex-col gap-0.5 py-2 text-xs sm:flex-row sm:gap-2 sm:text-sm sm:py-0"
+                >
+                  <LinkIcon className="h-4 w-4 shrink-0" />
+                  <span className="hidden sm:inline">Transfer</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="send-usdt"

@@ -80,4 +80,18 @@ export const walletApi = {
     });
     return response.data;
   },
+
+  async transfer(
+    recipient_user_id: string,
+    amount: number,
+    currency: string = 'PHP',
+    note?: string
+  ): Promise<WalletActionResponse> {
+    const response = await client.apiCall.invoke({
+      url: '/api/v1/wallet/transfer',
+      method: 'POST',
+      data: { recipient_user_id, amount, currency, note },
+    });
+    return response.data;
+  },
 };

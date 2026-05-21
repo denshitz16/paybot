@@ -368,6 +368,56 @@ For local development, continue using `bash start_app_v2.sh` or Docker.
 
 ---
 
+## 🖥️ Windows development notes (WSL / Docker recommended)
+
+If you're developing on Windows you may encounter native build failures when installing Python packages that include Rust extensions (for example `pydantic-core`). These failures commonly show up as "Failed building wheel for pydantic-core" and are caused by missing prebuilt wheels for your Python version or missing native build toolchains on Windows.
+
+Recommended approaches to avoid these issues:
+
+- Use **WSL (Ubuntu)** for local development (recommended):
+  ```bash
+  # inside WSL, from the repo root
+  python3.11 -m venv .venv
+  source .venv/bin/activate
+  pip install --upgrade pip build setuptools wheel
+  cd backend
+  pip install -r requirements.txt
+  python -m pytest tests/ -v --tb=short
+  ```
+
+- Use **Docker** (matches CI/Cloud Run):
+  ```bash
+  # Build multi-stage image (frontend + backend)
+  docker build -t paybot:local .
+
+  # Run the container locally and map port 8000
+  docker run --rm -p 8000:8000 -e PORT=8000 paybot:local
+  ```
+
+- If you must run natively on Windows, use **Python 3.11**, install Visual Studio Build Tools (C++ workload) and Rust (`rustup`), and run PowerShell as Administrator so native wheels can compile.
+
+These approaches avoid the local Rust-wheel compilation step that fails on many Windows setups and give behavior consistent with CI (Linux) and Cloud Run.
+
+## 🚢 Trigger CI / Deploy to Cloud Run
+
+This repository includes a GitHub Actions workflow at `.github/workflows/cloud-run-deploy.yml` that:
+
+- Builds the frontend (`pnpm build`)
+- Runs backend tests (`pytest`)
+- Builds and pushes a Docker image to Google Container Registry (GCR)
+- Deploys the image to Cloud Run (with `--min-instances=1` to reduce cold starts)
+
+Before pushing to `main` to trigger the workflow, add these GitHub secrets:
+
+- `GCP_SA_KEY` — service account key JSON (Cloud Run Admin, Cloud Build Editor, Storage Admin, Service Account User)
+- `GCP_PROJECT` — GCP project id
+- `CLOUD_RUN_SERVICE` — Cloud Run service name (e.g. `paybot`)
+- `CLOUD_RUN_REGION` — Cloud Run region (e.g. `us-central1`)
+
+You can set secrets via the GitHub UI or the `gh secret set` command.
+
+---
+
 ## 📁 Project Structure
 
 ```
