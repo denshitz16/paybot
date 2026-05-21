@@ -10,7 +10,7 @@ from core.config import settings
 logger = logging.getLogger(__name__)
 
 MAYA_SANDBOX_BASE_URL = "https://pg-sandbox.paymaya.com/checkout/v1"
-MAYA_LIVE_BASE_URL = "https://pg.maya.ph/checkout/v1"
+MAYA_LIVE_BASE_URL = "https://pg.paymaya.com/p3/pay"
 
 
 class MayaService:

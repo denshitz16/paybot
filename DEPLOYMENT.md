@@ -72,8 +72,8 @@ Railway will automatically create services based on your `railway.toml` configur
 | `DATABASE_URL` | PostgreSQL connection string (auto-added by Railway) | `postgresql://user:pass@host:5432/db` |
 | `TELEGRAM_BOT_TOKEN` | Your Telegram bot token | `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11` |
 | `MAYA_SECRET_KEY` | Your Maya Manager API secret key | `maya_live_...` |
-| `MAYA_MODE` | Maya Manager mode (`sandbox` or `live`) | `sandbox` |
-| `MAYA_BASE_URL` | Optional Maya Manager base URL override | `https://...` |
+| `MAYA_MODE` | Maya Manager mode (`sandbox` or `live`) | `live` |
+| `MAYA_BASE_URL` | Optional Maya Manager base URL override | `https://pg.paymaya.com/p3/pay` |
 | `PYTHON_BACKEND_URL` | Your Railway backend public URL (for Telegram webhook) | `https://paybot-backend-production-84b2.up.railway.app` |
 | `JWT_SECRET_KEY` | Secret key for signing JWT tokens | Run `python -c "import secrets; print(secrets.token_hex(32))"` |
 | `ADMIN_USER_PASSWORD` | Password for admin dashboard login | `your_secure_password` |
