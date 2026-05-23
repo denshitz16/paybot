@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
@@ -19,6 +19,7 @@ from schemas.auth import UserResponse
 # Xendit removed. Use Maya Manager for supported checkout flows.
 from services.maya_service import MayaService
 from services.paymongo_service import PayMongoService
+from services.otp_service import OTPService
 from services.event_bus import payment_event_bus
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,120 @@ class CreateEWalletRequest(BaseModel):
     amount: float
     channel_code: str
     mobile_number: str = ""
+
+class CreateMayaTerminalRequest(BaseModel):
+    amount: float
+    description: str = ""
+    customer_name: str = ""
+    customer_email: str = ""
+    mobile_number: str = ""
+    channel_code: str = "PH_MAYA"
+    terminal_id: str = ""
+    otp_reference: str = ""
+    otp_code: str = ""
+
+class CreateVirtualTerminalRequest(BaseModel):
+    amount: float
+    description: str = ""
+    customer_name: str = ""
+    customer_email: str = ""
+    mobile_number: str = ""
+    channel_code: str = "PH_MAYA"
+    terminal_id: str = ""
+    otp_reference: str = ""
+    otp_code: str = ""
+
+class CreateCardTerminalRequest(BaseModel):
+    amount: float
+    description: str = ""
+    customer_name: str = ""
+    customer_email: str = ""
+    mobile_number: str = ""
+    otp_reference: str = ""
+    otp_code: str = ""
+
+
+async def _get_or_create_wallet(db: AsyncSession, user_id: str, currency: str = "PHP") -> Wallets:
+    result = await db.execute(
+        select(Wallets).where(Wallets.user_id == user_id, Wallets.currency == currency)
+    )
+    wallet = result.scalar_one_or_none()
+    if wallet is None:
+        now = datetime.now()
+        wallet = Wallets(user_id=user_id, currency=currency, balance=0.0, created_at=now, updated_at=now)
+        db.add(wallet)
+        await db.flush()
+    return wallet
+
+
+async def _credit_php_wallet(db: AsyncSession, txn: Transactions, status_label: str) -> Wallets:
+    wallet = await _get_or_create_wallet(db, txn.user_id, "PHP")
+    amount = float(txn.amount or 0.0)
+    balance_before = float(wallet.balance or 0.0)
+    wallet.balance = balance_before + amount
+    wallet.updated_at = datetime.now()
+    wtxn = Wallet_transactions(
+        user_id=txn.user_id,
+        wallet_id=wallet.id,
+        transaction_type="top_up",
+        amount=amount,
+        balance_before=balance_before,
+        balance_after=wallet.balance,
+        note=f"{status_label} payment credited",
+        status="completed",
+        reference_id=txn.external_id or txn.xendit_id or f"maya-{txn.id}",
+        created_at=datetime.now(),
+    )
+    db.add(wtxn)
+    return wallet
+
+
+async def _refresh_maya_transaction(db: AsyncSession, checkout_id: str) -> dict:
+    result = await db.execute(
+        select(Transactions).where(
+            or_(Transactions.xendit_id == checkout_id, Transactions.external_id == checkout_id)
+        )
+    )
+    txn = result.scalar_one_or_none()
+    if not txn:
+        return {"success": False, "message": "Transaction not found"}
+
+    if txn.status == "paid":
+        return {"success": True, "message": "Transaction is already paid", "status": txn.status, "transaction_id": txn.id}
+
+    service = MayaService()
+    status_result = await service.get_checkout_status(checkout_id)
+    if not status_result.get("success"):
+        return status_result
+
+    status = status_result.get("status", "").upper()
+    if status in ("PAID", "COMPLETED", "SETTLED", "SUCCESS", "AUTHORIZED"):
+        old_status = txn.status
+        txn.status = "paid"
+        txn.updated_at = datetime.now()
+        await _credit_php_wallet(db, txn, "Maya")
+        payment_event_bus.publish({
+            "event_type": "status_change",
+            "transaction_id": txn.id,
+            "external_id": txn.external_id,
+            "old_status": old_status,
+            "new_status": txn.status,
+            "amount": txn.amount,
+            "description": txn.description or "",
+            "transaction_type": txn.transaction_type,
+            "user_id": txn.user_id,
+        })
+        await db.commit()
+        return {"success": True, "message": "Transaction marked paid and wallet credited", "status": txn.status, "transaction_id": txn.id}
+
+    if status in ("FAILED", "CANCELLED", "DECLINED", "EXPIRED"):
+        txn.status = "failed" if status in ("FAILED", "DECLINED") else status.lower()
+        txn.updated_at = datetime.now()
+        await db.commit()
+        return {"success": False, "message": f"Transaction status is {status}"}
+
+    return {"success": False, "message": f"Transaction status is {status}"}
+
 
 class CreateDisbursementRequest(BaseModel):
     amount: float
@@ -150,6 +265,242 @@ async def create_ewallet_charge(
         })
     except Exception as e:
         logger.error(f"E-wallet charge error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/maya-virtual-terminal", response_model=GatewayResponse)
+@router.post("/virtual-terminal", response_model=GatewayResponse)
+async def create_virtual_terminal(
+    data: CreateVirtualTerminalRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        if data.amount <= 0:
+            return GatewayResponse(success=False, message="Amount must be greater than zero")
+
+        if not data.otp_code:
+            challenge = OTPService.create_terminal_challenge(
+                amount=data.amount,
+                description=data.description or "Maya Virtual Terminal",
+                customer_name=data.customer_name,
+                customer_email=data.customer_email,
+                mobile_number=data.mobile_number,
+                terminal_id=data.terminal_id,
+                channel_code=data.channel_code,
+                terminal_mode="virtual",
+            )
+            response_data = {
+                "otp_required": True,
+                "otp_reference": challenge["otp_reference"],
+            }
+            if "otp_code" in challenge:
+                response_data["otp_code"] = challenge["otp_code"]
+            return GatewayResponse(
+                success=True,
+                message="OTP challenge generated. Enter the OTP to complete the virtual terminal payment.",
+                data=response_data,
+            )
+
+        if not data.otp_reference:
+            return GatewayResponse(success=False, message="OTP reference is required when submitting the OTP code")
+
+        verify_result = OTPService.verify_otp(data.otp_reference, data.otp_code)
+        if not verify_result.get("success"):
+            return GatewayResponse(success=False, message=verify_result.get("error", "OTP verification failed"))
+
+        payload = verify_result["payload"]
+        service = MayaService()
+        result = await service.create_virtual_terminal(
+            amount=payload["amount"],
+            description=payload["description"],
+            customer_name=payload["customer_name"],
+            customer_email=payload["customer_email"],
+            mobile_number=payload["mobile_number"],
+            terminal_id=payload["terminal_id"],
+            channel_code=payload["channel_code"],
+        )
+        if not result.get("success"):
+            return GatewayResponse(success=False, message=result.get("error", "Failed"))
+
+        now = datetime.now()
+        txn = Transactions(
+            user_id=str(current_user.id), transaction_type="virtual_terminal",
+            external_id=result.get("external_id", ""), xendit_id=result.get("checkout_id", ""),
+            amount=payload["amount"], currency="PHP", status="pending",
+            description=payload["description"],
+            customer_name=payload["customer_name"],
+            customer_email=payload["customer_email"],
+            payment_url=result.get("checkout_url", ""), created_at=now, updated_at=now,
+        )
+        db.add(txn)
+        await db.commit()
+        return GatewayResponse(success=True, message="Virtual terminal created", data={
+            "transaction_id": txn.id,
+            "checkout_id": result.get("checkout_id", ""),
+            "checkout_url": result.get("checkout_url", ""),
+            "external_id": result.get("external_id", ""),
+            "amount": payload["amount"],
+        })
+    except Exception as e:
+        logger.error(f"Virtual terminal error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/maya-terminal", response_model=GatewayResponse)
+async def create_maya_terminal(
+    data: CreateMayaTerminalRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        if data.amount <= 0:
+            return GatewayResponse(success=False, message="Amount must be greater than zero")
+
+        if not data.otp_code:
+            challenge = OTPService.create_terminal_challenge(
+                amount=data.amount,
+                description=data.description or "Maya Terminal POS",
+                customer_name=data.customer_name,
+                customer_email=data.customer_email,
+                mobile_number=data.mobile_number,
+                terminal_id=data.terminal_id,
+                channel_code=data.channel_code,
+                terminal_mode="real",
+            )
+            response_data = {
+                "otp_required": True,
+                "otp_reference": challenge["otp_reference"],
+            }
+            if "otp_code" in challenge:
+                response_data["otp_code"] = challenge["otp_code"]
+            return GatewayResponse(
+                success=True,
+                message="OTP challenge generated. Enter the OTP to complete the Maya terminal payment.",
+                data=response_data,
+            )
+
+        if not data.otp_reference:
+            return GatewayResponse(success=False, message="OTP reference is required when submitting the OTP code")
+
+        verify_result = OTPService.verify_otp(data.otp_reference, data.otp_code)
+        if not verify_result.get("success"):
+            return GatewayResponse(success=False, message=verify_result.get("error", "OTP verification failed"))
+
+        payload = verify_result["payload"]
+        service = MayaService()
+        result = await service.create_terminal(
+            amount=payload["amount"],
+            description=payload["description"],
+            customer_name=payload["customer_name"],
+            customer_email=payload["customer_email"],
+            mobile_number=payload["mobile_number"],
+            terminal_id=payload["terminal_id"],
+            channel_code=payload["channel_code"],
+        )
+
+        if not result.get("success"):
+            return GatewayResponse(success=False, message=result.get("error", "Failed"))
+
+        now = datetime.now()
+        txn = Transactions(
+            user_id=str(current_user.id), transaction_type="maya_terminal",
+            external_id=result.get("external_id", ""), xendit_id=result.get("checkout_id", ""),
+            amount=payload["amount"], currency="PHP", status="pending",
+            description=payload["description"],
+            customer_name=payload["customer_name"],
+            customer_email=payload["customer_email"],
+            payment_url=result.get("checkout_url", ""), created_at=now, updated_at=now,
+        )
+        db.add(txn)
+        await db.commit()
+        return GatewayResponse(success=True, message="Maya terminal created", data={
+            "transaction_id": txn.id,
+            "checkout_id": result.get("checkout_id", ""),
+            "checkout_url": result.get("checkout_url", ""),
+            "external_id": result.get("external_id", ""),
+            "amount": payload["amount"],
+        })
+    except Exception as e:
+        logger.error(f"Maya terminal error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/card-terminal", response_model=GatewayResponse)
+async def create_card_terminal(
+    data: CreateCardTerminalRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        if data.amount <= 0:
+            return GatewayResponse(success=False, message="Amount must be greater than zero")
+
+        if not data.otp_code:
+            challenge = OTPService.create_terminal_challenge(
+                amount=data.amount,
+                description=data.description or "Card terminal payment",
+                customer_name=data.customer_name,
+                customer_email=data.customer_email,
+                mobile_number=data.mobile_number,
+                terminal_id="card-terminal",
+                channel_code="PAYMONGO_CARD",
+                terminal_mode="card",
+            )
+            response_data = {
+                "otp_required": True,
+                "otp_reference": challenge["otp_reference"],
+            }
+            if "otp_code" in challenge:
+                response_data["otp_code"] = challenge["otp_code"]
+            return GatewayResponse(
+                success=True,
+                message="OTP challenge generated. Enter the OTP to complete the card terminal payment.",
+                data=response_data,
+            )
+
+        if not data.otp_reference:
+            return GatewayResponse(success=False, message="OTP reference is required when submitting the OTP code")
+
+        verify_result = OTPService.verify_otp(data.otp_reference, data.otp_code)
+        if not verify_result.get("success"):
+            return GatewayResponse(success=False, message=verify_result.get("error", "OTP verification failed"))
+
+        payload = verify_result["payload"]
+        service = PayMongoService()
+        result = await service.create_checkout_session(
+            amount=payload["amount"],
+            description=payload["description"],
+            payment_method_types=["card"],
+            reference_number="",
+            customer_email=payload["customer_email"],
+            customer_name=payload["customer_name"],
+        )
+
+        if not result.get("success"):
+            return GatewayResponse(success=False, message=result.get("error", "Failed"))
+
+        now = datetime.now()
+        txn = Transactions(
+            user_id=str(current_user.id), transaction_type="card_terminal",
+            external_id=result.get("reference_number", ""), xendit_id=result.get("checkout_session_id", ""),
+            amount=payload["amount"], currency="PHP", status="pending",
+            description=payload["description"],
+            customer_name=payload["customer_name"],
+            customer_email=payload["customer_email"],
+            payment_url=result.get("checkout_url", ""), created_at=now, updated_at=now,
+        )
+        db.add(txn)
+        await db.commit()
+        return GatewayResponse(success=True, message="Card terminal created", data={
+            "transaction_id": txn.id,
+            "checkout_session_id": result.get("checkout_session_id", ""),
+            "checkout_url": result.get("checkout_url", ""),
+            "reference_number": result.get("reference_number", ""),
+            "amount": payload["amount"],
+        })
+    except Exception as e:
+        logger.error(f"Card terminal error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -591,6 +942,55 @@ async def send_reminder(
     return GatewayResponse(success=True, message="Reminder logged (no delivery channel available)", data={
         "transaction_id": txn.id, "amount": txn.amount,
     })
+
+
+@router.get("/maya/checkouts/{checkout_id}/refresh", response_model=GatewayResponse)
+async def refresh_maya_checkout_status(
+    checkout_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await _refresh_maya_transaction(db, checkout_id)
+    return GatewayResponse(success=result.get("success", False), message=result.get("message", ""), data={
+        "status": result.get("status"),
+        "transaction_id": result.get("transaction_id"),
+        "response": result.get("response"),
+    })
+
+
+@router.get("/maya/redirect/success", response_model=GatewayResponse)
+async def maya_redirect_success(checkout_id: str = "", external_id: str = "", db: AsyncSession = Depends(get_db)):
+    if not checkout_id and not external_id:
+        return GatewayResponse(success=False, message="Missing checkout_id or external_id")
+    lookup_id = checkout_id or external_id
+    result = await _refresh_maya_transaction(db, lookup_id)
+    return GatewayResponse(success=result.get("success", False), message=result.get("message", ""), data={
+        "status": result.get("status"),
+        "transaction_id": result.get("transaction_id"),
+    })
+
+
+@router.get("/maya/redirect/failed", response_model=GatewayResponse)
+async def maya_redirect_failed(checkout_id: str = "", external_id: str = "", db: AsyncSession = Depends(get_db)):
+    lookup_id = checkout_id or external_id
+    if lookup_id:
+        result = await _refresh_maya_transaction(db, lookup_id)
+        return GatewayResponse(success=result.get("success", False), message=f"Payment failed or cancelled. {result.get('message', '')}", data={
+            "status": result.get("status"),
+            "transaction_id": result.get("transaction_id"),
+        })
+    return GatewayResponse(success=False, message="Payment failed or cancelled.")
+
+
+@router.get("/maya/redirect/cancelled", response_model=GatewayResponse)
+async def maya_redirect_cancelled(checkout_id: str = "", external_id: str = "", db: AsyncSession = Depends(get_db)):
+    lookup_id = checkout_id or external_id
+    if lookup_id:
+        result = await _refresh_maya_transaction(db, lookup_id)
+        return GatewayResponse(success=result.get("success", False), message=f"Payment cancelled. {result.get('message', '')}", data={
+            "status": result.get("status"),
+            "transaction_id": result.get("transaction_id"),
+        })
+    return GatewayResponse(success=False, message="Payment cancelled.")
 
 
 # ==================== EXPIRE/CANCEL INVOICE ====================

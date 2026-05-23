@@ -56,6 +56,7 @@ class MayaService:
         success_redirect_url: str = "",
         failure_redirect_url: str = "",
         cancel_redirect_url: str = "",
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         if not external_id:
             external_id = f"maya-{uuid.uuid4().hex[:12]}"
@@ -66,9 +67,9 @@ class MayaService:
             "requestReferenceNumber": external_id,
             "totalAmount": {"value": amount_value, "currency": "PHP"},
             "redirectUrl": {
-                "success": success_redirect_url or f"{redirect_base}/payment/success",
-                "failure": failure_redirect_url or f"{redirect_base}/payment/failed",
-                "cancel": cancel_redirect_url or f"{redirect_base}/payment/cancelled",
+                "success": success_redirect_url or f"{redirect_base}/api/v1/gateway/maya/redirect/success",
+                "failure": failure_redirect_url or f"{redirect_base}/api/v1/gateway/maya/redirect/failed",
+                "cancel": cancel_redirect_url or f"{redirect_base}/api/v1/gateway/maya/redirect/cancelled",
             },
             "items": [
                 {
@@ -84,6 +85,7 @@ class MayaService:
                 "channel_code": channel_code,
                 "customer_name": customer_name,
                 "customer_email": customer_email,
+                **(metadata or {}),
             },
         }
 
@@ -123,6 +125,32 @@ class MayaService:
             logger.error("Maya checkout creation error: %s", exc)
             return {"success": False, "error": str(exc)}
 
+    async def get_checkout_status(self, checkout_id: str) -> Dict[str, Any]:
+        if not checkout_id:
+            return {"success": False, "error": "Missing checkout ID"}
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{self.base_url}/checkouts/{checkout_id}",
+                    headers={**self._get_auth_headers(), "Content-Type": "application/json"},
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                data = response.json()
+                return {
+                    "success": True,
+                    "checkout_id": data.get("id", ""),
+                    "external_id": data.get("requestReferenceNumber", ""),
+                    "status": (data.get("status") or "").upper(),
+                    "response": data,
+                }
+        except httpx.HTTPStatusError as exc:
+            logger.error("Maya checkout status fetch failed: %s", exc.response.text)
+            return {"success": False, "error": exc.response.text}
+        except Exception as exc:
+            logger.error("Maya checkout status fetch error: %s", exc)
+            return {"success": False, "error": str(exc)}
+
     async def create_payment_link(
         self,
         amount: float,
@@ -153,6 +181,58 @@ class MayaService:
             customer_name=customer_name,
             customer_email=customer_email,
             external_id=external_id,
+        )
+
+    async def create_terminal(
+        self,
+        amount: float,
+        description: str = "",
+        customer_name: str = "",
+        customer_email: str = "",
+        mobile_number: str = "",
+        terminal_id: str = "",
+        channel_code: str = "PH_MAYA",
+        external_id: str = "",
+    ) -> Dict[str, Any]:
+        return await self.create_checkout(
+            amount=amount,
+            description=description or "Maya Terminal POS",
+            channel_code=channel_code,
+            customer_name=customer_name,
+            customer_email=customer_email,
+            mobile_number=mobile_number,
+            external_id=external_id,
+            metadata={
+                "terminal_mode": "real",
+                "terminal_id": terminal_id,
+                "preferred_payment_method": "card",
+            },
+        )
+
+    async def create_virtual_terminal(
+        self,
+        amount: float,
+        description: str = "",
+        customer_name: str = "",
+        customer_email: str = "",
+        mobile_number: str = "",
+        terminal_id: str = "",
+        channel_code: str = "PH_MAYA",
+        external_id: str = "",
+    ) -> Dict[str, Any]:
+        return await self.create_checkout(
+            amount=amount,
+            description=description or "Maya Virtual Terminal",
+            channel_code=channel_code,
+            customer_name=customer_name,
+            customer_email=customer_email,
+            mobile_number=mobile_number,
+            external_id=external_id,
+            metadata={
+                "terminal_mode": "virtual",
+                "terminal_id": terminal_id,
+                "preferred_payment_method": "card",
+            },
         )
 
     async def create_ewallet_charge(

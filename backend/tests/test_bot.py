@@ -905,6 +905,52 @@ class TestXenditEwalletChannelProperties:
         assert props["failure_redirect_url"] == "https://myapp.com/failed"
 
 
+class TestMayaVirtualTerminal:
+    def test_create_virtual_terminal_requests_checkout(self):
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "id": "checkout-test-123",
+            "status": "CREATED",
+            "redirectUrl": {
+                "success": "https://example.com/success",
+                "failure": "https://example.com/failed",
+                "cancel": "https://example.com/cancel",
+            },
+        }
+        mock_response.raise_for_status = MagicMock()
+
+        captured_payload: dict = {}
+
+        async def mock_post(url, **kwargs):
+            captured_payload.update(kwargs.get("json", {}))
+            return mock_response
+
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = mock_post
+
+        with patch("httpx.AsyncClient", return_value=mock_client):
+            svc = MayaService()
+            svc.secret_key = "test-key"
+            result = asyncio.run(
+                svc.create_virtual_terminal(
+                    amount=150,
+                    description="Test terminal",
+                    customer_name="Test User",
+                    customer_email="test@example.com",
+                    mobile_number="09171234567",
+                )
+            )
+
+        assert result["success"] is True
+        assert result["checkout_id"] == "checkout-test-123"
+        assert captured_payload["totalAmount"]["value"] == 15000
+        assert captured_payload["buyer"]["name"] == "Test User"
+        assert captured_payload["buyer"]["email"] == "test@example.com"
+        assert captured_payload["buyer"]["phoneNumber"] == "09171234567"
+
+
 # ---------------------------------------------------------------------------
 # Xendit QR code payload validation
 # ---------------------------------------------------------------------------

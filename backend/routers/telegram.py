@@ -297,6 +297,15 @@ _CMD_STEPS: Dict[str, List[Dict]] = {
         {"key": "amount",   "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
         {"key": "provider", "type": "str",   "prompt": "📱 Enter the <b>provider</b>:\n<i>GCASH · MAYA · GRABPAY</i>"},
     ],
+    "/pos": [
+        {"key": "amount",         "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
+        {"key": "description",    "type": "str",   "prompt": "📝 Enter the <b>description</b>:\n<i>e.g. Coffee, Retail sale</i>\n\nOr type <code>skip</code> to use the default.", "optional": True, "default": "Maya POS payment"},
+        {"key": "customer_name",  "type": "str",   "prompt": "👤 Enter the <b>customer name</b>:\n<i>e.g. Juan Dela Cruz</i>\n\nOr type <code>skip</code> to leave blank.", "optional": True, "default": ""},
+        {"key": "card_number",    "type": "str",   "prompt": "💳 Enter the <b>card number</b> (digits only):\n<i>e.g. 4111111111111111</i>\n\nThis is for the virtual terminal flow. You will receive a secure checkout link to enter card details safely."},
+        {"key": "expiry_date",    "type": "str",   "prompt": "📅 Enter the <b>card expiry</b> in MM/YY format:\n<i>e.g. 12/25</i>"},
+        {"key": "cvv",            "type": "str",   "prompt": "🔒 Enter the <b>card CVV</b>:\n<i>e.g. 123</i>"},
+        {"key": "terminal_id",    "type": "str",   "prompt": "🔢 Enter the <b>terminal ID</b> for this POS transaction:\n<i>e.g. POS-123</i>\n\nOr type <code>skip</code> to use a default.", "optional": True, "default": "POS-TERM"},
+    ],
     "/alipay": [
         {"key": "amount",      "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
         {"key": "description", "type": "str",   "prompt": "📝 Enter the <b>description</b>:\n<i>e.g. Alipay payment</i>\n\nOr type <code>skip</code> to use the default.", "optional": True, "default": "Alipay payment"},
@@ -355,23 +364,37 @@ _CMD_STEPS: Dict[str, List[Dict]] = {
 }
 
 
-def _wizard_start(chat_id: str, cmd: str) -> str:
+def _wizard_start(chat_id: str, cmd: str, initial_data: Optional[Dict[str, str]] = None, start_step: int = 0) -> str:
     """Initialise pending state for cmd and return the first prompt."""
-    _pending[chat_id] = {"cmd": cmd, "step": 0, "data": {}}
+    _pending[chat_id] = {
+        "cmd": cmd,
+        "step": start_step,
+        "data": initial_data.copy() if initial_data else {},
+    }
     return (
         f"📋 <b>{cmd}</b> — let's fill in the details.\n"
         f"Type <code>/cancel</code> at any time to abort.\n\n"
-        + _CMD_STEPS[cmd][0]["prompt"]
+        + _CMD_STEPS[cmd][start_step]["prompt"]
     )
+
+def _mask_card_number(card_number: str) -> str:
+    """Return a masked card number for display without storing full PAN."""
+    digits = re.sub(r"\D", "", card_number or "")
+    if len(digits) < 4:
+        return "****"
+    if len(digits) <= 8:
+        return f"{digits[:4]}{'*' * (len(digits) - 4)}"
+    return f"{digits[:4]}{'*' * (len(digits) - 8)}{digits[-4:]}"
 def _start_kb() -> dict:
     """Full quick-action keyboard for /start and /help."""
     return {
         "keyboard": [
             [{"text": "💳 /invoice"}, {"text": "📱 /qr"}, {"text": "🔗 /link"}],
-            [{"text": "🏦 /va"}, {"text": "📱 /ewallet"}, {"text": "🔴 /alipay"}],
-            [{"text": "🟢 /wechat"}, {"text": "💰 /balance"}, {"text": "💸 /disburse"}],
-            [{"text": "📷 /scanqr"}, {"text": "🏦 /deposit"}, {"text": "📥 /topup"}],
-            [{"text": "📋 /list"}, {"text": "💱 /fees"}, {"text": "❓ /help"}],
+            [{"text": "🏦 /va"}, {"text": "📱 /ewallet"}, {"text": "💳 /pos"}],
+            [{"text": "🔴 /alipay"}, {"text": "🟢 /wechat"}, {"text": "💰 /balance"}],
+            [{"text": "💸 /disburse"}, {"text": "📷 /scanqr"}, {"text": "🏦 /deposit"}],
+            [{"text": "📥 /topup"}, {"text": "📋 /list"}, {"text": "💱 /fees"}],
+            [{"text": "❓ /help"}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -400,6 +423,7 @@ def _welcome_en(name: str = "") -> str:
         f"  /link [amt] [desc] — Payment link\n"
         f"  /va [amt] [bank] — Virtual account\n"
         f"  /ewallet [amt] [provider] — E-wallet (GCash, Maya, GrabPay)\n"
+        f"  /pos [amt] [desc] — Terminal POS payment\n"
         f"  /alipay [amt] [desc] — Alipay QR (via PhotonPay)\n"
         f"  /wechat [amt] [desc] — WeChat QR (via PhotonPay)\n\n"
         f"📷 <b>Pay via QRPH</b>\n"
@@ -441,6 +465,7 @@ def _welcome_zh(name: str = "") -> str:
         f"  /link [金额] [说明] — 付款链接\n"
         f"  /va [金额] [银行] — 虚拟账户\n"
         f"  /ewallet [金额] [提供商] — 电子钱包（GCash、Maya、GrabPay）\n"
+        f"  /pos [金额] [说明] — 终端 POS 支付\n"
         f"  /alipay [金额] [说明] — 支付宝收款\n"
         f"  /wechat [金额] [说明] — 微信支付收款\n\n"
         f"📷 <b>扫码付款（QRPH）</b>\n"
@@ -1562,12 +1587,72 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                         f"🔢 Account: <code>{account}</code>\n"
                         f"💰 Amount: <b>₱{amount_php:,.2f}</b>\n"
                         f"🆔 Request ID: <code>#{deposit_req.id}</code>\n\n"
-                        f"📷 <b>Next step:</b> Please send a screenshot / photo of your transfer confirmation in this chat.\n"
+                        f"📷 <b>Next step:</b> Please send a screenshot /photo of your transfer confirmation in this chat.\n"
                         f"The admin will verify and credit your PHP wallet once the receipt is confirmed.",
                     )
                 except Exception as exc:
                     logger.error(f"/deposit wizard completion error: {exc}", exc_info=True)
                     await tg.send_message(chat_id, "❌ An error occurred saving your deposit. Please try /deposit again.")
+                return {"status": "ok"}
+
+            if cmd == "/pos":
+                try:
+                    amount = float(collected.get("amount", 0))
+                    if amount <= 0:
+                        await tg.send_message(chat_id, "❌ Amount must be greater than zero.")
+                        return {"status": "ok"}
+                    description = collected.get("description", "Maya POS payment") or "Maya POS payment"
+                    customer_name = collected.get("customer_name", "")
+                    terminal_id = collected.get("terminal_id", "POS-TERM") or "POS-TERM"
+                    card_number = collected.get("card_number", "")
+                    expiry_date = collected.get("expiry_date", "")
+                    maya = MayaService()
+                    result = await maya.create_virtual_terminal(
+                        amount=amount,
+                        description=description,
+                        customer_name=customer_name,
+                        customer_email=collected.get("customer_email", ""),
+                        mobile_number=collected.get("mobile_number", ""),
+                        terminal_id=terminal_id,
+                    )
+                    if result.get("success"):
+                        checkout_url = result.get("checkout_url", "")
+                        ext_id = result.get("external_id", "")
+                        masked_card = _mask_card_number(card_number)
+                        reply = (
+                            f"✅ <b>Virtual Card Terminal Ready</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━\n"
+                            f"💰 Amount: <b>₱{amount:,.2f}</b>\n"
+                            f"📝 {description}\n"
+                            f"🔢 Card: <code>{masked_card}</code>\n"
+                            f"📅 Expiry: <b>{expiry_date}</b>\n"
+                            f"🆔 <code>{ext_id}</code>\n\n"
+                            f"Use the secure checkout link below to enter your card details and complete payment.\n"
+                            f"If you prefer, you can type the card data above for the virtual terminal experience, but the secure link is the recommended way to pay."
+                        )
+                        keyboard = {"inline_keyboard": [[{"text": "🔗 Open Secure Payment Link", "url": checkout_url}]]} if checkout_url else None
+                        await tg.send_message(chat_id, reply, reply_markup=keyboard)
+                        try:
+                            now = datetime.now()
+                            txn = Transactions(
+                                user_id=f"tg-{chat_id}", transaction_type="maya_virtual_terminal",
+                                external_id=ext_id, xendit_id=result.get("checkout_id", ""),
+                                amount=amount, currency="PHP", status="pending",
+                                description=description, payment_url=checkout_url,
+                                telegram_chat_id=chat_id, created_at=now, updated_at=now,
+                            )
+                            db.add(txn)
+                            await db.commit()
+                        except Exception as e:
+                            logger.error(f"DB save failed for /pos: {e}", exc_info=True)
+                            try:
+                                await db.rollback()
+                            except Exception:
+                                pass
+                    else:
+                        await tg.send_message(chat_id, f"❌ Failed: {result.get('error', 'Unknown error')}")
+                except ValueError:
+                    await tg.send_message(chat_id, "❌ Invalid amount.")
                 return {"status": "ok"}
 
             # Other commands: rebuild command text and fall through to routing
@@ -3103,12 +3188,27 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 "🔗 /link [amt] [desc] — Payment Link\n"
                 "🏦 /va [amt] [bank] — Virtual Account\n"
                 "📲 /ewallet [amt] [provider] — E-Wallet\n"
+                "💳 /pos [amt] [desc] — Terminal POS payment\n"
                 "🔴 /alipay [amt] [desc] — Alipay QR (PhotonPay)\n"
                 "🟢 /wechat [amt] [desc] — WeChat QR (PhotonPay)\n"
                 "📷 /scanqr — Scan &amp; pay via QRPH\n\n"
                 "💡 Example: /invoice 500 Coffee order"
             )
             await tg.send_message(chat_id, menu)
+
+        # ==================== /pos ====================
+        elif text.startswith("/pos"):
+            parts = text.split(maxsplit=2)
+            if len(parts) < 2:
+                await tg.send_message(chat_id, _wizard_start(chat_id, "/pos"))
+            else:
+                initial_data = {"amount": parts[1]}
+                start_step = 1
+                if len(parts) > 2:
+                    initial_data["description"] = parts[2]
+                    start_step = 2
+                await tg.send_message(chat_id, _wizard_start(chat_id, "/pos", initial_data, start_step))
+            return {"status": "ok"}
 
         # ==================== /help ====================
         elif text.startswith("/help"):
@@ -3119,6 +3219,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 "  /pay — Open payment menu\n"
                 "  /invoice [amt] [desc] — Invoice with payment link\n"
                 "  /qr [amt] [desc] — Dynamic QR code\n"
+                "  /pos [amt] [desc] — Terminal POS payment\n"
                 "  /alipay [amt] [desc] — Alipay QR (PhotonPay)\n"
                 "  /wechat [amt] [desc] — WeChat QR (PhotonPay)\n"
                 "  /link [amt] [desc] — Shareable payment link\n"
@@ -3157,6 +3258,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 "  /pay — 打开收款菜单\n"
                 "  /invoice [金额] [说明] — 创建账单\n"
                 "  /qr [金额] [说明] — 动态二维码\n"
+                "  /pos [金额] [说明] — 终端 POS 支付\n"
                 "  /alipay [金额] [说明] — 支付宝 QR（PhotonPay）\n"
                 "  /wechat [金额] [说明] — 微信支付 QR（PhotonPay）\n"
                 "  /link [金额] [说明] — 可分享付款链接\n"
