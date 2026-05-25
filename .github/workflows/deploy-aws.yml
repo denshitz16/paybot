@@ -5,6 +5,7 @@ on:
     branches: [main]
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # Override AWS_REGION with a GitHub repository variable if needed.
   AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
   # Name used when the CloudFormation stack was deployed (default: paybot).
