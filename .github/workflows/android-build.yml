@@ -48,7 +48,18 @@ jobs:
       - name: Install dependencies
         working-directory: mobile
         run: |
-          npm ci
+          npm install
+
+      - name: Generate Android native project if missing
+        run: |
+          if [ ! -d mobile/android ]; then
+            cd mobile
+            npx react-native init tempapp --version 0.72.0
+            mv tempapp/android ./android
+            rm -rf tempapp
+          else
+            echo "mobile/android already exists"
+          fi
 
       - name: Build Android release (Gradle)
         working-directory: mobile/android
