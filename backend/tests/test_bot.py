@@ -19,7 +19,7 @@ os.environ.setdefault("TELEGRAM_ADMIN_IDS", "123456789")
 
 from fastapi.testclient import TestClient
 from main import app  # noqa: E402
-from services.maya_service import MayaService  # noqa: E402
+from services.xendit_service import XenditService  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -812,7 +812,6 @@ class TestUsdtQrImage:
 # ---------------------------------------------------------------------------
 # Xendit webhook
 # ---------------------------------------------------------------------------
-@pytest.mark.skip(reason="Xendit removed; webhook tests skipped")
 class TestXenditWebhook:
     def test_empty_body(self, client):
         r = client.post("/api/v1/xendit/webhook", json={})
@@ -831,7 +830,6 @@ class TestXenditWebhook:
 # ---------------------------------------------------------------------------
 # Xendit e-wallet channel_properties
 # ---------------------------------------------------------------------------
-@pytest.mark.skip(reason="Xendit removed; e-wallet channel_properties tests no longer apply")
 class TestXenditEwalletChannelProperties:
     """Verify that create_ewallet_charge always sends required channel_properties."""
 
@@ -857,7 +855,7 @@ class TestXenditEwalletChannelProperties:
         mock_client.post = mock_post
 
         with patch("httpx.AsyncClient", return_value=mock_client):
-            svc = MayaService()
+            svc = XenditService()
             svc.secret_key = "test-key"
             result = asyncio.run(
                 svc.create_ewallet_charge(amount=100, channel_code="PH_GCASH")
@@ -888,7 +886,7 @@ class TestXenditEwalletChannelProperties:
         mock_client.post = mock_post
 
         with patch("httpx.AsyncClient", return_value=mock_client):
-            svc = MayaService()
+            svc = XenditService()
             svc.secret_key = "test-key"
             result = asyncio.run(
                 svc.create_ewallet_charge(
@@ -905,56 +903,43 @@ class TestXenditEwalletChannelProperties:
         assert props["failure_redirect_url"] == "https://myapp.com/failed"
 
 
-class TestMayaVirtualTerminal:
-    def test_create_virtual_terminal_requests_checkout(self):
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "id": "checkout-test-123",
-            "status": "CREATED",
-            "redirectUrl": {
-                "success": "https://example.com/success",
-                "failure": "https://example.com/failed",
-                "cancel": "https://example.com/cancel",
-            },
+class TestMayaTopUpIntegration:
+    """Verify Maya wallet top-up creates checkout-based invoices correctly."""
+
+    def test_topup_uses_checkout_fields(self, client, auth_headers):
+        mock_result = {
+            "success": True,
+            "checkout_id": "maya-checkout-123",
+            "checkout_url": "https://maya.example.com/checkout/123",
+            "external_id": "maya-external-abc",
         }
-        mock_response.raise_for_status = MagicMock()
 
-        captured_payload: dict = {}
+        async def fake_create_invoice(*args, **kwargs):
+            return mock_result
 
-        async def mock_post(url, **kwargs):
-            captured_payload.update(kwargs.get("json", {}))
-            return mock_response
-
-        mock_client = AsyncMock()
-        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-        mock_client.__aexit__ = AsyncMock(return_value=False)
-        mock_client.post = mock_post
-
-        with patch("httpx.AsyncClient", return_value=mock_client):
-            svc = MayaService()
-            svc.secret_key = "test-key"
-            result = asyncio.run(
-                svc.create_virtual_terminal(
-                    amount=150,
-                    description="Test terminal",
-                    customer_name="Test User",
-                    customer_email="test@example.com",
-                    mobile_number="09171234567",
-                )
+        with patch("routers.wallet.MayaService.create_invoice", new=fake_create_invoice):
+            r = client.post(
+                "/api/v1/wallet/topup",
+                headers=auth_headers,
+                json={
+                    "amount": 100.0,
+                    "description": "Wallet Top Up",
+                    "customer_name": "Test User",
+                    "customer_email": "test@example.com",
+                },
             )
 
-        assert result["success"] is True
-        assert result["checkout_id"] == "checkout-test-123"
-        assert captured_payload["totalAmount"]["value"] == 15000
-        assert captured_payload["buyer"]["name"] == "Test User"
-        assert captured_payload["buyer"]["email"] == "test@example.com"
-        assert captured_payload["buyer"]["phoneNumber"] == "09171234567"
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["success"] is True
+        assert data["invoice_id"] == "maya-checkout-123"
+        assert data["invoice_url"] == "https://maya.example.com/checkout/123"
+        assert data["external_id"] == "maya-external-abc"
 
 
 # ---------------------------------------------------------------------------
 # Xendit QR code payload validation
 # ---------------------------------------------------------------------------
-@pytest.mark.skip(reason="Xendit removed; QR code tests skipped")
 class TestXenditQrCodePayload:
     """Verify that create_qr_code sends required fields (external_id + callback_url)."""
 
@@ -986,7 +971,7 @@ class TestXenditQrCodePayload:
         mock_client = self._make_mock_client(captured)
 
         with patch("httpx.AsyncClient", return_value=mock_client):
-            svc = MayaService()
+            svc = XenditService()
             svc.secret_key = "test-key"
             result = self._run(svc.create_qr_code(amount=500, description="Test"))
 
@@ -1000,7 +985,7 @@ class TestXenditQrCodePayload:
         mock_client = self._make_mock_client(captured)
 
         with patch("httpx.AsyncClient", return_value=mock_client):
-            svc = MayaService()
+            svc = XenditService()
             svc.secret_key = "test-key"
             result = self._run(svc.create_qr_code(amount=500))
 
@@ -1032,24 +1017,16 @@ class TestEvents:
 # ---------------------------------------------------------------------------
 class TestTransactionStats:
     def test_stats_requires_auth(self, client):
-        # Previously used the Xendit-specific stats endpoint; require auth for entity queries
-        r = client.get("/api/v1/entities/transactions")
+        r = client.get("/api/v1/xendit/transaction-stats")
         assert r.status_code == 401
 
     def test_stats_authenticated(self, client, auth_headers):
-        # Query transactions and compute basic stats locally
-        r = client.get("/api/v1/entities/transactions", headers=auth_headers)
+        r = client.get("/api/v1/xendit/transaction-stats", headers=auth_headers)
         assert r.status_code == 200
         data = r.json()
-        total = int(data.get("total", 0))
-        items = data.get("items", [])
-        paid_count = sum(1 for it in items if it.get("status") == "paid")
-        pending_count = sum(1 for it in items if it.get("status") == "pending")
-        expired_count = sum(1 for it in items if it.get("status") == "expired")
-        assert isinstance(total, int)
-        assert isinstance(paid_count, int)
-        assert isinstance(pending_count, int)
-        assert isinstance(expired_count, int)
+        for field in ("total_count", "paid_count", "pending_count", "expired_count"):
+            assert field in data
+            assert isinstance(data[field], int)
 
 
 # ---------------------------------------------------------------------------
@@ -1117,16 +1094,13 @@ class TestDemoData:
 
     def test_demo_transaction_stats_reflect_seed(self, client, auth_headers):
         """Transaction stats should reflect the seeded paid/pending/expired records."""
-        r = client.get("/api/v1/entities/transactions", headers=auth_headers)
+        r = client.get("/api/v1/xendit/transaction-stats", headers=auth_headers)
         assert r.status_code == 200
         data = r.json()
-        items = data.get("items", [])
-        paid = sum(1 for it in items if it.get("status") == "paid")
-        pending = sum(1 for it in items if it.get("status") == "pending")
-        expired = sum(1 for it in items if it.get("status") == "expired")
-        assert paid >= 5
-        assert pending >= 1
-        assert expired >= 1
+        # Seed data has 6 paid, 1 pending, 1 expired
+        assert data["paid_count"] >= 5
+        assert data["pending_count"] >= 1
+        assert data["expired_count"] >= 1
 
 
 # ---------------------------------------------------------------------------

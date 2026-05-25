@@ -85,6 +85,12 @@ class Settings(BaseSettings):
     maya_mode: str = "sandbox"  # "sandbox" or "live"
     maya_base_url: str = ""
 
+    # Maya Business API (for card payments and POS terminals)
+    maya_business_api_key: str = ""
+    maya_business_secret_key: str = ""
+    maya_business_mode: str = "sandbox"  # "sandbox" or "live"
+    maya_business_base_url: str = ""
+
     # Facebook Messenger API
     messenger_app_id: str = ""
     messenger_app_secret: str = ""
@@ -166,6 +172,8 @@ class Settings(BaseSettings):
             "telegram_bot_username",
             "xendit_secret_key",
             "maya_secret_key",
+            "maya_business_api_key",
+            "maya_business_secret_key",
             "paymongo_secret_key",
             "paymongo_public_key",
             "cloudflare_turnstile_secret_key",

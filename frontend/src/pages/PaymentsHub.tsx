@@ -184,7 +184,7 @@ export default function PaymentsHub() {
                       <Select value={ewalletProvider} onValueChange={setEwalletProvider}>
                         <SelectTrigger className="mt-1 bg-muted border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-muted border-border">
-                          {[['PH_GCASH', 'GCash'], ['PH_GRABPAY', 'GrabPay']].map(([v, l]) => (
+                          {[['PH_GCASH', 'GCash'], ['PH_MAYA', 'Maya (PayMaya)'], ['PH_GRABPAY', 'GrabPay']].map(([v, l]) => (
                             <SelectItem key={v} value={v} className="text-foreground">{l}</SelectItem>
                           ))}
                         </SelectContent>

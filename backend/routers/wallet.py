@@ -674,18 +674,21 @@ async def create_topup(
     if not result.get("success"):
         raise HTTPException(status_code=502, detail=result.get("error", "Failed to create invoice"))
 
+    checkout_id = result.get("checkout_id", "")
+    checkout_url = result.get("checkout_url", "")
+
     # Save transaction tagged with current user so webhook credits their wallet
     now = datetime.now()
     txn = Transactions(
         user_id=current_user.id,
         transaction_type="top_up",
         external_id=result["external_id"],
-        xendit_id=result["invoice_id"],
+        xendit_id=checkout_id,
         amount=req.amount,
         currency="PHP",
         status="pending",
         description=req.description or "Wallet Top Up",
-        payment_url=result["invoice_url"],
+        payment_url=checkout_url,
         created_at=now,
         updated_at=now,
     )
@@ -694,8 +697,8 @@ async def create_topup(
 
     return TopUpResponse(
         success=True,
-        invoice_id=result["invoice_id"],
-        invoice_url=result["invoice_url"],
+        invoice_id=checkout_id,
+        invoice_url=checkout_url,
         external_id=result["external_id"],
         amount=req.amount,
         message="Invoice created. Complete payment to credit your wallet.",

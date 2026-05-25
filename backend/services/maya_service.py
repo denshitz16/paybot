@@ -1,4 +1,6 @@
 import base64
+import hashlib
+import json
 import logging
 import os
 import uuid
@@ -11,6 +13,10 @@ logger = logging.getLogger(__name__)
 
 MAYA_SANDBOX_BASE_URL = "https://pg-sandbox.paymaya.com/checkout/v1"
 MAYA_LIVE_BASE_URL = "https://pg.paymaya.com/p3/pay"
+
+# Maya Business API endpoints
+MAYA_BUSINESS_SANDBOX_URL = "https://api-sandbox.paymaya.com"
+MAYA_BUSINESS_LIVE_URL = "https://api.paymaya.com"
 
 
 class MayaService:
@@ -282,3 +288,255 @@ class MayaService:
 
     async def create_refund(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": "Maya Manager does not support refunds through this checkout integration."}
+
+    # ============ Maya Business API Methods (Card Payments) ============
+
+    def _get_business_api_headers(self) -> Dict[str, str]:
+        """Get headers for Maya Business API requests."""
+        api_key = os.environ.get("MAYA_BUSINESS_API_KEY", "") or settings.maya_business_api_key
+        if not api_key:
+            return {}
+        encoded = base64.b64encode(f"{api_key}:".encode("utf-8")).decode("ascii")
+        return {
+            "Authorization": f"Basic {encoded}",
+            "Content-Type": "application/json",
+        }
+
+    def _get_business_api_base_url(self) -> str:
+        """Get Maya Business API base URL."""
+        base_url = (
+            os.environ.get("MAYA_BUSINESS_BASE_URL", "")
+            or settings.maya_business_base_url.strip()
+        )
+        if base_url:
+            return base_url
+
+        mode = (
+            os.environ.get("MAYA_BUSINESS_MODE", "")
+            or settings.maya_business_mode or "sandbox"
+        )
+        return (
+            MAYA_BUSINESS_LIVE_URL if mode.lower() == "live" else MAYA_BUSINESS_SANDBOX_URL
+        )
+
+    async def create_card_payment(
+        self,
+        amount: float,
+        description: str = "",
+        customer_name: str = "",
+        customer_email: str = "",
+        customer_phone: str = "",
+        external_id: str = "",
+        success_redirect_url: str = "",
+        failure_redirect_url: str = "",
+        cancel_redirect_url: str = "",
+    ) -> Dict[str, Any]:
+        """Create a card payment checkout using Maya Business API.
+        
+        This method creates a secure checkout session for accepting credit/debit card payments.
+        """
+        api_key = (
+            os.environ.get("MAYA_BUSINESS_API_KEY", "")
+            or settings.maya_business_api_key
+        )
+        if not api_key:
+            return {"success": False, "error": "Maya Business API key not configured"}
+
+        if not external_id:
+            external_id = f"card-{uuid.uuid4().hex[:12]}"
+
+        amount_cents = int(round(amount * 100))
+        redirect_base = settings.backend_url.rstrip("/")
+
+        # Build checkout payload for Maya Business API
+        payload = {
+            "totalAmount": {
+                "value": amount_cents,
+                "currency": "PHP"
+            },
+            "buyer": {},
+            "redirectUrl": {
+                "success": success_redirect_url or f"{redirect_base}/payment/success",
+                "failure": failure_redirect_url or f"{redirect_base}/payment/failed",
+                "cancel": cancel_redirect_url or f"{redirect_base}/payment/cancelled",
+            },
+            "requestReferenceNumber": external_id,
+            "items": [
+                {
+                    "name": description or "Card Payment",
+                    "code": "CARD",
+                    "quantity": 1,
+                    "unitPrice": {
+                        "value": amount_cents,
+                        "currency": "PHP"
+                    },
+                    "totalAmount": {
+                        "value": amount_cents,
+                        "currency": "PHP"
+                    }
+                }
+            ],
+            "metadata": {
+                "description": description,
+                "customer_name": customer_name,
+                "customer_email": customer_email,
+                "customer_phone": customer_phone,
+            }
+        }
+
+        # Add buyer details if provided
+        if customer_name:
+            payload["buyer"]["name"] = customer_name
+        if customer_email:
+            payload["buyer"]["email"] = customer_email
+        if customer_phone:
+            payload["buyer"]["phoneNumber"] = customer_phone
+
+        try:
+            base_url = self._get_business_api_base_url()
+            headers = self._get_business_api_headers()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{base_url}/checkout/v1/checkouts",
+                    json=payload,
+                    headers=headers,
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                checkout_url = ""
+                if isinstance(data.get("redirectUrl"), dict):
+                    checkout_url = data["redirectUrl"].get("success", "")
+                elif isinstance(data.get("checkoutUrl"), str):
+                    checkout_url = data["checkoutUrl"]
+                elif isinstance(data.get("redirect_url"), str):
+                    checkout_url = data["redirect_url"]
+
+                return {
+                    "success": True,
+                    "checkout_id": data.get("id", ""),
+                    "checkout_url": checkout_url,
+                    "external_id": external_id,
+                    "amount": amount,
+                    "status": data.get("status", "CREATED"),
+                    "response": data,
+                }
+        except httpx.HTTPStatusError as exc:
+            logger.error("Maya Business API checkout creation failed: %s", exc.response.text)
+            return {"success": False, "error": f"Payment gateway error: {exc.response.text}"}
+        except Exception as exc:
+            logger.error("Maya Business API checkout creation error: %s", exc)
+            return {"success": False, "error": str(exc)}
+
+    async def get_payment_status(self, checkout_id: str) -> Dict[str, Any]:
+        """Retrieve the status of a card payment."""
+        api_key = (
+            os.environ.get("MAYA_BUSINESS_API_KEY", "")
+            or settings.maya_business_api_key
+        )
+        if not api_key:
+            return {"success": False, "error": "Maya Business API key not configured"}
+
+        try:
+            base_url = self._get_business_api_base_url()
+            headers = self._get_business_api_headers()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{base_url}/checkout/v1/checkouts/{checkout_id}",
+                    headers=headers,
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                return {
+                    "success": True,
+                    "checkout_id": data.get("id", ""),
+                    "status": data.get("status", ""),
+                    "amount": data.get("totalAmount", {}).get("value", 0) / 100,
+                    "response": data,
+                }
+        except httpx.HTTPStatusError as exc:
+            logger.error("Maya Business API status check failed: %s", exc.response.text)
+            return {"success": False, "error": f"Status check failed: {exc.response.text}"}
+        except Exception as exc:
+            logger.error("Maya Business API status check error: %s", exc)
+            return {"success": False, "error": str(exc)}
+
+    async def create_card_payment_v2(
+        self,
+        amount: float,
+        description: str = "",
+        customer_name: str = "",
+        customer_email: str = "",
+        customer_phone: str = "",
+        external_id: str = "",
+        return_url: str = "",
+    ) -> Dict[str, Any]:
+        """Create a card payment using simplified Business API (V2).
+        
+        This is an alternative implementation for newer Maya Business API versions.
+        """
+        api_key = (
+            os.environ.get("MAYA_BUSINESS_API_KEY", "")
+            or settings.maya_business_api_key
+        )
+        if not api_key:
+            return {"success": False, "error": "Maya Business API key not configured"}
+
+        if not external_id:
+            external_id = f"card-{uuid.uuid4().hex[:12]}"
+
+        amount_cents = int(round(amount * 100))
+        redirect_base = settings.backend_url.rstrip("/")
+        
+        # Simplified payload for newer API versions
+        payload = {
+            "amount": {
+                "value": amount_cents,
+                "currency": "PHP"
+            },
+            "description": description or "Card Payment",
+            "reference": external_id,
+            "returnUrl": return_url or f"{redirect_base}/payment/success",
+        }
+
+        if customer_name or customer_email or customer_phone:
+            payload["customer"] = {
+                "name": customer_name or "",
+                "email": customer_email or "",
+                "phone": customer_phone or "",
+            }
+
+        try:
+            base_url = self._get_business_api_base_url()
+            headers = self._get_business_api_headers()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{base_url}/payments/v1/payment-links",
+                    json=payload,
+                    headers=headers,
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                return {
+                    "success": True,
+                    "payment_link_id": data.get("id", ""),
+                    "payment_url": data.get("url", ""),
+                    "external_id": external_id,
+                    "amount": amount,
+                    "status": data.get("status", "ACTIVE"),
+                    "response": data,
+                }
+        except httpx.HTTPStatusError as exc:
+            logger.error("Maya Business API V2 payment creation failed: %s", exc.response.text)
+            return {"success": False, "error": f"Payment gateway error: {exc.response.text}"}
+        except Exception as exc:
+            logger.error("Maya Business API V2 payment creation error: %s", exc)
+            return {"success": False, "error": str(exc)}
