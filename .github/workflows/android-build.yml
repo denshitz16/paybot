@@ -67,6 +67,27 @@ jobs:
             echo "mobile/android already exists"
           fi
 
+      - name: Patch react-native-camera build config
+        run: |
+          python3 - <<'PY'
+import pathlib, re
+app_build = pathlib.Path('mobile/android/app/build.gradle')
+if app_build.exists():
+    text = app_build.read_text()
+    if 'missingDimensionStrategy' not in text:
+        lines = text.splitlines()
+        out = []
+        inserted = False
+        for line in lines:
+            out.append(line)
+            if not inserted and re.match(r'^\s*defaultConfig\s*\{', line):
+                out.append("        missingDimensionStrategy 'react-native-camera', 'general'")
+                inserted = True
+        if inserted:
+            app_build.write_text('\n'.join(out) + '\n')
+            print('Patched missingDimensionStrategy in', app_build)
+PY
+
       - name: Build Android release (Gradle)
         working-directory: mobile/android
         run: |
