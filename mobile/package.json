@@ -32,13 +32,13 @@
     "react-native-qrcode-scanner": "^1.4.7",
     "react-native-vector-icons": "^10.0.0",
     "react-native-webview": "^13.6.2",
-    "react-native-barcode-builder": "^1.0.8",
+    "react-native-barcode-builder": "^2.0.0",
     "react-native-share": "^8.0.1",
     "react-native-device-info": "^10.5.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-loading-spinner-overlay": "^3.0.1",
     "react-native-toast-message": "^2.1.5",
-    "react-native-background-fetch": "^5.11.0",
+    "react-native-background-fetch": "^4.4.2",
     "@react-native-firebase/app": "^18.0.0",
     "@react-native-firebase/messaging": "^18.0.0",
     "moment": "^2.29.4",
@@ -49,7 +49,7 @@
     "@babel/preset-env": "^7.23.2",
     "@babel/preset-react": "^7.23.2",
     "@babel/runtime": "^7.23.2",
-    "metro-react-native-babel-preset": "^0.76.10",
+    "metro-react-native-babel-preset": "^0.76.9",
     "@types/react": "^18.2.31",
     "@types/react-native": "^0.72.0",
     "babel-jest": "^29.7.0",
@@ -59,3 +59,4 @@
     "typescript": "^5.2.2"
   }
 }
+
