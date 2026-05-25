@@ -45,6 +45,12 @@ jobs:
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
 
+      - name: Force metro preset version
+        working-directory: mobile
+        run: |
+          echo "Ensuring metro-react-native-babel-preset@0.76.9 is installed"
+          npm install --no-save metro-react-native-babel-preset@0.76.9
+
       - name: Install dependencies
         working-directory: mobile
         run: |
