@@ -27,6 +27,11 @@ cat keystore.base64
 
 4) Trigger the workflow `Build Android Release APK` in Actions or push to `main`.
 
+## Real Terminal Features (Maya Manager)
+- **T0 Instant Settlement**: Terminals configured with T0 support process Maya payments with immediate settlement.
+- **Dynamic QR Display**: Real-time QR generation for customer-facing terminal scanning.
+- **Auto-polling**: The app automatically detects payment completion for T0 transactions.
+
 Notes
 - The workflow expects the mobile project at `mobile_native/` or `mobile/`. Adjust if you use a different path.
 - The workflow will upload the produced `app-release.apk` as an artifact in the workflow run.

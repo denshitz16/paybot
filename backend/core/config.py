@@ -82,6 +82,7 @@ class Settings(BaseSettings):
 
     # Maya Manager Checkout API
     maya_secret_key: str = ""
+    maya_webhook_secret: str = ""
     maya_mode: str = "sandbox"  # "sandbox" or "live"
     maya_base_url: str = ""
 

@@ -7,7 +7,7 @@ import json
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1/webhooks", tags=["Webhooks"])
 
 
 @router.post("/maya/payment-status")
-async def maya_payment_webhook(request: Request, db: AsyncSession = None):
+async def maya_payment_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     """
     Webhook endpoint for Maya Business API payment status updates.
     Maya sends payment status notifications to this endpoint.
@@ -36,12 +36,17 @@ async def maya_payment_webhook(request: Request, db: AsyncSession = None):
         body = await request.body()
         
         # Verify signature
-        api_key = settings.maya_business_api_key or settings.maya_business_secret_key
-        if not api_key:
-            logger.warning("Maya Business API key not configured, skipping signature verification")
+        webhook_secret = (
+            settings.maya_webhook_secret or 
+            settings.maya_business_secret_key or 
+            settings.maya_business_api_key
+        )
+        
+        if not webhook_secret:
+            logger.warning("Maya webhook secret not configured, skipping signature verification")
         elif signature:
             expected_signature = hmac.new(
-                api_key.encode("utf-8"),
+                webhook_secret.encode("utf-8"),
                 body,
                 hashlib.sha256
             ).hexdigest()
@@ -62,20 +67,14 @@ async def maya_payment_webhook(request: Request, db: AsyncSession = None):
         if not request_reference:
             logger.warning("No request reference in Maya webhook")
             raise HTTPException(status_code=400, detail="Missing reference ID")
-        
-        # Get database session
-        if db is None:
-            from dependencies.database import get_db as get_db_func
-            async for db in get_db_func():
-                break
-        
+
         service = POSTerminalService(db)
         
         # Map Maya status to our status
         status_map = {
             "COMPLETED": "completed",
             "SUCCESS": "completed",
-            "AUTHORIZED": "completed",
+            "AUTHORIZED": "completed",  # For T0/Terminal payments, AUTHORIZED is often enough to release goods
             "PENDING": "pending",
             "FAILED": "failed",
             "CANCELLED": "cancelled",
@@ -110,7 +109,7 @@ async def maya_payment_webhook(request: Request, db: AsyncSession = None):
 
 
 @router.post("/paymongo/payment-status")
-async def paymongo_payment_webhook(request: Request, db: AsyncSession = None):
+async def paymongo_payment_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     """
     Webhook endpoint for PayMongo payment status updates.
     PayMongo sends payment status notifications to this endpoint.
@@ -139,13 +138,7 @@ async def paymongo_payment_webhook(request: Request, db: AsyncSession = None):
         if not order_id:
             logger.warning(f"No order ID found in PayMongo webhook: {reference}")
             raise HTTPException(status_code=400, detail="Missing order reference")
-        
-        # Get database session
-        if db is None:
-            from dependencies.database import get_db as get_db_func
-            async for db in get_db_func():
-                break
-        
+
         service = POSTerminalService(db)
         
         # Map PayMongo status to our status

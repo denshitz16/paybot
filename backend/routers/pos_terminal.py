@@ -4,8 +4,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import get_current_user_id, get_current_admin
+from dependencies.auth import get_current_user_id, get_current_admin, get_admin_user
 from dependencies.database import get_db
+from schemas.auth import UserResponse
 from schemas.pos_terminal import (
     POSTerminalCreate,
     POSTerminalUpdate,
@@ -21,6 +22,9 @@ from schemas.pos_terminal import (
     APIResponse,
     TerminalAssignmentResponse,
     CreateCheckoutResponse,
+    POSTerminalDeviceCreate,
+    POSTerminalDeviceResponse,
+    POSTerminalDeviceListResponse,
 )
 from services.pos_terminal import POSTerminalService
 
@@ -121,11 +125,20 @@ async def get_terminal(
 async def update_terminal(
     terminal_id: int,
     update_data: POSTerminalUpdate,
-    user_id: str = Depends(get_current_admin),
+    current_admin: UserResponse = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a terminal (admin only)."""
     service = POSTerminalService(db)
+    
+    # Only super admin can re-assign terminals to other users
+    if update_data.user_id:
+        if not current_admin.permissions or not current_admin.permissions.is_super_admin:
+            raise HTTPException(
+                status_code=403, 
+                detail="Super admin access required to re-assign terminals"
+            )
+
     terminal = await service.get_terminal_by_id(terminal_id)
     
     if not terminal:
@@ -284,6 +297,7 @@ async def create_transaction(
         success=True,
         checkout_url=result.get("payment_url", ""),
         payment_url=result.get("payment_url"),
+        qr_content=result.get("qr_content"),
         order_id=result.get("order_id"),
         message=result.get("message"),
     )
@@ -359,5 +373,65 @@ async def update_transaction_status(
     
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error", "Failed to update transaction"))
+    
+    return APIResponse(success=True, message=result.get("message"))
+
+
+# ============ Device Endpoints ============
+
+
+@router.post("/devices/register", response_model=APIResponse)
+async def register_device(
+    device_data: POSTerminalDeviceCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Register a new device or update heartbeat (Public)."""
+    service = POSTerminalService(db)
+    result = await service.register_device(device_data)
+    
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Failed to register device"))
+    
+    return APIResponse(
+        success=True,
+        message=result.get("message"),
+        data={
+            "is_authorized": result.get("device").is_authorized,
+            "is_linked": result.get("is_linked"),
+            "terminal_id": result.get("terminal_id"),
+        },
+    )
+
+
+@router.get("/devices", response_model=POSTerminalDeviceListResponse)
+async def list_devices(
+    user_id: str = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all registered devices (admin only)."""
+    service = POSTerminalService(db)
+    devices, total = await service.list_devices()
+    
+    return POSTerminalDeviceListResponse(
+        success=True,
+        data=[POSTerminalDeviceResponse.model_validate(d) for d in devices],
+        total=total,
+    )
+
+
+@router.post("/devices/{device_id}/assign", response_model=APIResponse)
+async def assign_device(
+    device_id: str,
+    user_id: str,
+    terminal_name: Optional[str] = None,
+    current_admin: str = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Assign a device to a user (admin only)."""
+    service = POSTerminalService(db)
+    result = await service.assign_device(device_id, user_id, terminal_name)
+    
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Failed to assign device"))
     
     return APIResponse(success=True, message=result.get("message"))

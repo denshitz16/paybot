@@ -29,6 +29,7 @@ class POSTerminalBase(BaseModel):
     enabled_payment_methods: List[PaymentMethodEnum] = [PaymentMethodEnum.MAYA]
     daily_transaction_limit: Optional[int] = None
     max_transaction_amount: Optional[int] = None
+    is_t0_settlement: bool = False
 
 
 class POSTerminalCreate(POSTerminalBase):
@@ -39,12 +40,14 @@ class POSTerminalCreate(POSTerminalBase):
 
 class POSTerminalUpdate(BaseModel):
     """Schema for updating a terminal."""
+    user_id: Optional[str] = None
     terminal_name: Optional[str] = None
     location: Optional[str] = None
     description: Optional[str] = None
     enabled_payment_methods: Optional[List[PaymentMethodEnum]] = None
     daily_transaction_limit: Optional[int] = None
     max_transaction_amount: Optional[int] = None
+    is_t0_settlement: bool = False
     is_active: Optional[bool] = None
 
 
@@ -53,6 +56,7 @@ class POSTerminalResponse(POSTerminalBase):
     id: int
     terminal_code: str
     user_id: str
+    device_id: Optional[str] = None
     merchant_id: Optional[str]
     status: TerminalStatusEnum
     is_active: bool
@@ -157,6 +161,7 @@ class POSTerminalTransactionResponse(BaseModel):
     paymongo_checkout_id: Optional[str]
     xendit_invoice_id: Optional[str]
     payment_url: Optional[str]
+    qr_content: Optional[str] = None
     customer_name: Optional[str]
     customer_email: Optional[str]
     customer_phone: Optional[str]
@@ -200,7 +205,43 @@ class TerminalAssignmentResponse(BaseModel):
 class CreateCheckoutResponse(BaseModel):
     """Response when creating a checkout."""
     success: bool
-    checkout_url: str
-    payment_url: Optional[str]
+    checkout_url: Optional[str] = None
+    payment_url: Optional[str] = None
+    qr_content: Optional[str] = None
     order_id: str
     message: Optional[str] = None
+
+
+# ============ Device Schemas ============
+
+class POSTerminalDeviceBase(BaseModel):
+    device_id: str
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    os_version: Optional[str] = None
+    app_version: Optional[str] = None
+    metadata_json: Optional[Dict[str, Any]] = None
+
+
+class POSTerminalDeviceCreate(POSTerminalDeviceBase):
+    """Schema for registering a device."""
+    pass
+
+
+class POSTerminalDeviceResponse(POSTerminalDeviceBase):
+    """Schema for device response."""
+    id: int
+    is_authorized: bool
+    last_seen_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class POSTerminalDeviceListResponse(BaseModel):
+    """Schema for list of devices."""
+    success: bool
+    data: List[POSTerminalDeviceResponse] = []
+    total: int = 0

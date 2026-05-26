@@ -12,11 +12,11 @@ from core.config import settings
 logger = logging.getLogger(__name__)
 
 MAYA_SANDBOX_BASE_URL = "https://pg-sandbox.paymaya.com/checkout/v1"
-MAYA_LIVE_BASE_URL = "https://pg.paymaya.com/p3/pay"
+MAYA_LIVE_BASE_URL = "https://pg.maya.ph/checkout/v1"
 
-# Maya Business API endpoints
-MAYA_BUSINESS_SANDBOX_URL = "https://api-sandbox.paymaya.com"
-MAYA_BUSINESS_LIVE_URL = "https://api.paymaya.com"
+# Maya Business API endpoints (Payments/QR/Vault)
+MAYA_BUSINESS_SANDBOX_URL = "https://pg-sandbox.paymaya.com"
+MAYA_BUSINESS_LIVE_URL = "https://pg.maya.ph"
 
 
 class MayaService:
@@ -39,8 +39,9 @@ class MayaService:
         encoded = base64.b64encode(f"{self.secret_key}:".encode("utf-8")).decode("ascii")
         return {"Authorization": f"Basic {encoded}"}
 
-    def _amount_value(self, amount: float) -> int:
-        return int(round(amount * 100))
+    def _amount_value(self, amount: float) -> float:
+        """Maya Business API uses decimal (major units) for amounts."""
+        return round(float(amount), 2)
 
     def _extract_checkout_url(self, data: Dict[str, Any]) -> str:
         url = data.get("redirectUrl") or data.get("redirect_url") or data.get("checkoutUrl") or data.get("checkout_url") or ""
@@ -69,6 +70,10 @@ class MayaService:
 
         amount_value = self._amount_value(amount)
         redirect_base = settings.backend_url.rstrip("/")
+
+        # T0 Settlement Hint: In some Maya integrations, passing certain metadata
+        # or using specific items helps with settlement routing, though it's
+        # mostly account-level.
         payload: Dict[str, Any] = {
             "requestReferenceNumber": external_id,
             "totalAmount": {"value": amount_value, "currency": "PHP"},
@@ -79,8 +84,8 @@ class MayaService:
             },
             "items": [
                 {
-                    "name": description or "PayBot payment",
-                    "code": "PAYBOT",
+                    "name": description or "POS Terminal Payment",
+                    "code": "POS_SALE",
                     "quantity": 1,
                     "unitPrice": {"value": amount_value, "currency": "PHP"},
                     "totalAmount": {"value": amount_value, "currency": "PHP"},
@@ -91,6 +96,8 @@ class MayaService:
                 "channel_code": channel_code,
                 "customer_name": customer_name,
                 "customer_email": customer_email,
+                "settlement_type": "T0",  # Hint for T0 settlement if supported by the merchant configuration
+                "terminal_id": metadata.get("terminal_id") if metadata else "POS-1",
                 **(metadata or {}),
             },
         }
@@ -189,21 +196,21 @@ class MayaService:
             external_id=external_id,
         )
 
-    async def create_terminal(
+    async def create_terminal_payment(
         self,
         amount: float,
         description: str = "",
+        terminal_id: str = "",
+        external_id: str = "",
         customer_name: str = "",
         customer_email: str = "",
         mobile_number: str = "",
-        terminal_id: str = "",
-        channel_code: str = "PH_MAYA",
-        external_id: str = "",
     ) -> Dict[str, Any]:
+        """Create a real terminal payment with T0 settlement priority."""
         return await self.create_checkout(
             amount=amount,
-            description=description or "Maya Terminal POS",
-            channel_code=channel_code,
+            description=description or f"Terminal Payment {terminal_id}",
+            channel_code="PH_MAYA_POS",
             customer_name=customer_name,
             customer_email=customer_email,
             mobile_number=mobile_number,
@@ -211,7 +218,8 @@ class MayaService:
             metadata={
                 "terminal_mode": "real",
                 "terminal_id": terminal_id,
-                "preferred_payment_method": "card",
+                "settlement_type": "T0",
+                "transaction_type": "POS_SALE",
             },
         )
 
@@ -466,58 +474,56 @@ class MayaService:
             logger.error("Maya Business API status check error: %s", exc)
             return {"success": False, "error": str(exc)}
 
-    async def create_card_payment_v2(
+    async def create_qr_payment(
         self,
         amount: float,
         description: str = "",
-        customer_name: str = "",
-        customer_email: str = "",
-        customer_phone: str = "",
         external_id: str = "",
-        return_url: str = "",
+        success_redirect_url: str = "",
+        failure_redirect_url: str = "",
+        cancel_redirect_url: str = "",
     ) -> Dict[str, Any]:
-        """Create a card payment using simplified Business API (V2).
+        """Create a Dynamic QR code for payment (PWM).
         
-        This is an alternative implementation for newer Maya Business API versions.
+        This is ideal for real terminals where the customer scans a QR on the screen.
+        Maya Business QR API usually results in T0 settlement for verified merchants.
         """
-        api_key = (
-            os.environ.get("MAYA_BUSINESS_API_KEY", "")
-            or settings.maya_business_api_key
-        )
+        api_key = os.environ.get("MAYA_BUSINESS_API_KEY", "") or settings.maya_business_api_key
         if not api_key:
             return {"success": False, "error": "Maya Business API key not configured"}
 
         if not external_id:
-            external_id = f"card-{uuid.uuid4().hex[:12]}"
+            external_id = f"qr-{uuid.uuid4().hex[:12]}"
 
-        amount_cents = int(round(amount * 100))
+        amount_val = self._amount_value(amount)
         redirect_base = settings.backend_url.rstrip("/")
-        
-        # Simplified payload for newer API versions
+
         payload = {
-            "amount": {
-                "value": amount_cents,
+            "totalAmount": {
+                "value": amount_val,
                 "currency": "PHP"
             },
-            "description": description or "Card Payment",
-            "reference": external_id,
-            "returnUrl": return_url or f"{redirect_base}/payment/success",
-        }
-
-        if customer_name or customer_email or customer_phone:
-            payload["customer"] = {
-                "name": customer_name or "",
-                "email": customer_email or "",
-                "phone": customer_phone or "",
+            "redirectUrl": {
+                "success": success_redirect_url or f"{redirect_base}/api/v1/gateway/maya/redirect/success",
+                "failure": failure_redirect_url or f"{redirect_base}/api/v1/gateway/maya/redirect/failed",
+                "cancel": cancel_redirect_url or f"{redirect_base}/api/v1/gateway/maya/redirect/cancelled",
+            },
+            "requestReferenceNumber": external_id,
+            "metadata": {
+                "description": description,
+                "type": "DYNAMIC_QR",
+                "settlement_type": "T0"
             }
+        }
 
         try:
             base_url = self._get_business_api_base_url()
             headers = self._get_business_api_headers()
 
             async with httpx.AsyncClient() as client:
+                # New endpoint for Dynamic QR (PWM)
                 response = await client.post(
-                    f"{base_url}/payments/v1/payment-links",
+                    f"{base_url}/payments/v1/qr/payments",
                     json=payload,
                     headers=headers,
                     timeout=30.0,
@@ -527,16 +533,18 @@ class MayaService:
 
                 return {
                     "success": True,
-                    "payment_link_id": data.get("id", ""),
-                    "payment_url": data.get("url", ""),
+                    "qr_id": data.get("paymentId") or data.get("id", ""),
+                    "qr_content": data.get("qrCodeBody") or data.get("qrContent", ""),
+                    "redirect_url": data.get("redirectUrl", ""),
                     "external_id": external_id,
                     "amount": amount,
-                    "status": data.get("status", "ACTIVE"),
+                    "status": "CREATED",
                     "response": data,
                 }
         except httpx.HTTPStatusError as exc:
-            logger.error("Maya Business API V2 payment creation failed: %s", exc.response.text)
-            return {"success": False, "error": f"Payment gateway error: {exc.response.text}"}
+            logger.error("Maya QR creation failed: %s", exc.response.text)
+            # Fallback: Many merchants use the standard Checkout API even for QR
+            return await self.create_checkout(amount, description, external_id=external_id)
         except Exception as exc:
-            logger.error("Maya Business API V2 payment creation error: %s", exc)
+            logger.error("Maya QR creation error: %s", exc)
             return {"success": False, "error": str(exc)}

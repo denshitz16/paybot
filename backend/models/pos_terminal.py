@@ -27,6 +27,7 @@ class POSTerminal(Base):
         Index("idx_terminal_code", "terminal_code"),
         Index("idx_terminal_user_id", "user_id"),
         Index("idx_terminal_status", "status"),
+        Index("idx_terminal_device_id", "device_id"),
         {"extend_existing": True},
     )
 
@@ -36,6 +37,9 @@ class POSTerminal(Base):
     terminal_code = Column(String(50), unique=True, nullable=False, index=True)
     terminal_name = Column(String(255), nullable=False)
     
+    # Device linkage
+    device_id = Column(String(255), nullable=True, index=True) # Linked physical device ID
+    
     # Assignment
     user_id = Column(String(64), nullable=False, index=True)  # Telegram user ID
     merchant_id = Column(String(64), nullable=True)  # Reference to merchant account
@@ -43,6 +47,7 @@ class POSTerminal(Base):
     # Status
     status = Column(String(20), default=TerminalStatus.UNASSIGNED, nullable=False, index=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_t0_settlement = Column(Boolean, default=False, nullable=False)  # T0 Settlement support
     
     # Configuration
     enabled_payment_methods = Column(JSON, default=lambda: [pm.value for pm in PaymentMethod], nullable=False)
@@ -107,6 +112,34 @@ class POSTerminalRequest(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
+class POSTerminalDevice(Base):
+    """Represents a physical device that has registered with the POS terminal system."""
+    __tablename__ = "pos_terminal_devices"
+    __table_args__ = (
+        Index("idx_device_identifier", "device_id"),
+        {"extend_existing": True},
+    )
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True, nullable=False)
+    device_id = Column(String(255), unique=True, nullable=False, index=True) # Hardware ID / Unique ID
+    
+    # Device details
+    brand = Column(String(100), nullable=True)
+    model = Column(String(100), nullable=True)
+    os_version = Column(String(50), nullable=True)
+    app_version = Column(String(50), nullable=True)
+    
+    # Status
+    is_authorized = Column(Boolean, default=False, nullable=False)
+    last_seen_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Metadata
+    metadata_json = Column(JSON, nullable=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
 class POSTerminalTransaction(Base):
     """Represents a transaction made through a POS terminal."""
     __tablename__ = "pos_terminal_transactions"
@@ -137,6 +170,7 @@ class POSTerminalTransaction(Base):
     paymongo_checkout_id = Column(String(255), nullable=True)
     xendit_invoice_id = Column(String(255), nullable=True)
     payment_url = Column(String(2048), nullable=True)
+    qr_content = Column(Text, nullable=True)
     
     # Customer info
     customer_name = Column(String(255), nullable=True)

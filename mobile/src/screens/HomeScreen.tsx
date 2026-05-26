@@ -34,7 +34,7 @@ const COLORS = {
 
 const api = {
   getTerminals: async (token) => {
-    const response = await fetch('https://api.paybot.local/api/v1/pos-terminals/', {
+    const response = await fetch('https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ const api = {
 
   getTransactions: async (token, terminalId) => {
     const response = await fetch(
-      `https://api.paybot.local/api/v1/pos-terminals/${terminalId}/transactions?per_page=20`,
+      `https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/${terminalId}/transactions?per_page=20`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -60,7 +60,7 @@ const api = {
 
   createTransaction: async (token, terminalId, data) => {
     const response = await fetch(
-      `https://api.paybot.local/api/v1/pos-terminals/${terminalId}/transactions`,
+      `https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/${terminalId}/transactions`,
       {
         method: 'POST',
         headers: {
@@ -111,6 +111,12 @@ const TerminalCard = ({ terminal, onPress, isSelected }) => {
         <View style={styles.terminalInfo}>
           <Text style={styles.terminalName}>{terminal.terminal_name}</Text>
           <Text style={styles.terminalCode}>Code: {terminal.terminal_code}</Text>
+          {terminal.is_t0_settlement && (
+            <View style={styles.t0Badge}>
+              <MaterialIcons name="bolt" size={14} color="#D97706" />
+              <Text style={styles.t0Text}>T0 Settlement</Text>
+            </View>
+          )}
         </View>
         <StatusBadge status={terminal.is_active ? 'active' : 'inactive'} />
       </View>
@@ -396,6 +402,22 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 4,
     fontFamily: 'monospace',
+  },
+  t0Badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  t0Text: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#D97706',
+    marginLeft: 2,
   },
   terminalLocation: {
     fontSize: 13,

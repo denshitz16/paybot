@@ -10,6 +10,7 @@ from models.pos_terminal import (
     POSTerminal,
     POSTerminalRequest,
     POSTerminalTransaction,
+    POSTerminalDevice,
     TerminalStatus,
 )
 from schemas.pos_terminal import (
@@ -17,6 +18,7 @@ from schemas.pos_terminal import (
     POSTerminalUpdate,
     POSTerminalRequestCreate,
     POSTerminalTransactionCreate,
+    POSTerminalDeviceCreate,
 )
 from services.maya_service import MayaService
 from services.paymongo_service import PayMongoService
@@ -56,6 +58,7 @@ class POSTerminalService:
                 user_id=user_id,
                 status=TerminalStatus.ASSIGNED if assigned_by else TerminalStatus.UNASSIGNED,
                 is_active=True,
+                is_t0_settlement=create_data.is_t0_settlement,
                 enabled_payment_methods=create_data.enabled_payment_methods,
                 daily_transaction_limit=create_data.daily_transaction_limit,
                 max_transaction_amount=create_data.max_transaction_amount,
@@ -148,7 +151,13 @@ class POSTerminalService:
             update_dict = update_data.model_dump(exclude_unset=True)
             for key, value in update_dict.items():
                 if hasattr(terminal, key):
-                    setattr(terminal, key, value)
+                    if key == "user_id" and value:
+                        # Update assignment metadata if user_id is changed
+                        terminal.user_id = value
+                        terminal.status = TerminalStatus.ASSIGNED
+                        terminal.assigned_at = datetime.utcnow()
+                    else:
+                        setattr(terminal, key, value)
 
             await self.db.commit()
             await self.db.refresh(terminal)
@@ -390,25 +399,41 @@ class POSTerminalService:
             order_id = f"order-{uuid.uuid4().hex[:12]}"
             payment_url = None
             payment_gateway_id = None
+            qr_content = None
 
             # Create payment based on selected method
             if transaction_data.payment_method == "maya":
-                maya_result = await self.maya_service.create_checkout(
+                # Check if we should use QR payment for T0 settlement
+                # In real terminal mode, QR is often preferred for immediate settlement
+                maya_result = await self.maya_service.create_qr_payment(
                     amount=transaction_data.amount / 100,
                     description=transaction_data.description,
-                    customer_name=transaction_data.customer_name,
-                    customer_email=transaction_data.customer_email,
-                    mobile_number=transaction_data.customer_phone,
                     external_id=order_id,
                 )
+                
                 if maya_result.get("success"):
                     payment_url = maya_result.get("checkout_url")
-                    payment_gateway_id = maya_result.get("checkout_id")
+                    payment_gateway_id = maya_result.get("checkout_id") or maya_result.get("qr_id")
+                    qr_content = maya_result.get("qr_content")
                 else:
-                    return {
-                        "success": False,
-                        "error": f"Failed to create payment: {maya_result.get('error')}",
-                    }
+                    # Fallback to terminal payment if QR fails
+                    maya_result = await self.maya_service.create_terminal_payment(
+                        amount=transaction_data.amount / 100,
+                        description=transaction_data.description,
+                        terminal_id=terminal.terminal_code,
+                        external_id=order_id,
+                        customer_name=transaction_data.customer_name,
+                        customer_email=transaction_data.customer_email,
+                        mobile_number=transaction_data.customer_phone,
+                    )
+                    if maya_result.get("success"):
+                        payment_url = maya_result.get("checkout_url")
+                        payment_gateway_id = maya_result.get("checkout_id")
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"Failed to create Maya payment: {maya_result.get('error')}",
+                        }
             elif transaction_data.payment_method == "card":
                 # Use Maya Business API for card payments
                 card_result = await self.maya_service.create_card_payment(
@@ -460,6 +485,7 @@ class POSTerminalService:
                 if transaction_data.payment_method in ["gcash", "grabpay"]
                 else None,
                 payment_url=payment_url,
+                qr_content=qr_content,
                 customer_name=transaction_data.customer_name,
                 customer_email=transaction_data.customer_email,
                 customer_phone=transaction_data.customer_phone,
@@ -474,6 +500,7 @@ class POSTerminalService:
                 "success": True,
                 "order_id": order_id,
                 "payment_url": payment_url,
+                "qr_content": qr_content,
                 "message": "Transaction created successfully",
             }
         except Exception as exc:
@@ -539,5 +566,120 @@ class POSTerminalService:
             return {"success": True, "message": "Transaction updated"}
         except Exception as exc:
             logger.error(f"Error updating transaction: {exc}")
+            await self.db.rollback()
+            return {"success": False, "error": str(exc)}
+
+    # ============ Device Management Methods ============
+
+    async def register_device(self, data: POSTerminalDeviceCreate) -> Dict[str, Any]:
+        """Register or update device information."""
+        try:
+            result = await self.db.execute(
+                select(POSTerminalDevice).where(POSTerminalDevice.device_id == data.device_id)
+            )
+            device = result.scalar_one_or_none()
+
+            if device:
+                # Update existing device info
+                device.brand = data.brand
+                device.model = data.model
+                device.os_version = data.os_version
+                device.app_version = data.app_version
+                device.metadata_json = data.metadata_json
+                device.last_seen_at = datetime.utcnow()
+            else:
+                # Create new device record
+                device = POSTerminalDevice(
+                    device_id=data.device_id,
+                    brand=data.brand,
+                    model=data.model,
+                    os_version=data.os_version,
+                    app_version=data.app_version,
+                    metadata_json=data.metadata_json,
+                    is_authorized=False, # Wait for admin to authorize/assign
+                )
+                self.db.add(device)
+
+            await self.db.commit()
+            await self.db.refresh(device)
+            
+            # Check if this device is already linked to a terminal
+            terminal_result = await self.db.execute(
+                select(POSTerminal).where(POSTerminal.device_id == data.device_id)
+            )
+            terminal = terminal_result.scalar_one_or_none()
+
+            return {
+                "success": True,
+                "device": device,
+                "is_linked": terminal is not None,
+                "terminal_id": terminal.id if terminal else None,
+                "message": "Device registered successfully",
+            }
+        except Exception as exc:
+            logger.error(f"Error registering device: {exc}")
+            await self.db.rollback()
+            return {"success": False, "error": str(exc)}
+
+    async def list_devices(self) -> Tuple[List[POSTerminalDevice], int]:
+        """List all registered devices."""
+        result = await self.db.execute(
+            select(POSTerminalDevice).order_by(desc(POSTerminalDevice.last_seen_at))
+        )
+        devices = result.scalars().all()
+        return list(devices), len(devices)
+
+    async def assign_device(self, device_id: str, user_id: str, terminal_name: Optional[str] = None) -> Dict[str, Any]:
+        """Assign a device to a user by creating/updating a terminal."""
+        try:
+            # Check if device exists
+            device_result = await self.db.execute(
+                select(POSTerminalDevice).where(POSTerminalDevice.device_id == device_id)
+            )
+            device = device_result.scalar_one_or_none()
+            if not device:
+                return {"success": False, "error": "Device not found"}
+
+            # Check if user already has a terminal for this device
+            existing_terminal_result = await self.db.execute(
+                select(POSTerminal).where(POSTerminal.device_id == device_id)
+            )
+            terminal = existing_terminal_result.scalar_one_or_none()
+
+            if terminal:
+                # Re-assign or update existing terminal
+                terminal.user_id = user_id
+                terminal.status = TerminalStatus.ACTIVE
+                terminal.is_active = True
+                if terminal_name:
+                    terminal.terminal_name = terminal_name
+            else:
+                # Create a new terminal for this device
+                terminal_code = self._generate_terminal_code()
+                terminal = POSTerminal(
+                    terminal_code=terminal_code,
+                    terminal_name=terminal_name or f"Terminal for {device.model or 'Device'}",
+                    user_id=user_id,
+                    device_id=device_id,
+                    status=TerminalStatus.ACTIVE,
+                    is_active=True,
+                    assigned_at=datetime.utcnow(),
+                )
+                self.db.add(terminal)
+
+            # Mark device as authorized
+            device.is_authorized = True
+
+            await self.db.commit()
+            await self.db.refresh(terminal)
+
+            return {
+                "success": True,
+                "terminal_id": terminal.id,
+                "terminal_code": terminal.terminal_code,
+                "message": "Device assigned and terminal activated",
+            }
+        except Exception as exc:
+            logger.error(f"Error assigning device: {exc}")
             await self.db.rollback()
             return {"success": False, "error": str(exc)}

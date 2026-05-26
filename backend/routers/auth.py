@@ -34,6 +34,8 @@ from schemas.auth import (
     TokenExchangeResponse,
     UserResponse,
     UserPermissions,
+    LoginRequest,
+    LoginResponse,
 )
 from services.auth import AuthService
 from services.telegram_service import TelegramService
@@ -655,6 +657,61 @@ async def telegram_debug():
     debug_info["next_step"] = "Capture the exact payload from browser DevTools → Network → /telegram-login-widget POST request"
 
     return debug_info
+
+
+@router.post("/login", response_model=LoginResponse)
+async def login_mobile(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
+    """Simple login for mobile POS clients."""
+    admin_email = getattr(settings, "admin_user_email", "") or "admin@paybot.local"
+    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+
+    if payload.email == admin_email and payload.password == admin_password:
+        admin_id = getattr(settings, "admin_user_id", "admin")
+        user = User(id=admin_id, email=admin_email, name="Admin User", role="admin")
+
+        auth_service = AuthService(db)
+        app_token, _, _ = await auth_service.issue_app_token(user=user)
+
+        # Build permissions
+        perms = UserPermissions(
+            is_super_admin=True,
+            can_manage_payments=True,
+            can_manage_disbursements=True,
+            can_view_reports=True,
+            can_manage_wallet=True,
+            can_manage_transactions=True,
+            can_manage_bot=True,
+        )
+
+        user_resp = UserResponse(
+            id=user.id,
+            email=user.email,
+            name=user.name,
+            role=user.role,
+            permissions=perms
+        )
+
+        return LoginResponse(access_token=app_token, user=user_resp)
+
+    # Check for demo/test user
+    if payload.email == "demo@paybot.local" and payload.password == "demo123":
+        user = User(id="demo_user", email="demo@paybot.local", name="Demo User", role="user")
+        auth_service = AuthService(db)
+        app_token, _, _ = await auth_service.issue_app_token(user=user)
+
+        user_resp = UserResponse(
+            id=user.id,
+            email=user.email,
+            name=user.name,
+            role=user.role,
+            permissions=UserPermissions()
+        )
+        return LoginResponse(access_token=app_token, user=user_resp)
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid email or password",
+    )
 
 
 async def login(request: Request, db: AsyncSession = Depends(get_db)):

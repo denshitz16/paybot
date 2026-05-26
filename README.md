@@ -326,6 +326,11 @@ A full-featured web dashboard for managing everything visually:
 ./start_local_windows.ps1
 ```
 
+**Production Build (Windows):**
+```powershell
+./build_production.ps1
+```
+
 ### Linux / macOS
 
 ```bash

@@ -12,13 +12,17 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Modal,
+  Dimensions,
 } from 'react-native';
 import { useMutation } from 'react-query';
+
+const { width } = Dimensions.get('window');
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useForm, Controller } from 'react-hook-form';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Toast from 'react-native-toast-message';
 import { WebView } from 'react-native-webview';
+import QRCode from 'react-native-qrcode-svg';
 
 const COLORS = {
   primary: '#3B82F6',
@@ -41,7 +45,7 @@ const PAYMENT_METHODS = [
 const api = {
   createTransaction: async (token, terminalId, data) => {
     const response = await fetch(
-      `https://api.paybot.local/api/v1/pos-terminals/${terminalId}/transactions`,
+      `https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/${terminalId}/transactions`,
       {
         method: 'POST',
         headers: {
@@ -65,6 +69,9 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
   const [selectedMethod, setSelectedMethod] = useState('card');
   const [showWebView, setShowWebView] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState(null);
+  const [qrContent, setQrContent] = useState(null);
+  const [orderId, setOrderId] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState('pending');
 
   const { control, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -91,14 +98,24 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
     (data) => api.createTransaction(token, terminal.id, data),
     {
       onSuccess: (data) => {
-        if (data.success && data.checkout_url) {
-          setCheckoutUrl(data.checkout_url);
-          setShowWebView(true);
-          Toast.show({
-            type: 'success',
-            text1: 'Payment order created',
-            text2: 'Opening payment gateway...',
-          });
+        if (data.success) {
+          setOrderId(data.order_id);
+          if (data.qr_content) {
+            setQrContent(data.qr_content);
+            Toast.show({
+              type: 'success',
+              text1: 'QR Code Generated',
+              text2: 'Customer can now scan to pay.',
+            });
+          } else if (data.checkout_url) {
+            setCheckoutUrl(data.checkout_url);
+            setShowWebView(true);
+            Toast.show({
+              type: 'success',
+              text1: 'Payment order created',
+              text2: 'Opening payment gateway...',
+            });
+          }
         }
       },
       onError: (error) => {
@@ -110,6 +127,45 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
       },
     }
   );
+
+  // Poll for payment status when orderId is set and qrContent is shown
+  useEffect(() => {
+    let interval;
+    if (orderId && qrContent && paymentStatus === 'pending') {
+      interval = setInterval(async () => {
+        try {
+          const response = await fetch(
+            `https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/transactions/${orderId}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          if (response.ok) {
+            const result = await response.json();
+            const status = result.data?.transaction?.status;
+            if (status === 'completed') {
+              setPaymentStatus('completed');
+              clearInterval(interval);
+              Toast.show({
+                type: 'success',
+                text1: 'Payment Received!',
+                text2: 'Transaction completed successfully.',
+              });
+            } else if (status === 'failed' || status === 'cancelled') {
+              setPaymentStatus(status);
+              clearInterval(interval);
+            }
+          }
+        } catch (e) {
+          console.error('Polling error', e);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [orderId, qrContent, paymentStatus, token]);
 
   const onSubmit = (data) => {
     Keyboard.dismiss();
@@ -163,6 +219,66 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
             }
           }}
         />
+      </SafeAreaView>
+    );
+  }
+
+  if (qrContent) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.checkoutHeader}>
+          <TouchableOpacity
+            onPress={() => {
+              setQrContent(null);
+              setOrderId(null);
+              setPaymentStatus('pending');
+            }}
+          >
+            <MaterialIcons name="close" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.checkoutHeaderTitle}>Terminal QR Payment</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
+        <View style={styles.qrContainer}>
+          <Text style={styles.qrTitle}>₱{parseFloat(amount || 0).toFixed(2)}</Text>
+          <Text style={styles.qrSubtitle}>{watch('description') || 'Payment Order'}</Text>
+
+          <View style={styles.qrCodeBox}>
+            {paymentStatus === 'completed' ? (
+              <View style={styles.successBox}>
+                <MaterialIcons name="check-circle" size={120} color={COLORS.secondary} />
+                <Text style={styles.successText}>PAYMENT SUCCESS</Text>
+                <Text style={styles.t0Badge}>T0 SETTLED</Text>
+              </View>
+            ) : (
+              <QRCode
+                value={qrContent}
+                size={width * 0.7}
+                color="black"
+                backgroundColor="white"
+              />
+            )}
+          </View>
+
+          {paymentStatus === 'pending' && (
+            <View style={styles.waitingBox}>
+              <ActivityIndicator color={COLORS.primary} style={{ marginRight: 10 }} />
+              <Text style={styles.waitingText}>Waiting for customer to pay...</Text>
+            </View>
+          )}
+
+          {paymentStatus === 'completed' && (
+            <TouchableOpacity
+              style={styles.doneButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.doneButtonText}>Done</Text>
+            </TouchableOpacity>
+          )}
+
+          <Text style={styles.qrFooter}>T0 Settlement Priority Enabled</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -561,5 +677,83 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  qrContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  qrTitle: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  qrSubtitle: {
+    fontSize: 18,
+    color: COLORS.textSecondary,
+    marginBottom: 40,
+  },
+  qrCodeBox: {
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  waitingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  waitingText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+  },
+  successBox: {
+    width: 250,
+    height: 250,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: COLORS.secondary,
+    marginTop: 10,
+  },
+  doneButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 60,
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginTop: 40,
+  },
+  doneButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  qrFooter: {
+    position: 'absolute',
+    bottom: 40,
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontStyle: 'italic',
+  },
+  t0Badge: {
+    backgroundColor: '#D1FAE5',
+    color: '#065F46',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: 10,
+    overflow: 'hidden',
   },
 });
