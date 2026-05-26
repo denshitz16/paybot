@@ -202,6 +202,28 @@ export const HomeScreen = ({ navigation }) => {
   const [selectedTerminal, setSelectedTerminal] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isDeviceLinked, setIsDeviceLinked] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  const fetchWallet = async () => {
+    try {
+      const response = await fetch('https://telegram.drl-developers.info/api/v1/wallet/balance?currency=PHP', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWalletBalance(data.balance);
+      }
+    } catch (err) {
+      console.error('Failed to fetch wallet', err);
+    }
+  };
+
+  useEffect(() => {
+    if (token) fetchWallet();
+  }, [token]);
 
   useEffect(() => {
     const loadToken = async () => {
@@ -290,8 +312,16 @@ export const HomeScreen = ({ navigation }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>POS Terminal</Text>
-            <Text style={styles.headerSubtitle}>Accept payments on the go</Text>
+            <View style={styles.headerTop}>
+               <View>
+                 <Text style={styles.headerTitle}>POS Terminal</Text>
+                 <Text style={styles.headerSubtitle}>Accept payments on the go</Text>
+               </View>
+               <View style={styles.walletHeader}>
+                 <Text style={styles.walletLabel}>Wallet Balance</Text>
+                 <Text style={styles.walletValue}>₱{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+               </View>
+            </View>
           </View>
 
           {/* Setup Guide - only show if no terminals or for new users */}
@@ -415,6 +445,28 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.dark,
     padding: 20,
     paddingTop: 10,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  walletHeader: {
+    alignItems: 'flex-end',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: 10,
+    borderRadius: 12,
+  },
+  walletLabel: {
+    color: COLORS.textSecondary,
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  walletValue: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   headerTitle: {
     fontSize: 28,

@@ -20,6 +20,7 @@ from fastapi.responses import RedirectResponse
 # MODULE_IMPORTS_START
 from services.database import initialize_database, close_database
 from services.auth import initialize_admin_user
+import services.wallet_integration # Initialize wallet event handlers
 # MODULE_IMPORTS_END
 
 # Telegram bot commands registered on startup
