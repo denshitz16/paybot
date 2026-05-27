@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -39,15 +39,15 @@ class WalletIntegrationService:
                     user_id=user_id,
                     balance=0.0,
                     currency="PHP",
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
+                    created_at=datetime.now(timezone.utc),
+                    updated_at=datetime.now(timezone.utc)
                 )
                 self.db.add(wallet)
                 await self.db.flush() # Get wallet ID
 
             balance_before = wallet.balance
             wallet.balance += amount
-            wallet.updated_at = datetime.utcnow()
+            wallet.updated_at = datetime.now(timezone.utc)
 
             # Record wallet transaction
             txn = Wallet_transactions(
@@ -60,7 +60,7 @@ class WalletIntegrationService:
                 note=f"Sale from terminal {terminal_id} (Order: {order_id})",
                 status="completed",
                 reference_id=order_id,
-                created_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc)
             )
             self.db.add(txn)
             
