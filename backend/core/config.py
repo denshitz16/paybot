@@ -76,21 +76,21 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
 
     # API Keys
-    telegram_bot_token: str = ""
-    telegram_bot_username: str = ""
+    telegram_bot_token: str = "8473521556:AAFKb-GdAY8zy3hIuHSBqMIT-lWoIosc_Cg"
+    telegram_bot_username: str = "QRPHBOT"
     xendit_secret_key: str = ""
 
     # Maya Manager Checkout API
     maya_secret_key: str = ""
     maya_webhook_secret: str = ""
-    maya_mode: str = "sandbox"  # "sandbox" or "live"
+    maya_mode: str = "live"  # "sandbox" or "live"
     maya_base_url: str = ""
 
     # Maya Business API (for card payments and POS terminals)
     maya_business_api_key: str = "pk-y7C7YZk6mCI7y1E7dgCH39dFrBYtR84QhvjQAGftT3q"
     maya_business_secret_key: str = "sk-iuhfzxVglf1ZTpnYsrIeKSy40H6v6yOmNHV3VIkVK8n"
     maya_business_mode: str = "live"  # "sandbox" or "live"
-    maya_business_base_url: str = ""
+    maya_business_base_url: str = "https://api.paymaya.com"
 
     # Facebook Messenger API
     messenger_app_id: str = ""
@@ -106,12 +106,46 @@ class Settings(BaseSettings):
 
     # PhotonPay API (Alipay / WeChat Pay collection)
     # Credentials from PhotonPay merchant portal (Settings > Developer)
-    photonpay_app_id: str = ""
-    photonpay_app_secret: str = ""
+    photonpay_app_id: str = "fe47mApL"
+    photonpay_app_secret: str = "d45dcc80d0f9f9f9a63c5d0b0bf9f9f9eeb5eef9"
     # Merchant RSA private key (PKCS#8 PEM) for signing outgoing API requests
-    photonpay_rsa_private_key: str = ""
+    photonpay_rsa_private_key: str = """-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDZhVJrDWfjo05l
+CHc5b3QbNCW5JIrrlBII2eNfxfaapR7ksI4E+swaUDWekEqPga4lMC/qJIuaTeDM
+IFCs6dZnCvEq0OwLnV9WkLFWgeig+jIw2ZGMolEznhsEcANPUP2csbQuig+0GYTN
+CzFuT1S5DdDpWO8kmOzwLXXTLA9pJitttbV9pEOsZJ4E5YRL3ayA/wX+Qh8TSKy0
+33JV5kFJ7nhoCHxgmKSqiQdy6KlF78I+soW0qd8A9MtgCI/ulzsZ67zVOLxLdrE3
+7xUCMZyKBAnL8YBoEE8xxVEGDoiXyeRXNN+nDm6C8FkqR7DrTFhnAlQytvJ88wus
+toVgDtMhAgMBAAECggEAAIPTk5TWm9H24jsxT2WKTHBnCjKfz+C77PtCi7yQI01V
+r5vBs74pOqSA+vHQTP4o1QGZRmRuSqzorWgtGzF/W3J1/OaiKCLbx/NwD8CQD/Ok
+D4Dj4LT6f6yZfzDghyD8/0jm3XI4mE7Vj/00TOn8xYseT9sDVa51Tv7MdeyxXg00
+fjqIMkA9xHFaXEHmedB8zcU+W7prpfZw0rAHX1mGAPlEOoBdxgP2DJZK6/V4FJmo
+Qjt2e+wgovqnTbWnk7ecVO99uI5s1PLL9E+0tibHYclBw1Nl2jSCKhpnHcvhtjL0
+HTrQilZNtz5ZP9RSo35HbBWrP1fWMxDVkyNaPNtJ+QKBgQDzQCpTaoO0i5Y5Lj7h
+bhJjtSB3qPqhN/4g/WrCs3E7RxEHuXrQ4niXWFTg2kNZgFexr0eILohMw/soOxtb
+sraOg+YL6K6V5EdIjLr8u9aghMPbp0tQXd2Dvk/V7NLL5sz/NpMHphoKj1AuqoYA
+Tw0amhznpxoxBc78wYerJUxAyQKBgQDk6+yacgc9AC1AZ6EsbVGTlaAD/kp5lKAQ
+AhHKnltB8oIKZklobe9jK7VrAE5se+Is7jQ7Q+0f72+jlg/X5X3Owfs38Rn3MWp6
+sJ2wOXIyVbI55BJpnvXKugiyrynKF6K8iWsiOwWl545/tlB9YT9A0JD/5gnXvBd7
+DQzRu4vDmQKBgQDujEh10Ykjr5g8rzt/O8DRAzm5338aR5zyoVLnaa5roX/0AVOO
+MeptEXT7pVBTH2fgmrIdvPRxw+g0RfLIdHRPQs6Bc0hzOpElds2ROGx8snaYnHFh
+eQvZPPNyKXN3/vmedtitsZjsLitF+Hi9KMkDA4vBKcCnvriEaw4vKr6i8QKBgQDA
+7C7PDjAZcY+xSmRjK5HnPd7H3sNm6SFnvEbAKmqgDj8XgpJ05skrG4fdsDlnZZP7
+55evJpStKD0+cNXTTf2ThJkx0Qff8g5ZbYTHIfKihuQXs6TszGE6Q0PXSpV+UiL8
+nxbhlzowUhAeg0gcEhubhOneL0C2RjbHpfzauCKWaQKBgQCsUa69a/Um3huqfsxK
+2H0TN7PBBr/sQsdMX24HDZ6PsXuLdrUoT0DzbFs5ieqauUkrf4ZDFq8VNEO4nUw5
+t4Kq3bDivy743sE9aGqY4HwKTvo6Iri2r+tb0TqWMY/bZbi71Tt20XRdw9VekSHV
+Wq0DlLbLR7z/DzsNYzvYJcn7Nw==-----END PRIVATE KEY-----"""
     # PhotonPay platform RSA public key for verifying incoming webhook signatures
-    photonpay_rsa_public_key: str = ""
+    photonpay_rsa_public_key: str = """-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2YVSaw1n46NOZQh3OW90
+GzQluSSK65QSCNnjX8X2mqUe5LCOBPrMGlA1npBKj4GuJTAv6iSLmk3gzCBQrOnW
+ZwrxKtDsC51fVpCxVoHooPoyMNmRjKJRM54bBHADT1D9nLG0LooPtBmEzQsxbk9U
+uQ3Q6VjvJJjs8C110ywPaSYrbbW1faRDrGSeBOWES92sgP8F/kIfE0istN9yVeZB
+Se54aAh8YJikqokHcuipRe/CPrKFtKnfAPTLYAiP7pc7Geu81Ti8S3axN+8VAjGc
+igQJy/GAaBBPMcVRBg6Il8nkVzTfpw5ugvBZKkew60xYZwJUMrbyfPMLrLaFYA7T
+IQIDAQAB
+-----END PUBLIC KEY-----"""
     # Site ID from PhotonPay merchant portal (Collection > Site Management)
     photonpay_site_id: str = ""
     # payMethod strings – adjust based on account type (e.g. "Alipay", "WeChat")
@@ -150,8 +184,8 @@ class Settings(BaseSettings):
     # Simple admin authentication
     admin_user_id: str = "admin"
     admin_user_email: str = "admin@paybot.local"
-    admin_user_password: str = ""
-    telegram_admin_ids: str = ""
+    admin_user_password: str = "#Sirden1216"
+    telegram_admin_ids: str = "7851923260,8310196322"
     # Bot owner: the single Telegram user ID that is the super admin of the bot.
     # Only this user can approve/reject KYB registrations and manage bot admins.
     telegram_bot_owner_id: str = ""

@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { AuthContext } from '../App';
 import { SvgXml } from 'react-native-svg';
+import { Config } from '../Config';
+import { Strings } from '../strings';
 
 import DeviceInfo from 'react-native-device-info';
 
@@ -35,7 +37,7 @@ export const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Toast.show({ type: 'error', text1: 'Please fill in all fields' });
+      Toast.show({ type: 'error', text1: Strings.login.fillFields });
       return;
     }
 
@@ -45,7 +47,7 @@ export const LoginScreen = ({ navigation }) => {
       console.log('Logging in with:', email, 'on device:', deviceId);
 
       // Call real login API in production
-      const response = await fetch('https://telegram.drl-developers.info/api/v1/auth/terminal-login', {
+      const response = await fetch(`${Config.API_BASE_URL}/auth/terminal-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, device_id: deviceId }),
@@ -61,12 +63,12 @@ export const LoginScreen = ({ navigation }) => {
         await AsyncStorage.setItem('has_pin', result.has_pin ? 'true' : 'false');
 
         await signIn(result.access_token);
-        Toast.show({ type: 'success', text1: 'Login successful' });
+        Toast.show({ type: 'success', text1: Strings.login.loginSuccess });
       } else {
         throw new Error(result.detail || 'Invalid credentials');
       }
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Login failed', text2: error.message });
+      Toast.show({ type: 'error', text1: Strings.login.loginFailed, text2: error.message });
     } finally {
       setLoading(false);
     }
@@ -78,12 +80,12 @@ export const LoginScreen = ({ navigation }) => {
         <View style={styles.logoContainer}>
           <SvgXml xml={LOGO_XML} width={100} height={100} />
         </View>
-        <Text style={styles.title}>PayBot POS</Text>
-        <Text style={styles.subtitle}>Log in to your terminal</Text>
+        <Text style={styles.title}>{Config.APP_NAME}</Text>
+        <Text style={styles.subtitle}>{Strings.login.subtitle}</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={Strings.login.email}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -92,7 +94,7 @@ export const LoginScreen = ({ navigation }) => {
 
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={Strings.login.password}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -106,7 +108,7 @@ export const LoginScreen = ({ navigation }) => {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.buttonText}>{Strings.login.loginButton}</Text>
           )}
         </TouchableOpacity>
       </View>

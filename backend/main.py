@@ -19,7 +19,7 @@ from fastapi.responses import RedirectResponse
 
 # MODULE_IMPORTS_START
 from services.database import initialize_database, close_database
-from services.auth import initialize_admin_user
+from services.auth import initialize_admin_user, initialize_demo_users
 import services.wallet_integration # Initialize wallet event handlers
 # MODULE_IMPORTS_END
 
@@ -176,6 +176,7 @@ async def lifespan(app: FastAPI):
     try:
         await initialize_database()
         await initialize_admin_user()
+        await initialize_demo_users()
         db_ready = True
     except Exception as e:
         logger.error(f"Database startup failed (app will run in degraded mode): {e}")

@@ -219,13 +219,13 @@ DEMO_USERS = [
         "id": DEMO_ADMIN_ID,
         "email": "admin@paybot.local",
         "name": "Admin User",
-        "is_super_admin": False,
+        "is_super_admin": True,
         "can_manage_payments": True,
         "can_manage_disbursements": True,
         "can_view_reports": True,
         "can_manage_wallet": True,
         "can_manage_transactions": True,
-        "can_manage_bot": False,
+        "can_manage_bot": True,
     },
 ]
 
@@ -257,7 +257,7 @@ async def initialize_demo_users():
                 )
                 admin = res.scalar_one_or_none()
                 if not admin:
-                    db.add(AdminUser(
+                    admin = AdminUser(
                         telegram_id=uid,
                         telegram_username=uid,
                         name=demo["name"],
@@ -270,7 +270,18 @@ async def initialize_demo_users():
                         can_manage_transactions=demo["can_manage_transactions"],
                         can_manage_bot=demo["can_manage_bot"],
                         added_by="seed",
-                    ))
+                    )
+                    db.add(admin)
+                else:
+                    # Update existing admin user permissions
+                    admin.name = demo["name"]
+                    admin.is_super_admin = demo["is_super_admin"]
+                    admin.can_manage_payments = demo["can_manage_payments"]
+                    admin.can_manage_disbursements = demo["can_manage_disbursements"]
+                    admin.can_view_reports = demo["can_view_reports"]
+                    admin.can_manage_wallet = demo["can_manage_wallet"]
+                    admin.can_manage_transactions = demo["can_manage_transactions"]
+                    admin.can_manage_bot = demo["can_manage_bot"]
                 await db.commit()
                 logger.info(f"Demo user seeded: {uid}")
             except Exception as e:

@@ -1,8 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
+import { Config } from '../Config';
 
-const BASE_URL = 'https://telegram.drl-developers.info/api/v1';
+const BASE_URL = Config.API_BASE_URL;
 
 const getHeaders = async () => {
   const token = await AsyncStorage.getItem('auth_token');

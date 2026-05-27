@@ -12,6 +12,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useQuery } from 'react-query';
+import { Config } from '../Config';
+import { Strings } from '../strings';
 
 const COLORS = {
   primary: '#3B82F6',
@@ -27,7 +29,7 @@ const COLORS = {
 
 const api = {
   getTerminals: async (token) => {
-    const response = await fetch('https://telegram.drl-developers.info/api/v1/pos-terminals/', {
+    const response = await fetch(`${Config.API_BASE_URL}/pos-terminals/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -39,7 +41,7 @@ const api = {
 
   getAllTransactions: async (token, terminalId) => {
     const response = await fetch(
-      `https://telegram.drl-developers.info/api/v1/pos-terminals/${terminalId}/transactions?per_page=50`,
+      `${Config.API_BASE_URL}/pos-terminals/${terminalId}/transactions?per_page=50`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -73,7 +75,7 @@ const TransactionItem = ({ item }) => {
            />
         </View>
         <View>
-          <Text style={styles.desc}>{item.description || 'POS Sale'}</Text>
+          <Text style={styles.desc}>{item.description || Strings.history.posSale}</Text>
           <Text style={styles.date}>
             {new Date(item.created_at).toLocaleDateString()} • {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </Text>
@@ -125,8 +127,8 @@ export const TransactionsScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
-        <Text style={styles.title}>Transaction History</Text>
-        <Text style={styles.subtitle}>View and manage your terminal sales</Text>
+        <Text style={styles.title}>{Strings.history.title}</Text>
+        <Text style={styles.subtitle}>{Strings.history.subtitle}</Text>
       </View>
 
       {transactionsQuery.isLoading ? (
@@ -146,7 +148,7 @@ export const TransactionsScreen = () => {
       ) : (
         <View style={styles.center}>
           <MaterialIcons name="receipt-long" size={64} color={COLORS.border} />
-          <Text style={styles.emptyText}>No transactions found</Text>
+          <Text style={styles.emptyText}>{Strings.history.empty}</Text>
         </View>
       )}
     </SafeAreaView>

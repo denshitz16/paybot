@@ -17,7 +17,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Toast from 'react-native-toast-message';
 import { WebView } from 'react-native-webview';
 import QRCode from 'react-native-qrcode-svg';
-// import LinearGradient from 'react-native-linear-gradient'; // Removed due to missing module
+import { Config } from '../Config';
+import { Strings } from '../strings';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,7 +35,7 @@ const COLORS = {
 const api = {
   createTransaction: async (token, terminalId, data) => {
     const response = await fetch(
-      `https://telegram.drl-developers.info/api/v1/pos-terminals/${terminalId}/transactions`,
+      `${Config.API_BASE_URL}/pos-terminals/${terminalId}/transactions`,
       {
         method: 'POST',
         headers: {
@@ -143,7 +144,7 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
     if (orderId && (qrContent || checkoutUrl) && paymentStatus === 'pending') {
       interval = setInterval(async () => {
         try {
-          const response = await fetch(`https://telegram.drl-developers.info/api/v1/pos-terminals/transactions/${orderId}`, {
+          const response = await fetch(`${Config.API_BASE_URL}/pos-terminals/transactions/${orderId}`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
           if (response.ok) {
@@ -168,16 +169,16 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
           <TouchableOpacity onPress={() => setShowWebView(false)}>
             <MaterialIcons name="close" size={24} color={COLORS.text} />
           </TouchableOpacity>
-          <Text style={styles.checkoutHeaderTitle}>Complete Payment</Text>
+          <Text style={styles.checkoutHeaderTitle}>{Strings.transaction.completePayment}</Text>
           <View style={{ width: 24 }} />
         </View>
         <WebView source={{ uri: checkoutUrl }} style={{ flex: 1 }} />
         {paymentStatus === 'completed' && (
            <View style={styles.fullScreenSuccess}>
              <MaterialIcons name="check-circle" size={100} color="#00BA97" />
-             <Text style={styles.successText}>PAID SUCCESSFULLY</Text>
+             <Text style={styles.successText}>{Strings.transaction.paidSuccessfully}</Text>
              <TouchableOpacity style={styles.doneButton} onPress={() => navigation.goBack()}>
-               <Text style={styles.doneButtonText}>Finish</Text>
+               <Text style={styles.doneButtonText}>{Strings.transaction.finish}</Text>
              </TouchableOpacity>
            </View>
         )}
@@ -201,14 +202,14 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
              {paymentStatus === 'completed' ? (
                 <View style={styles.successInner}>
                    <MaterialIcons name="check-circle" size={120} color="#00BA97" />
-                   <Text style={styles.successTitle}>COMPLETED</Text>
+                   <Text style={styles.successTitle}>{Strings.transaction.completed}</Text>
                 </View>
              ) : (
                <QRCode value={qrContent} size={width * 0.65} />
              )}
            </View>
            <TouchableOpacity style={styles.printButton} onPress={() => navigation.goBack()}>
-              <Text style={styles.printButtonText}>{paymentStatus === 'completed' ? 'Done' : 'Cancel'}</Text>
+              <Text style={styles.printButtonText}>{paymentStatus === 'completed' ? Strings.transaction.done : Strings.transaction.cancel}</Text>
            </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -229,31 +230,31 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.selectOptionText}>Select payment option</Text>
+          <Text style={styles.selectOptionText}>{Strings.transaction.selectOption}</Text>
         </View>
 
         <View style={styles.optionsBody}>
           <PaymentOptionCard
-            title="Debit or Credit Card"
-            subLabel="Pay with"
+            title={Strings.transaction.debitCreditCard}
+            subLabel={Strings.transaction.payWith}
             icon="credit-card"
             logos={['VISA', 'MC', 'JCB', 'AMEX']}
             onPress={() => createMutation.mutate('card')}
           />
           <PaymentOptionCard
-            title="QR Code"
-            subLabel="Pay with"
+            title={Strings.transaction.qrCode}
+            subLabel={Strings.transaction.payWith}
             icon="qr-code-scanner"
             logos={[{ name: 'qr-code-2', color: '#5D2E91' }]}
             onPress={() => createMutation.mutate('maya')}
           />
 
           <View style={styles.quickAccessSection}>
-            <Text style={styles.quickAccessTitle}>Quick Access</Text>
+            <Text style={styles.quickAccessTitle}>{Strings.transaction.quickAccess}</Text>
             <View style={styles.quickAccessRow}>
-              <QuickAccessItem icon="qr-code-2" label="Maya QR" onPress={() => createMutation.mutate('maya')} />
-              <QuickAccessItem icon="center-focus-strong" label="QRPH" onPress={() => createMutation.mutate('maya')} />
-              <QuickAccessItem icon="help-outline" label="Help Center" onPress={() => {}} />
+              <QuickAccessItem icon="qr-code-2" label={Strings.transaction.mayaQr} onPress={() => createMutation.mutate('maya')} />
+              <QuickAccessItem icon="center-focus-strong" label={Strings.transaction.qrph} onPress={() => createMutation.mutate('maya')} />
+              <QuickAccessItem icon="help-outline" label={Strings.transaction.helpCenter} onPress={() => {}} />
             </View>
           </View>
         </View>
@@ -285,7 +286,7 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
           ))}
         </View>
         <TouchableOpacity style={styles.chargeBtn} onPress={() => setViewMode('options')}>
-           <Text style={styles.chargeBtnText}>CHARGE</Text>
+           <Text style={styles.chargeBtnText}>{Strings.transaction.charge}</Text>
            <MaterialIcons name="chevron-right" size={28} color="#fff" />
         </TouchableOpacity>
       </View>
