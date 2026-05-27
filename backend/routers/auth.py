@@ -665,7 +665,7 @@ async def telegram_debug():
 async def login_mobile(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Secure login for mobile POS clients with device binding."""
     admin_email = getattr(settings, "admin_user_email", "") or "admin@paybot.local"
-    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+    admin_password = getattr(settings, "admin_user_password", "") or os.getenv("ADMIN_PASSWORD", "admin123")
 
     authenticated_user = None
     if payload.email == admin_email and payload.password == admin_password:
