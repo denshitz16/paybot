@@ -742,7 +742,19 @@ async def login_mobile(payload: LoginRequest, db: AsyncSession = Depends(get_db)
     from core.auth import create_access_token
     app_token = create_access_token(token_claims, expires_minutes=expires_minutes)
 
-    perms = UserPermissions(is_super_admin=(authenticated_user.role == "admin"))
+    if authenticated_user.role == "admin":
+        perms = UserPermissions(
+            is_super_admin=True,
+            can_manage_payments=True,
+            can_manage_disbursements=True,
+            can_view_reports=True,
+            can_manage_wallet=True,
+            can_manage_transactions=True,
+            can_manage_bot=True,
+            can_approve_topups=True,
+        )
+    else:
+        perms = UserPermissions(is_super_admin=False)
     user_resp = UserResponse(
         id=authenticated_user.id,
         email=authenticated_user.email,
