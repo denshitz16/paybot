@@ -16,6 +16,9 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRouter
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.database import get_db
+from fastapi import Depends
 
 # MODULE_IMPORTS_START
 from services.database import initialize_database, close_database
@@ -374,6 +377,34 @@ async def general_exception_handler(request: Request, exc: Exception):
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/api/v1/diagnostics/db-schema")
+async def db_diagnostics(db: AsyncSession = Depends(get_db)):
+    """Diagnostic endpoint to check DB schema status."""
+    from sqlalchemy import text
+    try:
+        # Check tables
+        tables_res = await db.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"))
+        tables = [row[0] for row in tables_res]
+        
+        # Check columns of pos_terminals
+        columns = {}
+        if 'pos_terminals' in tables:
+            cols_res = await db.execute(text("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'pos_terminals'"))
+            columns['pos_terminals'] = [f"{row[0]} ({row[1]})" for row in cols_res]
+            
+        # Check alembic version
+        alembic_res = await db.execute(text("SELECT version_num FROM alembic_version"))
+        alembic_version = alembic_res.scalar()
+        
+        return {
+            "tables": tables,
+            "columns": columns,
+            "alembic_version": alembic_version
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 
 # ── Frontend SPA serving ─────────────────────────────────────────────────────
