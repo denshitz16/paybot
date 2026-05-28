@@ -398,10 +398,17 @@ async def db_diagnostics(db: AsyncSession = Depends(get_db)):
         alembic_res = await db.execute(text("SELECT version_num FROM alembic_version"))
         alembic_version = alembic_res.scalar()
         
+        # Check routes
+        routes = []
+        for route in app.routes:
+            if hasattr(route, 'path'):
+                routes.append(f"{getattr(route, 'methods', 'ANY')} {route.path}")
+
         return {
             "tables": tables,
             "columns": columns,
-            "alembic_version": alembic_version
+            "alembic_version": alembic_version,
+            "routes": sorted(routes)
         }
     except Exception as e:
         return {"error": str(e)}
