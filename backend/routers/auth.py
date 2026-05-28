@@ -43,8 +43,10 @@ from services.auth import AuthService
 from services.telegram_service import TelegramService
 # Xendit removed; KYC via Xendit is no longer performed. Maya Manager checkout
 # integration does not provide customer KYC creation via this API.
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, inspect
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from models.pos_terminal import POSTerminal, POSTerminalDevice
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 logger = logging.getLogger(__name__)
@@ -685,43 +687,56 @@ async def login_mobile(payload: LoginRequest, db: AsyncSession = Depends(get_db)
     # Secure Device Binding
     terminal_id = None
     has_pin = False
+    
     if payload.device_id:
-        from models.pos_terminal import POSTerminal
-        # Find terminal assigned to this user and device
-        res = await db.execute(
-            select(POSTerminal).where(
-                and_(
-                    POSTerminal.user_id == authenticated_user.id,
-                    POSTerminal.device_id == payload.device_id
+        try:
+            # Check if columns exist before querying to prevent 500 errors on failed migrations
+            mapper = inspect(POSTerminal)
+            if "device_id" in mapper.attrs:
+                # Find terminal assigned to this user and device
+                res = await db.execute(
+                    select(POSTerminal).where(
+                        and_(
+                            POSTerminal.user_id == authenticated_user.id,
+                            POSTerminal.device_id == payload.device_id
+                        )
+                    )
                 )
-            )
-        )
-        terminal = res.scalar_one_or_none()
-        
-        # If no linked terminal, we still allow login for admins so they can reach the dashboard
-        # and register their device. We only block non-admin users without an authorized device.
-        if not terminal:
-            from models.pos_terminal import POSTerminalDevice
-            device_res = await db.execute(
-                select(POSTerminalDevice).where(POSTerminalDevice.device_id == payload.device_id)
-            )
-            device = device_res.scalar_one_or_none()
-            
-            # If user is admin, allow them in even if device isn't linked yet
-            # This allows them to see the dashboard and assign themselves a terminal
-            if authenticated_user.role == "admin":
-                logger.info(f"Admin login allowed for unlinked device: {payload.device_id}")
-            elif not device or not device.is_authorized:
-                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="This device is not authorized. Please contact your administrator.",
+                terminal = res.scalar_one_or_none()
+                
+                # If no linked terminal, we still allow login for admins so they can reach the dashboard
+                # and register their device. We only block non-admin users without an authorized device.
+                if not terminal:
+                    device_res = await db.execute(
+                        select(POSTerminalDevice).where(POSTerminalDevice.device_id == payload.device_id)
+                    )
+                    device = device_res.scalar_one_or_none()
+                    
+                    # If user is admin, allow them in even if device isn't linked yet
+                    # This allows them to see the dashboard and assign themselves a terminal
+                    if authenticated_user.role == "admin":
+                        logger.info(f"Admin login allowed for unlinked device: {payload.device_id}")
+                    elif not device or not device.is_authorized:
+                         raise HTTPException(
+                            status_code=status.HTTP_403_FORBIDDEN,
+                            detail="This device is not authorized. Please contact your administrator.",
+                        )
+                else:
+                    terminal_id = terminal.id
+                    has_pin = bool(terminal.operator_pin)
+                    terminal.last_device_id = payload.device_id
+                    terminal.authorized_at = datetime.utcnow()
+                    await db.commit()
+            else:
+                logger.warning("POSTerminal table missing device_id column. Skipping device binding.")
+        except Exception as e:
+            logger.error(f"Error during terminal device binding: {e}")
+            # Fallback: allow login if it's an admin, otherwise block for safety
+            if authenticated_user.role != "admin":
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Database error during device verification."
                 )
-        else:
-            terminal_id = terminal.id
-            has_pin = bool(terminal.operator_pin)
-            terminal.last_device_id = payload.device_id
-            terminal.authorized_at = datetime.utcnow()
-            await db.commit()
 
     auth_service = AuthService(db)
     # Inject device_id into JWT claims for verification on every request
