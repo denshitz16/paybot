@@ -213,6 +213,19 @@ export const HomeScreen = ({ navigation }) => {
     }
   );
 
+  useEffect(() => {
+    if (selectedTerminal && transactionsQuery.data?.data) {
+      const latestTxn = transactionsQuery.data.data[0];
+      if (latestTxn && latestTxn.status === 'pending' && latestTxn.payment_method === 'awaiting_selection') {
+        // Auto-navigate to payment screen for ECR push
+        navigation.navigate('CreateTransaction', {
+          terminal: selectedTerminal,
+          ecrTransaction: latestTxn
+        });
+      }
+    }
+  }, [transactionsQuery.data, selectedTerminal]);
+
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     try {

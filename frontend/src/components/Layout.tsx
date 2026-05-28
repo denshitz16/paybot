@@ -151,6 +151,7 @@ export default function Layout({ children, connected }: LayoutProps) {
           items: [
             { to: '/admin-management', icon: ShieldCheck, label: t('nav_admin_management'), badge: 'Super' },
             { to: '/pos-terminals', icon: Smartphone, label: 'POS Terminals', badge: 'Super' },
+            { to: '/terminal-simulator', icon: Monitor, label: 'ECR Simulator', badge: 'Super' },
             { to: '/roles', icon: Shield, label: t('nav_roles'), badge: 'Super' },
             {
               type: 'group' as const,

@@ -67,15 +67,15 @@ const QuickAccessItem = ({ icon, label, onPress }) => (
 );
 
 export const CreateTransactionScreen = ({ route, navigation }) => {
-  const { terminal } = route.params;
+  const { terminal, ecrTransaction } = route.params;
   const [token, setToken] = useState(null);
-  const [amount, setAmount] = useState('0');
+  const [amount, setAmount] = useState(ecrTransaction ? (ecrTransaction.amount / 100).toString() : '0');
   const [showWebView, setShowWebView] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState(null);
   const [qrContent, setQrContent] = useState(null);
-  const [orderId, setOrderId] = useState(null);
+  const [orderId, setOrderId] = useState(ecrTransaction?.order_id || null);
   const [paymentStatus, setPaymentStatus] = useState('pending');
-  const [viewMode, setViewMode] = useState('keypad'); // 'keypad' or 'options'
+  const [viewMode, setViewMode] = useState(ecrTransaction ? 'options' : 'keypad'); // Skip keypad for ECR push
 
   useEffect(() => {
     AsyncStorage.getItem('auth_token').then(setToken);
@@ -99,11 +99,16 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
   };
 
   const createMutation = useMutation(
-    (method) => terminalApi.createTransaction(terminal.id, {
-      amount: parseFloat(amount) * 100,
-      payment_method: method,
-      description: 'Terminal Sale'
-    }),
+    (method) => {
+      if (ecrTransaction) {
+        return terminalApi.finalizeEcrTransaction(terminal.id, ecrTransaction.order_id, method);
+      }
+      return terminalApi.createTransaction(terminal.id, {
+        amount: parseFloat(amount) * 100,
+        payment_method: method,
+        description: 'Terminal Sale'
+      });
+    },
     {
       onSuccess: (data) => {
         if (data.success) {

@@ -60,6 +60,12 @@ export const terminalApi = {
     return response.data;
   },
 
+  finalizeEcrTransaction: async (terminalId: number, orderId: string, paymentMethod: string) => {
+    const headers = await getHeaders();
+    const response = await axios.post(`${BASE_URL}/pos-terminals/${terminalId}/transactions/${orderId}/finalize`, { payment_method: paymentMethod }, { headers });
+    return response.data;
+  },
+
   getTransaction: async (orderId: string) => {
     const headers = await getHeaders();
     const response = await axios.get(`${BASE_URL}/pos-terminals/transactions/${orderId}`, { headers });
