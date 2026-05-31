@@ -24,19 +24,11 @@ If you prefer to deploy from your machine instead of GitHub Actions:
 # Install Railway CLI
 npm install -g @railway/cli
 
-# Login interactively in your browser
-railway login
+# Login with API key
+railway login --apiKey YOUR_API_KEY
 
 # Deploy (from repo root)
 railway up --projectId YOUR_PROJECT_ID --environment production --detach --yes
-```
-
-If your Railway CLI version supports a token instead of interactive login, set `RAILWAY_TOKEN` and use the deploy script directly:
-
-```bash
-export RAILWAY_TOKEN=YOUR_TOKEN
-export RAILWAY_PROJECT_ID=YOUR_PROJECT_ID
-bash scripts/deploy_railway.sh
 ```
 
 Notes & troubleshooting
