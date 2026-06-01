@@ -442,6 +442,24 @@ aws cloudwatch put-metric-alarm \
   --comparison-operator GreaterThanThreshold
 ```
 
+### Railway Monitoring
+
+If you deploy PayBot to Railway, use Railway CLI logs and helper scripts to monitor production.
+
+```bash
+export RAILWAY_PROJECT_ID="your_project_id"
+railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --follow
+railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --http --lines 100
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --follow
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --latest --follow
+```
+
+Use `--health` after monitoring to validate the backend health endpoint:
+
+```bash
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://paybot-production-7350.up.railway.app/health"
+```
+
 ### Database Backups
 
 ```bash

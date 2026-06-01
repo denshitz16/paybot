@@ -530,7 +530,7 @@ class TestWalletTransferEndpoint:
 
                 result = await db.execute(
                     select(Wallets).where(
-                        Wallets.user_id == sender_tg_id,
+                            Wallets.user_id == sender_tg_id,
                         Wallets.currency == "USD",
                     )
                 )

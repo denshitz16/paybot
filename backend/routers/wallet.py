@@ -5,7 +5,7 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import ConfigDict, BaseModel
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
@@ -173,17 +173,49 @@ async def _get_php_balance(db: AsyncSession, tg_user_id: str) -> float:
 
 
 async def get_or_create_wallet(db: AsyncSession, user_id: str, currency: str = "PHP") -> Wallets:
-    """Get user's wallet for a given currency, or create one with 0 balance."""
+    """Get user's wallet for a given currency, or create one with 0 balance.
+
+    PHP wallets are normalized to plain Telegram user IDs so bot and web
+    workflows share the same wallet row. Legacy "tg-" prefixes are migrated
+    to the normalized ID when found.
+    """
+    currency_upper = currency.upper()
+    normalized_user_id = user_id.strip()
+    if currency_upper == "PHP" and normalized_user_id.startswith("tg-"):
+        normalized_user_id = normalized_user_id[3:]
+
     result = await db.execute(
-        select(Wallets).where(Wallets.user_id == user_id, Wallets.currency == currency)
+        select(Wallets).where(Wallets.user_id == normalized_user_id, Wallets.currency == currency_upper)
     )
     wallet = result.scalar_one_or_none()
+
+    if not wallet and currency_upper == "PHP":
+        legacy_user_id = _tg_user_id(normalized_user_id)
+        result = await db.execute(
+            select(Wallets).where(Wallets.user_id == legacy_user_id, Wallets.currency == "PHP")
+        )
+        wallet = result.scalar_one_or_none()
+        if wallet:
+            wallet.user_id = normalized_user_id
+            wallet.updated_at = datetime.now()
+            await db.execute(
+                update(Wallet_transactions)
+                .where(
+                    Wallet_transactions.wallet_id == wallet.id,
+                    Wallet_transactions.user_id == legacy_user_id,
+                )
+                .values(user_id=normalized_user_id)
+            )
+            await db.commit()
+            await db.refresh(wallet)
+            return wallet
+
     if not wallet:
         now = datetime.now()
         wallet = Wallets(
-            user_id=user_id,
+            user_id=normalized_user_id,
             balance=0.0,
-            currency=currency,
+            currency=currency_upper,
             created_at=now,
             updated_at=now,
         )
@@ -401,7 +433,7 @@ async def send_money(
 
     return WalletActionResponse(
         success=True,
-        message=f"Successfully sent ₱{data.amount:,.2f} to {data.recipient}",
+        message=f"Successfully sent ₱{data.amount:,.2f} to {data.recipient} — bank processing typically takes 1–2 business days.",
         balance=wallet.balance,
         transaction_id=txn.id,
     )
@@ -450,7 +482,7 @@ async def withdraw_money(
 
     return WalletActionResponse(
         success=True,
-        message=f"Successfully withdrew ₱{data.amount:,.2f}",
+        message=f"Successfully withdrew ₱{data.amount:,.2f} — bank processing typically takes 1–2 business days.",
         balance=wallet.balance,
         transaction_id=txn.id,
     )

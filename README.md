@@ -88,6 +88,30 @@ PayBot is built with a modular, scalable architecture:
 2. Set `ENVIRONMENT=production` and `MAYA_BUSINESS_MODE=live`.
 3. Deploy to Railway or your preferred cloud provider.
 
+### Railway Monitoring
+Use the Railway CLI to inspect production logs and monitor the live PayBot service.
+
+```bash
+export RAILWAY_PROJECT_ID="your_project_id"
+railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --lines 200
+railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --follow
+railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --http --lines 100
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --follow
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --latest --follow
+```
+
+To inspect build logs:
+
+```bash
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --build --lines 300
+```
+
+To run a health check after monitoring:
+
+```bash
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://paybot-production-7350.up.railway.app/health"
+```
+
 ### Mobile POS Setup
 1. Update `mobile/android/src/Config.ts` with your production API URL.
 2. Build the production APK:

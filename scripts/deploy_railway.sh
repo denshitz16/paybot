@@ -35,9 +35,9 @@ fi
 
 echo "Deploying to Railway project $RAILWAY_PROJECT_ID..."
 if [ -n "${RAILWAY_TOKEN:-}" ]; then
-  railway up --ci --project "$RAILWAY_PROJECT_ID" --environment production --detach --yes
+  railway up --ci --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --detach
 else
-  railway up --project "$RAILWAY_PROJECT_ID" --environment production --detach --yes
+  railway up --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --detach
 fi
 
 echo "Done."

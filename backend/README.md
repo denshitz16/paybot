@@ -53,6 +53,28 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ### 3. Railway Deployment
 The backend is optimized for **Railway**. Simply push to the `main` branch to trigger the automatic deployment via GitHub Actions.
 
+### 4. Railway Monitoring
+Use Railway logs to inspect production backend behavior and troubleshoot issues in real time.
+
+```bash
+export RAILWAY_PROJECT_ID="your_project_id"
+railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --follow
+railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --http --lines 100
+```
+
+Or use the helper script:
+
+```bash
+bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --follow
+bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --latest --follow
+```
+
+To run a health check after log monitoring:
+
+```bash
+bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://paybot-production-7350.up.railway.app/health"
+```
+
 ## 🧪 Testing
 ```bash
 pytest tests/ -v

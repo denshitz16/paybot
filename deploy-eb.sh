@@ -100,9 +100,7 @@ if ! command -v eb &> /dev/null; then
   exit 1
 fi
 
-eb deploy ${EB_ENV_NAME} \
-  --version=${TIMESTAMP} \
-  --message="Deployment ${TIMESTAMP}" || {
+eb deploy ${EB_ENV_NAME} || {
   echo -e "${RED}❌ EB deployment failed${NC}"
   exit 1
 }

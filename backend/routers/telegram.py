@@ -2473,12 +2473,13 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
         # ==================== /balance ====================
         elif text.startswith("/balance"):
             try:
+                php_user_id = str(chat_id)
                 # PHP wallet — get or create, then sync balance from PayMongo live balance
-                res = await db.execute(select(Wallets).where(Wallets.user_id == tg_user_id, Wallets.currency == "PHP"))
+                res = await db.execute(select(Wallets).where(Wallets.user_id == php_user_id, Wallets.currency == "PHP"))
                 wallet = res.scalar_one_or_none()
                 if not wallet:
                     now_w = datetime.now()
-                    wallet = Wallets(user_id=tg_user_id, balance=0.0, currency="PHP", created_at=now_w, updated_at=now_w)
+                    wallet = Wallets(user_id=php_user_id, balance=0.0, currency="PHP", created_at=now_w, updated_at=now_w)
                     db.add(wallet)
                     await db.commit()
                     await db.refresh(wallet)
@@ -2870,13 +2871,14 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     if amount <= 0:
                         await tg.send_message(chat_id, "❌ Amount must be positive.")
                     else:
+                        php_user_id = str(chat_id)
                         # DB required for wallet ops
                         try:
-                            res = await db.execute(select(Wallets).where(Wallets.user_id == tg_user_id, Wallets.currency == "PHP"))
+                            res = await db.execute(select(Wallets).where(Wallets.user_id == php_user_id, Wallets.currency == "PHP"))
                             wallet = res.scalar_one_or_none()
                             if not wallet:
                                 now_w = datetime.now()
-                                wallet = Wallets(user_id=tg_user_id, balance=0.0, currency="PHP", created_at=now_w, updated_at=now_w)
+                                wallet = Wallets(user_id=php_user_id, balance=0.0, currency="PHP", created_at=now_w, updated_at=now_w)
                                 db.add(wallet)
                                 await db.commit()
                                 await db.refresh(wallet)
@@ -2900,7 +2902,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                                 wallet.balance = new_balance
                                 wallet.updated_at = now
                                 wtxn = Wallet_transactions(
-                                    user_id=tg_user_id, wallet_id=wallet.id,
+                                    user_id=php_user_id, wallet_id=wallet.id,
                                     transaction_type="send", amount=amount, balance_before=bb,
                                     balance_after=new_balance, recipient=recipient,
                                     note=f"Sent to {recipient} via Telegram", status="completed",
@@ -2935,12 +2937,13 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     if amount <= 0:
                         await tg.send_message(chat_id, "❌ Amount must be positive.")
                     else:
+                        php_user_id = str(chat_id)
                         try:
-                            res = await db.execute(select(Wallets).where(Wallets.user_id == tg_user_id, Wallets.currency == "PHP"))
+                            res = await db.execute(select(Wallets).where(Wallets.user_id == php_user_id, Wallets.currency == "PHP"))
                             wallet = res.scalar_one_or_none()
                             if not wallet:
                                 now_w = datetime.now()
-                                wallet = Wallets(user_id=tg_user_id, balance=0.0, currency="PHP", created_at=now_w, updated_at=now_w)
+                                wallet = Wallets(user_id=php_user_id, balance=0.0, currency="PHP", created_at=now_w, updated_at=now_w)
                                 db.add(wallet)
                                 await db.commit()
                                 await db.refresh(wallet)
@@ -2964,7 +2967,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                                 wallet.balance = new_balance
                                 wallet.updated_at = now
                                 wtxn = Wallet_transactions(
-                                    user_id=tg_user_id, wallet_id=wallet.id,
+                                    user_id=php_user_id, wallet_id=wallet.id,
                                     transaction_type="withdraw", amount=amount, balance_before=bb,
                                     balance_after=new_balance, note="Withdrawal via Telegram",
                                     status="completed",

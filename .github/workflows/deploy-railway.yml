@@ -75,5 +75,6 @@ jobs:
         run: |
           set -e
           railway login --apiKey "$RAILWAY_API_KEY"
-          # Deploy the current directory to the specified project and environment
-          railway up --projectId "$RAILWAY_PROJECT_ID" --environment production --detach --yes
+          # The Dockerfile handles the multi-stage build (frontend + backend)
+          # Deploy the repository directly and let Railway build the image.
+          railway up --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --detach

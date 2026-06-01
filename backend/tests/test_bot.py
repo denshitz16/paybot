@@ -426,6 +426,29 @@ class TestTelegramWebhook:
         assert r.status_code == 200
         assert r.json()["status"] == "ok"
 
+    def test_balance_command_uses_plain_php_wallet_id(self, client):
+        # Use the test admin ID so the webhook runs admin flows and creates the wallet
+        chat_id = 123456789
+        r = client.post("/api/v1/telegram/webhook", json=_webhook_body("/balance", chat_id=chat_id))
+        assert r.status_code == 200
+        assert r.json()["status"] == "ok"
+
+        import asyncio
+        from core.database import db_manager
+        from sqlalchemy import select
+        from models.wallets import Wallets
+
+        async def verify_wallet():
+            async with db_manager.async_session_maker() as db:
+                result = await db.execute(
+                    select(Wallets).where(Wallets.user_id == str(chat_id), Wallets.currency == "PHP")
+                )
+                return result.scalar_one_or_none()
+
+        wallet = asyncio.run(verify_wallet())
+        assert wallet is not None
+        assert wallet.user_id == str(chat_id)
+
     def test_status_command_not_found(self, client):
         r = client.post("/api/v1/telegram/webhook", json=_webhook_body("/status nonexistent-id"))
         assert r.status_code == 200
@@ -1370,17 +1393,17 @@ class TestUsdtPhpConversion:
         async def verify():
             async with db_manager.async_session_maker() as db:
                 wallet_res = await db.execute(
-                    select(Wallets).where(
-                        Wallets.user_id == f"tg-{chat_id}",
-                        Wallets.currency == "PHP",
-                    )
+                            select(Wallets).where(
+                                Wallets.user_id == str(chat_id),
+                                Wallets.currency == "PHP",
+                            )
                 )
                 wallet = wallet_res.scalar_one_or_none()
 
                 txn_res = await db.execute(
                     select(Wallet_transactions).where(
                         Wallet_transactions.reference_id == str(req_id),
-                        Wallet_transactions.user_id == f"tg-{chat_id}",
+                        Wallet_transactions.user_id == str(chat_id),
                     )
                 )
                 txn = txn_res.scalar_one_or_none()
@@ -1446,7 +1469,7 @@ class TestUsdtPhpConversion:
         from models.wallets import Wallets
         from models.wallet_transactions import Wallet_transactions
 
-        target_user_id = "tg-900123"
+        target_user_id = "900123"
 
         r1 = client.post(
             f"/api/v1/wallet/admin/php-wallets/{target_user_id}/adjust",
@@ -1487,7 +1510,7 @@ class TestUsdtPhpConversion:
 
     def test_admin_php_wallet_adjust_insufficient_balance_is_rejected(self, client, auth_headers):
         """Debiting more than the PHP wallet balance should be rejected."""
-        target_user_id = "tg-900124"
+        target_user_id = "900124"
 
         r1 = client.post(
             f"/api/v1/wallet/admin/php-wallets/{target_user_id}/adjust",

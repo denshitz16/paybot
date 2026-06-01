@@ -55,6 +55,7 @@ Before accepting real card payments on your Telegram Bot or Mini App, ensure the
 ### 7. **Monitoring & Alerts**
    - [ ] Set up database connection pool monitoring
    - [ ] Alert on failed transactions
+   - [ ] Monitor Railway logs for production deployments
    - [ ] Monitor cron job execution (T+1 settlement sweep at 5 AM)
    - [ ] Set up log aggregation (CloudWatch, DataDog, etc.)
    - [ ] Monitor webhook delivery failures

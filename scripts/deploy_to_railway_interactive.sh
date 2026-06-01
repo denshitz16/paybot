@@ -93,7 +93,7 @@ read -p "Deploy to production? (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Deploying..."
-    railway up --environment production --detach --yes
+    railway up --service paybot --environment production --detach
     echo ""
     echo "✅ Deployment started!"
     echo ""

@@ -105,9 +105,14 @@ interface BotConfig {
 // Bot commands reference
 const BOT_COMMANDS = [
   { cmd: '/start',      emoji: '\u{1F680}', category: 'General',   desc: 'Welcome message + language selection' },
+  { cmd: '/register',   emoji: '\u{1F4E6}', category: 'General',   desc: 'Register your business and request dashboard access' },
+  { cmd: '/login',      emoji: '\u{1F511}', category: 'General',   desc: 'Log in with your Telegram account' },
+  { cmd: '/setpin',     emoji: '\u{1F528}', category: 'General',   desc: 'Set or change your PIN for secure actions' },
+  { cmd: '/logout',     emoji: '\u274C',    category: 'General',   desc: 'Log out of your current session' },
   { cmd: '/help',       emoji: '\u2753',    category: 'General',   desc: 'Full command reference guide' },
   { cmd: '/balance',    emoji: '\u{1F4B0}', category: 'Wallet',    desc: 'View PHP wallet balance & history' },
   { cmd: '/usdbalance', emoji: '\u{1F4B5}', category: 'Wallet',    desc: 'USD wallet balance (USDT TRC20)' },
+  { cmd: '/wallet',     emoji: '\u{1F4B3}', category: 'Wallet',    desc: 'Manage your wallet (Send, Top-up, Withdraw)' },
   { cmd: '/invoice',    emoji: '\u{1F4B3}', category: 'Payments',  desc: 'Create a Xendit payment invoice' },
   { cmd: '/qr',         emoji: '\u{1F4F1}', category: 'Payments',  desc: 'Generate a QR code payment' },
   { cmd: '/link',       emoji: '\u{1F517}', category: 'Payments',  desc: 'Create a payment link' },
@@ -115,14 +120,15 @@ const BOT_COMMANDS = [
   { cmd: '/ewallet',    emoji: '\u{1F4F2}', category: 'Payments',  desc: 'GCash / Maya / GrabPay e-wallet' },
   { cmd: '/alipay',     emoji: '\u{1F534}', category: 'Payments',  desc: 'Alipay QR via PhotonPay' },
   { cmd: '/wechat',     emoji: '\u{1F4AC}', category: 'Payments',  desc: 'WeChat Pay QR via PhotonPay' },
-  { cmd: '/disburse',   emoji: '\u{1F4B8}', category: 'Transfers', desc: 'Bank transfer disbursement' },
+  { cmd: '/pay',        emoji: '\u{1F4B8}', category: 'Payments',  desc: 'Interactive payment menu' },
+  { cmd: '/deposit',    emoji: '\u{1F4E5}', category: 'Payments',  desc: 'Record a manual bank/e-wallet deposit' },
+  { cmd: '/disburse',   emoji: '\u{1F4B8}', category: 'Transfers', desc: 'Send money to bank account' },
   { cmd: '/refund',     emoji: '\u21A9\uFE0F', category: 'Transfers', desc: 'Refund a completed payment' },
   { cmd: '/send',       emoji: '\u{1F4E4}', category: 'Transfers', desc: 'Send PHP to another user' },
   { cmd: '/sendusdt',   emoji: '\u20BF',    category: 'Transfers', desc: 'Send USDT to a TRC20 address' },
   { cmd: '/sendusd',    emoji: '\u{1F4B1}', category: 'Transfers', desc: 'Send USD to another user' },
   { cmd: '/topup',      emoji: '\u2B06\uFE0F', category: 'Transfers', desc: 'Top up PHP wallet via USDT' },
   { cmd: '/withdraw',   emoji: '\u2B07\uFE0F', category: 'Transfers', desc: 'Withdraw from wallet' },
-  { cmd: '/deposit',    emoji: '\u{1F4E5}', category: 'Transfers', desc: 'Record a manual deposit' },
   { cmd: '/status',     emoji: '\u{1F50D}', category: 'Tools',     desc: 'Check a payment status by ID' },
   { cmd: '/list',       emoji: '\u{1F4CB}', category: 'Tools',     desc: 'Recent transactions list' },
   { cmd: '/report',     emoji: '\u{1F4CA}', category: 'Tools',     desc: 'Daily / weekly / monthly report' },
@@ -130,7 +136,9 @@ const BOT_COMMANDS = [
   { cmd: '/cancel',     emoji: '\u{1F6AB}', category: 'Tools',     desc: 'Cancel a pending payment' },
   { cmd: '/remind',     emoji: '\u{1F514}', category: 'Tools',     desc: 'Send a payment reminder' },
   { cmd: '/scanqr',     emoji: '\u{1F4F7}', category: 'Tools',     desc: 'Scan a QRPH code and pay' },
-  { cmd: '/kyb',        emoji: '\u{1FAAA}', category: 'Tools',     desc: 'KYB (know-your-business) form' },
+  { cmd: '/kyb',        emoji: '\u{1FAAA}', category: 'Tools',     desc: 'Begin KYB registration flow' },
+  { cmd: '/terminal',   emoji: '\u{1F4BB}', category: 'Tools',     desc: 'Manage your POS terminals' },
+  { cmd: '/subscribe',  emoji: '\u{1F4E6}', category: 'Tools',     desc: 'Create a recurring subscription' },
 ];
 
 const COMMAND_CATEGORIES = ['General', 'Wallet', 'Payments', 'Transfers', 'Tools'];

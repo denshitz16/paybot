@@ -183,7 +183,9 @@ async def approve_bank_deposit_request(
     if req.status != "pending":
         raise HTTPException(status_code=400, detail=f"Request is already {req.status}")
 
-    user_wallet_id = f"tg-{req.chat_id}"
+    user_wallet_id = str(req.chat_id)
+    if user_wallet_id.startswith("tg-"):
+        user_wallet_id = user_wallet_id[3:]
     amount_php = req.amount_php
     now = datetime.now()
 

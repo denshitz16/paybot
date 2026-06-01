@@ -195,11 +195,11 @@ echo ""
 echo -e "${YELLOW}STEP 7: Deploying to Railway...${NC}"
 echo ""
 
-echo "Command: railway up --project \"$RAILWAY_PROJECT_ID\" --environment production --detach --yes"
+echo "Command: railway up --project \"$RAILWAY_PROJECT_ID\" --service paybot --environment production --detach"
 echo ""
 
 # Execute railway deployment
-if railway up --project "$RAILWAY_PROJECT_ID" --environment production --detach --yes; then
+if railway up --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --detach; then
     echo -e "${GREEN}✅ Deployment started!${NC}"
 else
     echo -e "${RED}❌ Deployment failed${NC}"
@@ -207,7 +207,7 @@ else
     echo "Try running manually:"
     echo "  railway login"
     echo "  railway link"
-    echo "  railway up --detach --yes"
+    echo "  railway up --project \"$RAILWAY_PROJECT_ID\" --service paybot --environment production --detach"
     exit 1
 fi
 

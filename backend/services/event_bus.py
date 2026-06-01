@@ -41,6 +41,8 @@ class EventBus:
         # Trigger specialized cross-component sync logic
         if event_type == "payment_completed":
             await cls._sync_payment_to_telegram(data)
+        if event_type == "wallet_update":
+            await cls._sync_wallet_update_to_telegram(data)
 
     @classmethod
     def publish(cls, data: Dict[str, Any]):
@@ -107,6 +109,93 @@ class EventBus:
             
         except Exception as e:
             logger.error(f"Failed to sync payment to Telegram: {e}")
+
+    @classmethod
+    async def _sync_wallet_update_to_telegram(cls, data: Dict[str, Any]):
+        """Send a Telegram notification to the user for wallet credit/receive events."""
+        try:
+            from services.telegram_service import TelegramService
+            tg = TelegramService()
+
+            user_id = data.get("user_id") or ""
+            # Normalize chat id: allow both "tg-123" and "123"
+            chat_id = user_id[3:] if isinstance(user_id, str) and user_id.startswith("tg-") else user_id
+
+            txn_type = data.get("transaction_type", "")
+            amount = data.get("amount")
+            balance = data.get("balance")
+
+            # Only notify on credits / receipts
+            credit_types = ("top_up", "receive", "crypto_topup", "usd_receive", "admin_credit")
+            if txn_type not in credit_types:
+                # If this is a debit/withdrawal, notify about bank processing time
+                debit_types = ("withdraw", "send", "admin_debit")
+                if txn_type in debit_types:
+                    # Inform user that external bank processing may take 1-2 days
+                    try:
+                        note = data.get("note") or ""
+                        amount = data.get("amount")
+                        if amount is None:
+                            amt_str = ""
+                        else:
+                            try:
+                                amt_f = float(amount)
+                                amt_str = f"₱{amt_f:,.2f}"
+                            except Exception:
+                                amt_str = str(amount)
+
+                        bal_str = ""
+                        if balance is not None:
+                            try:
+                                bal_f = float(balance)
+                                bal_str = f"New balance: ₱{bal_f:,.2f}"
+                            except Exception:
+                                bal_str = f"New balance: {balance}"
+
+                        message = (
+                            f"✅ <b>Withdrawal Submitted</b>\n\n"
+                            f"{amt_str}\n"
+                            + (f"{note}\n" if note else "")
+                            + (f"{bal_str}\n" if bal_str else "")
+                            + "⏳ Bank processing typically takes 1–2 business days."
+                        )
+                        await tg.send_message(chat_id=chat_id, text=message)
+                        logger.info(f"Notified Telegram user {chat_id} of withdrawal processing: {txn_type} {amount}")
+                    except Exception as e:
+                        logger.error(f"Failed to notify withdrawal to Telegram: {e}")
+                return
+
+            # Format amount (assume PHP floats for PHP wallet events)
+            if amount is None:
+                amt_str = ""
+            else:
+                try:
+                    amt_f = float(amount)
+                    amt_str = f"₱{amt_f:,.2f}" if data.get("currency", "PHP").upper() == "PHP" else f"${amt_f:,.2f}"
+                except Exception:
+                    amt_str = str(amount)
+
+            bal_str = ""
+            if balance is not None:
+                try:
+                    bal_f = float(balance)
+                    bal_str = f"New balance: ₱{bal_f:,.2f}"
+                except Exception:
+                    bal_str = f"New balance: {balance}"
+
+            note = data.get("note") or ""
+
+            message = (
+                f"✅ <b>Wallet Credited</b>\n\n"
+                f"{amt_str}\n"
+                + (f"{note}\n" if note else "")
+                + (f"{bal_str}\n" if bal_str else "")
+            )
+
+            await tg.send_message(chat_id=chat_id, text=message)
+            logger.info(f"Notified Telegram user {chat_id} of wallet update: {txn_type} {amount}")
+        except Exception as e:
+            logger.error(f"Failed to notify wallet update to Telegram: {e}")
 
 event_bus = EventBus()
 payment_event_bus = event_bus # Alias for legacy code
