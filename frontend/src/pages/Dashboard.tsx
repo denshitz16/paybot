@@ -190,7 +190,9 @@ export default function Dashboard() {
       const results = await Promise.allSettled([
         client.apiCall.invoke({ url: '/api/v1/xendit/transaction-stats', method: 'GET', data: {} }),
         client.entities.transactions.query({ query: {}, sort: '-created_at', limit: 8 }),
-        client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=PHP', method: 'GET', data: {} }),
+        isSuperAdmin 
+          ? client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=PHP', method: 'GET', data: {} })
+          : Promise.resolve(null),
         client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=USD', method: 'GET', data: {} }),
       ]);
 
@@ -208,11 +210,11 @@ export default function Dashboard() {
         console.warn('Failed to fetch recent transactions:', results[1].reason);
       }
 
-      if (results[2].status === 'fulfilled') {
+      if (isSuperAdmin && results[2] && results[2].status === 'fulfilled') {
         const walletData = results[2].value?.data;
         if (walletData?.balance != null) setWalletBalance(walletData.balance);
-      } else {
-        console.warn('Failed to fetch wallet balance:', results[2].reason);
+      } else if (isSuperAdmin) {
+        console.warn('Failed to fetch wallet balance:', results[2]?.reason);
       }
 
       if (results[3].status === 'fulfilled') {
@@ -224,7 +226,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error('Unexpected error in fetchData:', err);
     }
-  }, [user]);
+  }, [user, isSuperAdmin]);
 
   const { connected } = usePaymentEvents({
     enabled: !!user,
@@ -352,31 +354,33 @@ export default function Dashboard() {
           WALLET CARDS + STAT CARDS ROW
       ═══════════════════════════════════════════════ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-6">
-        {/* Wallet Balance */}
-        <Link to="/wallet" className="col-span-1 block group">
-          <Card className="h-full bg-primary border-0 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200 cursor-pointer">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-blue-100">PHP Wallet</p>
-                <div className="h-8 w-8 bg-white/20 rounded-xl flex items-center justify-center">
-                  <Wallet className="h-4 w-4 text-white" />
+        {/* PHP Wallet (Maya Business) - Super Admin Only */}
+        {isSuperAdmin && (
+          <Link to="/wallet" className="col-span-1 block group">
+            <Card className="h-full bg-primary border-0 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200 cursor-pointer">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-blue-100">PHP Wallet (Maya)</p>
+                  <div className="h-8 w-8 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Wallet className="h-4 w-4 text-white" />
+                  </div>
                 </div>
-              </div>
-              <p className="text-xl sm:text-2xl font-bold text-white transition-all duration-300">
-                {loading
-                  ? <span className="inline-block w-24 h-8 bg-white/20 rounded-lg animate-pulse" />
-                  : `₱${fmt(walletBalance || 0)}`
-                }
-              </p>
-              <div className="flex items-center gap-1 mt-2 text-blue-100 text-xs group-hover:text-white transition-colors">
-                <span>View wallet</span>
-                <ArrowUpRight className="h-3 w-3" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+                <p className="text-xl sm:text-2xl font-bold text-white transition-all duration-300">
+                  {loading
+                    ? <span className="inline-block w-24 h-8 bg-white/20 rounded-lg animate-pulse" />
+                    : `₱${fmt(walletBalance || 0)}`
+                  }
+                </p>
+                <div className="flex items-center gap-1 mt-2 text-blue-100 text-xs group-hover:text-white transition-colors">
+                  <span>View wallet</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        {/* USD Wallet */}
+        {/* USD Wallet - Visible to All Admins */}
         <Link to="/wallet" className="col-span-1 block group">
           <Card className="h-full bg-gradient-to-br from-emerald-500 to-emerald-700 border-0 shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all duration-200 cursor-pointer">
             <CardContent className="p-4 sm:p-5">
