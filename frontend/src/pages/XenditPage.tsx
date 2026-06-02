@@ -135,7 +135,7 @@ export default function XenditPage() {
       const data = await apiGet('/api/v1/xendit/balance');
       setBalance(data.balance ?? 0);
     } catch {
-      // Balance may fail if Xendit key is not configured — show nothing
+      // Balance may fail if Maya Business key is not configured — show nothing
       setBalance(null);
     } finally {
       setBalanceLoading(false);
@@ -439,12 +439,15 @@ export default function XenditPage() {
         {/* ── Header ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Maya Manager</h1>
+            <h1 className="text-2xl font-bold text-white">Maya Business Manager</h1>
             <p className="text-slate-400 text-sm mt-0.5">
-              Manage all Maya payment operations from one place
+              Manage all Maya Business payment operations from one place
+            </p>
+            <p className="text-slate-500 text-xs mt-1">
+              This page uses Maya Business API credentials configured in the backend.
             </p>
           </div>
-          <Badge className="bg-blue-600 text-white">Maya</Badge>
+          <Badge className="bg-blue-600 text-white">Maya Business</Badge>
         </div>
 
         {/* ── Balance + Fee Calculator ────────────────────────── */}
@@ -453,7 +456,7 @@ export default function XenditPage() {
           <Card className="bg-slate-800/60 border-slate-700">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-slate-400 flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-blue-400" /> Maya Balance
+                <Wallet className="h-4 w-4 text-blue-400" /> Maya Business Balance
               </CardTitle>
             </CardHeader>
             <CardContent>

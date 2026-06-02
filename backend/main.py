@@ -171,6 +171,12 @@ async def lifespan(app: FastAPI):
             "MAYA_SECRET_KEY is not configured. Maya-based payment features will be unavailable."
         )
 
+    if not settings.maya_business_api_key or not settings.maya_business_secret_key:
+        logger.warning(
+            "MAYA_BUSINESS_API_KEY and/or MAYA_BUSINESS_SECRET_KEY are not configured. "
+            "Maya Business card/QR payments will fail without these credentials."
+        )
+
     # MODULE_STARTUP_START
     db_ready = False
     try:

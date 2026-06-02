@@ -302,9 +302,14 @@ class MayaService:
     def _get_business_api_headers(self) -> Dict[str, str]:
         """Get headers for Maya Business API requests."""
         api_key = os.environ.get("MAYA_BUSINESS_API_KEY", "") or settings.maya_business_api_key
-        if not api_key:
+        secret_key = os.environ.get("MAYA_BUSINESS_SECRET_KEY", "") or settings.maya_business_secret_key
+        if not api_key or not secret_key:
+            if not api_key:
+                logger.warning("MAYA_BUSINESS_API_KEY is not configured")
+            if not secret_key:
+                logger.warning("MAYA_BUSINESS_SECRET_KEY is not configured")
             return {}
-        encoded = base64.b64encode(f"{api_key}:".encode("utf-8")).decode("ascii")
+        encoded = base64.b64encode(f"{api_key}:{secret_key}".encode("utf-8")).decode("ascii")
         return {
             "Authorization": f"Basic {encoded}",
             "Content-Type": "application/json",
@@ -347,8 +352,15 @@ class MayaService:
             os.environ.get("MAYA_BUSINESS_API_KEY", "")
             or settings.maya_business_api_key
         )
-        if not api_key:
-            return {"success": False, "error": "Maya Business API key not configured"}
+        secret_key = (
+            os.environ.get("MAYA_BUSINESS_SECRET_KEY", "")
+            or settings.maya_business_secret_key
+        )
+        if not api_key or not secret_key:
+            return {
+                "success": False,
+                "error": "Maya Business API key and secret are required",
+            }
 
         if not external_id:
             external_id = f"card-{uuid.uuid4().hex[:12]}"
@@ -444,8 +456,15 @@ class MayaService:
             os.environ.get("MAYA_BUSINESS_API_KEY", "")
             or settings.maya_business_api_key
         )
-        if not api_key:
-            return {"success": False, "error": "Maya Business API key not configured"}
+        secret_key = (
+            os.environ.get("MAYA_BUSINESS_SECRET_KEY", "")
+            or settings.maya_business_secret_key
+        )
+        if not api_key or not secret_key:
+            return {
+                "success": False,
+                "error": "Maya Business API key and secret are required",
+            }
 
         try:
             base_url = self._get_business_api_base_url()
@@ -489,8 +508,15 @@ class MayaService:
         Maya Business QR API usually results in T0 settlement for verified merchants.
         """
         api_key = os.environ.get("MAYA_BUSINESS_API_KEY", "") or settings.maya_business_api_key
-        if not api_key:
-            return {"success": False, "error": "Maya Business API key not configured"}
+        secret_key = (
+            os.environ.get("MAYA_BUSINESS_SECRET_KEY", "")
+            or settings.maya_business_secret_key
+        )
+        if not api_key or not secret_key:
+            return {
+                "success": False,
+                "error": "Maya Business API key and secret are required",
+            }
 
         if not external_id:
             external_id = f"qr-{uuid.uuid4().hex[:12]}"
