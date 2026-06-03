@@ -2867,62 +2867,156 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
             else:
                 try:
                     amount = float(parts[1])
-                    recipient = parts[2]
+                    recipient_raw = parts[2].strip()
+                    recipient_username = recipient_raw.lstrip("@")
+
                     if amount <= 0:
                         await tg.send_message(chat_id, "❌ Amount must be positive.")
-                    else:
-                        php_user_id = str(chat_id)
-                        # DB required for wallet ops
-                        try:
-                            res = await db.execute(select(Wallets).where(Wallets.user_id == php_user_id, Wallets.currency == "PHP"))
-                            wallet = res.scalar_one_or_none()
-                            if not wallet:
-                                now_w = datetime.now()
-                                wallet = Wallets(user_id=php_user_id, balance=0.0, currency="PHP", created_at=now_w, updated_at=now_w)
-                                db.add(wallet)
-                                await db.commit()
-                                await db.refresh(wallet)
-                        except Exception as e:
-                            logger.error(f"DB failed for /send wallet lookup: {e}", exc_info=True)
-                            await tg.send_message(chat_id, "⚠️ Database temporarily unavailable. Please try again later.")
-                            await _safe_log(db, chat_id, username, text)
-                            return {"status": "ok"}
+                        return {"status": "ok"}
 
-                        if wallet.balance < amount:
-                            await tg.send_message(chat_id, f"❌ Insufficient balance: ₱{wallet.balance:,.2f}")
-                        else:
-                            now = datetime.now()
-                            bb = wallet.balance
-                            new_balance = bb - amount
-                            # Send reply FIRST
-                            reply = f"✅ <b>Sent!</b>\n\n💸 ₱{amount:,.2f} → {recipient}\n💰 Balance: <b>₱{new_balance:,.2f}</b>"
-                            await tg.send_message(chat_id, reply)
-                            # Then DB
-                            try:
-                                wallet.balance = new_balance
-                                wallet.updated_at = now
-                                wtxn = Wallet_transactions(
-                                    user_id=php_user_id, wallet_id=wallet.id,
-                                    transaction_type="send", amount=amount, balance_before=bb,
-                                    balance_after=new_balance, recipient=recipient,
-                                    note=f"Sent to {recipient} via Telegram", status="completed",
-                                    reference_id=f"tg-send-{wallet.id}-{int(now.timestamp())}",
-                                    created_at=now,
+                    # 1. Look up recipient by telegram_username or telegram_id
+                    try:
+                        # Try username first
+                        rec_res = await db.execute(
+                            select(AdminUser).where(
+                                AdminUser.telegram_username == recipient_username,
+                                AdminUser.is_active.is_(True),
+                            )
+                        )
+                        recipient_admin = rec_res.scalar_one_or_none()
+
+                        # Fallback to telegram_id if it's numeric
+                        if not recipient_admin and recipient_username.isdigit():
+                            rec_res = await db.execute(
+                                select(AdminUser).where(
+                                    AdminUser.telegram_id == recipient_username,
+                                    AdminUser.is_active.is_(True),
                                 )
-                                db.add(wtxn)
-                                await db.commit()
-                                payment_event_bus.publish({
-                                    "event_type": "wallet_update", "user_id": tg_user_id,
-                                    "wallet_id": wallet.id, "balance": new_balance,
-                                    "transaction_type": "send", "amount": amount,
-                                    "transaction_id": wtxn.id,
-                                })
-                            except Exception as e:
-                                logger.error(f"DB save failed for /send: {e}", exc_info=True)
-                                try:
-                                    await db.rollback()
-                                except Exception:
-                                    pass
+                            )
+                            recipient_admin = rec_res.scalar_one_or_none()
+                    except Exception as e:
+                        logger.error("DB lookup failed for /send: %s", e)
+                        await tg.send_message(chat_id, "⚠️ Database temporarily unavailable. Please try again later.")
+                        return {"status": "ok"}
+
+                    if not recipient_admin:
+                        await tg.send_message(
+                            chat_id,
+                            f"❌ User <code>{recipient_raw}</code> not found or not active.\n"
+                            "Please check the username/ID and try again."
+                        )
+                        return {"status": "ok"}
+
+                    recipient_tg_user_id = str(recipient_admin.telegram_id)
+                    sender_tg_user_id = str(chat_id)
+
+                    # 2. Prevent self-transfers
+                    if sender_tg_user_id == recipient_tg_user_id:
+                        await tg.send_message(chat_id, "❌ You cannot send PHP to yourself.")
+                        return {"status": "ok"}
+
+                    # Check sender's PHP wallet balance
+                    try:
+                        # PHP wallet uses plain chat_id in this context (bot uses chat_id, dashboard uses str(user_id))
+                        # We need to ensure we use the same user_id for wallets across systems.
+                        # In /balance, php_user_id = str(chat_id).
+                        sender_wallet = await _get_or_create_wallet(db, sender_tg_user_id, "PHP")
+                        recipient_wallet = await _get_or_create_wallet(db, recipient_tg_user_id, "PHP")
+                    except Exception as e:
+                        logger.error(f"DB failed for /send wallet lookup: {e}", exc_info=True)
+                        await tg.send_message(chat_id, "⚠️ Database temporarily unavailable. Please try again later.")
+                        return {"status": "ok"}
+
+                    if sender_wallet.balance < amount:
+                        await tg.send_message(chat_id, f"❌ Insufficient balance: ₱{sender_wallet.balance:,.2f}")
+                        return {"status": "ok"}
+
+                    # 3. & 4. Deduct from sender and credit recipient
+                    try:
+                        now = datetime.now()
+                        sender_bal_before = sender_wallet.balance
+                        sender_wallet.balance = round(sender_wallet.balance - amount, 2)
+                        sender_wallet.updated_at = now
+
+                        recipient_bal_before = recipient_wallet.balance
+                        recipient_wallet.balance = round(recipient_wallet.balance + amount, 2)
+                        recipient_wallet.updated_at = now
+
+                        # Create "send" transaction
+                        sender_note = f"@{username}" if username and username != "unknown" else f"chat {chat_id}"
+                        recipient_display = f"@{recipient_admin.telegram_username}" if recipient_admin.telegram_username else f"ID: {recipient_admin.telegram_id}"
+
+                        sender_txn = Wallet_transactions(
+                            user_id=sender_tg_user_id,
+                            wallet_id=sender_wallet.id,
+                            transaction_type="send",
+                            amount=-amount, # Negative for debit
+                            balance_before=sender_bal_before,
+                            balance_after=sender_wallet.balance,
+                            recipient=recipient_display,
+                            note=f"Sent to {recipient_display} via Telegram",
+                            status="completed",
+                            reference_id=f"tg-send-{sender_wallet.id}-{int(now.timestamp())}",
+                            created_at=now,
+                        )
+
+                        # Create "receive" transaction
+                        recipient_txn = Wallet_transactions(
+                            user_id=recipient_tg_user_id,
+                            wallet_id=recipient_wallet.id,
+                            transaction_type="receive",
+                            amount=amount, # Positive for credit
+                            balance_before=recipient_bal_before,
+                            balance_after=recipient_wallet.balance,
+                            recipient=sender_note,
+                            note=f"Received from {sender_note} via Telegram",
+                            status="completed",
+                            reference_id=f"tg-recv-{recipient_wallet.id}-{int(now.timestamp())}",
+                            created_at=now,
+                        )
+
+                        db.add(sender_txn)
+                        db.add(recipient_txn)
+                        await db.commit()
+
+                        # 5. Publish wallet events for real-time updates
+                        payment_event_bus.publish({
+                            "event_type": "wallet_update",
+                            "user_id": sender_tg_user_id,
+                            "wallet_id": sender_wallet.id,
+                            "balance": sender_wallet.balance,
+                            "currency": "PHP",
+                            "transaction_type": "send",
+                            "amount": amount,
+                            "transaction_id": sender_txn.id,
+                            "note": f"Sent to {recipient_display}"
+                        })
+
+                        payment_event_bus.publish({
+                            "event_type": "wallet_update",
+                            "user_id": recipient_tg_user_id,
+                            "wallet_id": recipient_wallet.id,
+                            "balance": recipient_wallet.balance,
+                            "currency": "PHP",
+                            "transaction_type": "receive",
+                            "amount": amount,
+                            "transaction_id": recipient_txn.id,
+                            "note": f"Received from {sender_note}"
+                        })
+
+                        await tg.send_message(
+                            chat_id,
+                            f"✅ <b>Sent Successfully!</b>\n\n💸 ₱{amount:,.2f} → {recipient_display}\n💰 New Balance: <b>₱{sender_wallet.balance:,.2f}</b>"
+                        )
+                        # Recipient notification is handled by the event bus (_sync_wallet_update_to_telegram)
+                    except Exception as e:
+                        logger.error(f"DB save failed for /send: {e}", exc_info=True)
+                        try:
+                            await db.rollback()
+                        except Exception:
+                            pass
+                        await tg.send_message(chat_id, "❌ Transaction failed. Please try again.")
+
                 except ValueError:
                     await tg.send_message(chat_id, "❌ Invalid amount.")
 
