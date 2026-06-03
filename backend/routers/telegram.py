@@ -29,6 +29,7 @@ from services.event_bus import payment_event_bus
 from services.paymongo_service import PayMongoService
 from services.photonpay_service import PhotonPayService
 from services.bot_settings import Bot_settingsService
+from services.pos_terminal import POSTerminalService
 from models.topup_requests import TopupRequest
 from models.bank_deposit_requests import BankDepositRequest
 from models.usdt_send_requests import UsdtSendRequest
@@ -299,48 +300,20 @@ _CMD_STEPS: Dict[str, List[Dict]] = {
     ],
     "/pos": [
         {"key": "amount",         "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
-        {"key": "description",    "type": "str",   "prompt": "📝 Enter the <b>description</b>:\n<i>e.g. Coffee, Retail sale</i>\n\nOr type <code>skip</code> to use the default.", "optional": True, "default": "Maya POS payment"},
-        {"key": "customer_name",  "type": "str",   "prompt": "👤 Enter the <b>customer name</b>:\n<i>e.g. Juan Dela Cruz</i>\n\nOr type <code>skip</code> to leave blank.", "optional": True, "default": ""},
-        {"key": "card_number",    "type": "str",   "prompt": "💳 Enter the <b>card number</b> (digits only):\n<i>e.g. 4111111111111111</i>\n\nThis is for the virtual terminal flow. You will receive a secure checkout link to enter card details safely."},
-        {"key": "expiry_date",    "type": "str",   "prompt": "📅 Enter the <b>card expiry</b> in MM/YY format:\n<i>e.g. 12/25</i>"},
-        {"key": "cvv",            "type": "str",   "prompt": "🔒 Enter the <b>card CVV</b>:\n<i>e.g. 123</i>"},
-        {"key": "terminal_id",    "type": "str",   "prompt": "🔢 Enter the <b>terminal ID</b> for this POS transaction:\n<i>e.g. POS-123</i>\n\nOr type <code>skip</code> to use a default.", "optional": True, "default": "POS-TERM"},
-    ],
-    "/alipay": [
-        {"key": "amount",      "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
-        {"key": "description", "type": "str",   "prompt": "📝 Enter the <b>description</b>:\n<i>e.g. Alipay payment</i>\n\nOr type <code>skip</code> to use the default.", "optional": True, "default": "Alipay payment"},
-    ],
-    "/wechat": [
-        {"key": "amount",      "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
-        {"key": "description", "type": "str",   "prompt": "📝 Enter the <b>description</b>:\n<i>e.g. WeChat payment</i>\n\nOr type <code>skip</code> to use the default.", "optional": True, "default": "WeChat payment"},
-    ],
-    "/disburse": [
-        {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 1000</i>"},
-        {"key": "bank",    "type": "str",   "prompt": "🏦 Enter the <b>bank code</b>:\n<i>BDO · BPI · UNIONBANK · METROBANK · LANDBANK · PNB · RCBC</i>"},
-        {"key": "account", "type": "str",   "prompt": "🔢 Enter the <b>account number</b>:\n<i>e.g. 1234567890</i>"},
-        {"key": "name",    "type": "str",   "prompt": "👤 Enter the <b>account holder name</b>:\n<i>e.g. Juan Dela Cruz</i>"},
-    ],
-    "/refund": [
-        {"key": "id",     "type": "str",   "prompt": "🆔 Enter the <b>transaction ID</b> to refund:\n<i>e.g. INV-xxx</i>"},
-        {"key": "amount", "type": "float", "prompt": "💰 Enter the <b>refund amount</b> in PHP:\n<i>e.g. 500</i>"},
+        {"key": "description",    "type": "str",   "prompt": "📝 Enter the <b>description</b>:\n<i>e.g. Retail Sale</i>\n\nOr type <code>skip</code> to use the default.", "optional": True, "default": "POS Sale"},
+        {"key": "terminal_code",  "type": "str",   "prompt": "🔢 Enter the <b>Terminal Code</b> to push this transaction to:\n\nOr type <code>skip</code> to use your active terminal.", "optional": True, "default": "AUTO"},
     ],
     "/send": [
-        {"key": "amount",    "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
         {"key": "recipient", "type": "str",   "prompt": "👤 Enter the <b>recipient</b> (username or Telegram ID):\n<i>e.g. @username</i>"},
-    ],
-    "/withdraw": [
-        {"key": "amount", "type": "float", "prompt": "💰 Enter the <b>withdrawal amount</b> in PHP:\n<i>e.g. 500</i>"},
-    ],
-    "/topup": [
-        {"key": "amount", "type": "float", "prompt": "💰 Enter the <b>USDT amount</b> to top up:\n<i>e.g. 100</i>"},
+        {"key": "amount",    "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
     ],
     "/sendusdt": [
-        {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>USDT amount</b> to send:\n<i>e.g. 50</i>"},
         {"key": "address", "type": "str",   "prompt": "📬 Enter the <b>TRC20 wallet address</b>:\n<i>e.g. TXxx...</i>"},
+        {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>USDT amount</b> to send:\n<i>e.g. 50</i>"},
     ],
     "/sendusd": [
-        {"key": "amount",   "type": "float", "prompt": "💰 Enter the <b>USD amount</b> to send:\n<i>e.g. 50</i>"},
         {"key": "username", "type": "str",   "prompt": "👤 Enter the <b>recipient username</b>:\n<i>e.g. @username</i>"},
+        {"key": "amount",   "type": "float", "prompt": "💰 Enter the <b>USD amount</b> to send:\n<i>e.g. 50</i>"},
     ],
     "/fees": [
         {"key": "amount", "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
@@ -416,40 +389,19 @@ def _welcome_en(name: str = "") -> str:
     return (
         f"👋 <b>Welcome to PayBot Philippines!</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"{greeting} Your all-in-one Philippine payment gateway is ready to go.\n\n"
+        f"{greeting} Your all-in-one payment terminal is ready.\n\n"
         f"💳 <b>Accept Payments</b>\n"
-        f"  /invoice [amt] [desc] — Create an invoice\n"
-        f"  /qr [amt] [desc] — Generate QR code\n"
-        f"  /link [amt] [desc] — Payment link\n"
-        f"  /va [amt] [bank] — Virtual account\n"
-        f"  /ewallet [amt] [provider] — E-wallet (GCash, Maya, GrabPay)\n"
-        f"  /pos [amt] [desc] — Terminal POS payment\n"
-        f"  /alipay [amt] [desc] — Alipay QR (via PhotonPay)\n"
-        f"  /wechat [amt] [desc] — WeChat QR (via PhotonPay)\n\n"
-        f"📷 <b>Pay via QRPH</b>\n"
-        f"  /scanqr — Scan &amp; pay a merchant QRPH\n\n"
-        f"💸 <b>Send Money</b>\n"
-        f"  /disburse [amt] [bank] [acct] [name] — Bank transfer\n"
-        f"  /refund [id] [amt] — Refund a payment\n\n"
-        f"💰 <b>PHP Wallet</b>\n"
-        f"  /balance — View balances &amp; history\n"
-        f"  /topup [amt] — Top up PHP wallet via USDT (auto-converted)\n"
-        f"  /deposit — Submit bank/e-wallet transfer deposit\n"
-        f"  /send [amt] [to] — Send funds to another user\n"
-        f"  /withdraw [amt] — Withdraw\n\n"
-        f"💵 <b>USD Wallet (USDT TRC20)</b>\n"
-        f"  /usdbalance — USD balance &amp; history\n"
-        f"  /sendusdt [amt] [address] — Send USDT to TRC20 address\n"
-        f"  /sendusd [amt] [@username] — Send USD to another user\n\n"
-        f"📊 <b>Reports &amp; Tools</b>\n"
-        f"  /status [id] — Payment status\n"
-        f"  /list — Recent transactions\n"
-        f"  /report [daily|weekly|monthly]\n"
-        f"  /fees [amt] [method] — Fee calculator\n"
-        f"  /subscribe [amt] [plan] — Create subscription\n"
-        f"  /cancel [id] — Cancel pending payment\n"
-        f"  /remind [id] — Send payment reminder\n\n"
-        f"💡 <b>Tip:</b> Type any command or /help to see everything you can do!"
+        f"  /invoice — Create invoice link\n"
+        f"  /pos — Push to Terminal (Tap to Phone)\n"
+        f"  /qr — Generate a QR code\n"
+        f"  /link — Shareable link\n\n"
+        f"📟 <b>Terminals</b>\n"
+        f"  /terminal — Manage active POS devices\n\n"
+        f"💰 <b>Wallet</b>\n"
+        f"  /wallet — Check balance & history\n"
+        f"  /send [to] [amt] — Transfer PHP to user\n"
+        f"  /topup [amt] — Add funds via USDT\n\n"
+        f"💡 <b>Tip:</b> Type any command to start. Use /help for full reference."
     )
 
 
@@ -458,40 +410,19 @@ def _welcome_zh(name: str = "") -> str:
     return (
         f"👋 <b>欢迎使用 PayBot Philippines！</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"{greeting} 您的一站式菲律宾支付机器人已就绪。\n\n"
-        f"💳 <b>收款</b>\n"
-        f"  /invoice [金额] [说明] — 创建账单\n"
-        f"  /qr [金额] [说明] — 生成二维码\n"
-        f"  /link [金额] [说明] — 付款链接\n"
-        f"  /va [金额] [银行] — 虚拟账户\n"
-        f"  /ewallet [金额] [提供商] — 电子钱包（GCash、Maya、GrabPay）\n"
-        f"  /pos [金额] [说明] — 终端 POS 支付\n"
-        f"  /alipay [金额] [说明] — 支付宝收款\n"
-        f"  /wechat [金额] [说明] — 微信支付收款\n\n"
-        f"📷 <b>扫码付款（QRPH）</b>\n"
-        f"  /scanqr — 扫描并支付商家 QRPH\n\n"
-        f"💸 <b>转账</b>\n"
-        f"  /disburse [金额] [银行] [账号] [姓名] — 银行转账\n"
-        f"  /refund [ID] [金额] — 退款\n\n"
-        f"💰 <b>PHP 钱包</b>\n"
-        f"  /balance — 查看余额及历史\n"
-        f"  /topup [金额] — 通过 USDT 充值至 PHP 钱包（自动换汇）\n"
-        f"  /deposit — 提交银行/电子钱包转账充值\n"
-        f"  /send [金额] [接收方] — 向用户转账\n"
-        f"  /withdraw [金额] — 提现\n\n"
-        f"💵 <b>USD 钱包（USDT TRC20）</b>\n"
-        f"  /usdbalance — USD 余额及历史\n"
-        f"  /sendusdt [金额] [地址] — 发送 USDT 至 TRC20 地址\n"
-        f"  /sendusd [金额] [@用户名] — 向用户转账 USD\n\n"
-        f"📊 <b>报表与工具</b>\n"
-        f"  /status [ID] — 付款状态\n"
-        f"  /list — 近期交易记录\n"
-        f"  /report [daily|weekly|monthly]\n"
-        f"  /fees [金额] [方式] — 费用计算\n"
-        f"  /subscribe [金额] [计划] — 创建订阅\n"
-        f"  /cancel [ID] — 取消待付款项\n"
-        f"  /remind [ID] — 发送付款提醒\n\n"
-        f"💡 <b>提示：</b>输入任意命令或 /help 查看全部功能！"
+        f"{greeting} 您的一站式支付终端已就绪。\n\n"
+        f"💳 <b>收款功能</b>\n"
+        f"  /invoice — 创建账单链接\n"
+        f"  /pos — 终端支付 (Tap to Phone)\n"
+        f"  /qr — 生成二维码\n"
+        f"  /link — 分享付款链接\n\n"
+        f"📟 <b>终端管理</b>\n"
+        f"  /terminal — 管理您的 POS 设备\n\n"
+        f"💰 <b>我的钱包</b>\n"
+        f"  /wallet — 查看余额与历史\n"
+        f"  /send [接收方] [金额] — 转账 PHP\n"
+        f"  /topup [金额] — 通过 USDT 充值\n\n"
+        f"💡 <b>提示：</b> 输入命令即可开始。输入 /help 查看完整参考。"
     )
 
 
@@ -1598,66 +1529,81 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
             if cmd == "/pos":
                 try:
                     amount = float(collected.get("amount", 0))
+                    description = collected.get("description", "POS Sale")
+                    terminal_code = collected.get("terminal_code", "AUTO")
+
                     if amount <= 0:
                         await tg.send_message(chat_id, "❌ Amount must be greater than zero.")
                         return {"status": "ok"}
-                    description = collected.get("description", "Maya POS payment") or "Maya POS payment"
-                    customer_name = collected.get("customer_name", "")
-                    terminal_id = collected.get("terminal_id", "POS-TERM") or "POS-TERM"
-                    card_number = collected.get("card_number", "")
-                    expiry_date = collected.get("expiry_date", "")
-                    maya = MayaService()
-                    result = await maya.create_virtual_terminal(
-                        amount=amount,
-                        description=description,
-                        customer_name=customer_name,
-                        customer_email=collected.get("customer_email", ""),
-                        mobile_number=collected.get("mobile_number", ""),
-                        terminal_id=terminal_id,
-                    )
-                    if result.get("success"):
-                        checkout_url = result.get("checkout_url", "")
-                        ext_id = result.get("external_id", "")
-                        masked_card = _mask_card_number(card_number)
-                        reply = (
-                            f"✅ <b>Virtual Card Terminal Ready</b>\n"
-                            f"━━━━━━━━━━━━━━━━━━━━\n"
-                            f"💰 Amount: <b>₱{amount:,.2f}</b>\n"
-                            f"📝 {description}\n"
-                            f"🔢 Card: <code>{masked_card}</code>\n"
-                            f"📅 Expiry: <b>{expiry_date}</b>\n"
-                            f"🆔 <code>{ext_id}</code>\n\n"
-                            f"Use the secure checkout link below to enter your card details and complete payment.\n"
-                            f"If you prefer, you can type the card data above for the virtual terminal experience, but the secure link is the recommended way to pay."
-                        )
-                        keyboard = {"inline_keyboard": [[{"text": "🔗 Open Secure Payment Link", "url": checkout_url}]]} if checkout_url else None
-                        await tg.send_message(chat_id, reply, reply_markup=keyboard)
-                        try:
-                            now = datetime.now()
-                            txn = Transactions(
-                                user_id=f"tg-{chat_id}", transaction_type="maya_virtual_terminal",
-                                external_id=ext_id, xendit_id=result.get("checkout_id", ""),
-                                amount=amount, currency="PHP", status="pending",
-                                description=description, payment_url=checkout_url,
-                                telegram_chat_id=chat_id, created_at=now, updated_at=now,
-                            )
-                            db.add(txn)
-                            await db.commit()
-                        except Exception as e:
-                            logger.error(f"DB save failed for /pos: {e}", exc_info=True)
-                            try:
-                                await db.rollback()
-                            except Exception:
-                                pass
+
+                    pos_service = POSTerminalService(db)
+
+                    # Try to find the terminal
+                    terminal = None
+                    if terminal_code != "AUTO":
+                        terminal = await pos_service.get_terminal_by_code(terminal_code)
                     else:
-                        await tg.send_message(chat_id, f"❌ Failed: {result.get('error', 'Unknown error')}")
-                except ValueError:
-                    await tg.send_message(chat_id, "❌ Invalid amount.")
+                        # Find the first active terminal for this user
+                        terminals, _ = await pos_service.list_user_terminals(f"tg-{chat_id}", page=1, per_page=1)
+                        if terminals:
+                            terminal = terminals[0]
+
+                    if not terminal:
+                        await tg.send_message(chat_id, "❌ No active terminal found to push this transaction to.")
+                        return {"status": "ok"}
+
+                    # Push to terminal (ECR Push)
+                    order_id = f"pos-{uuid.uuid4().hex[:12]}"
+                    from models.pos_terminal import POSTerminalTransaction
+                    from services.event_bus import event_bus
+
+                    txn = POSTerminalTransaction(
+                        terminal_id=terminal.id,
+                        user_id=f"tg-{chat_id}",
+                        order_id=order_id,
+                        description=description,
+                        amount=int(amount * 100),
+                        currency="PHP",
+                        payment_method="awaiting_tap",
+                        status="pending",
+                    )
+                    db.add(txn)
+                    await db.commit()
+
+                    # Emit event to wake up the physical terminal
+                    await event_bus.emit("ecr_push", {
+                        "terminal_id": terminal.id,
+                        "device_id": terminal.device_id,
+                        "order_id": order_id,
+                        "amount": amount,
+                        "description": description
+                    })
+
+                    reply = (
+                        f"📲 <b>Transaction Pushed to Terminal</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                        f"📟 Terminal: <b>{terminal.terminal_name}</b> (<code>{terminal.terminal_code}</code>)\n"
+                        f"💰 Amount: <b>₱{amount:,.2f}</b>\n"
+                        f"📝 {description}\n"
+                        f"🆔 <code>{order_id}</code>\n\n"
+                        f"Please tap the card on your terminal app to complete the payment."
+                    )
+                    await tg.send_message(chat_id, reply)
+
+                except Exception as exc:
+                    logger.error(f"/pos wizard completion error: {exc}", exc_info=True)
+                    await tg.send_message(chat_id, "❌ An error occurred pushing your transaction. Please try again.")
                 return {"status": "ok"}
 
             # Other commands: rebuild command text and fall through to routing
-            parts = [cmd] + [collected.get(s["key"], s.get("default", "")) for s in steps]
-            text = " ".join(str(p) for p in parts)
+            # Special case for transfer commands because order changed
+            if cmd in ("/send", "/sendusd", "/sendusdt"):
+                # collected order is: recipient/address, then amount
+                keys = [s["key"] for s in steps]
+                text = f"{cmd} {collected[keys[0]]} {collected[keys[1]]}"
+            else:
+                parts = [cmd] + [collected.get(s["key"], s.get("default", "")) for s in steps]
+                text = " ".join(str(p) for p in parts)
             # fall through to command routing below
 
         elif chat_id in _pending and text and text.startswith("/"):
@@ -2617,8 +2563,8 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 await tg.send_message(chat_id, _wizard_start(chat_id, "/sendusdt"))
             else:
                 try:
-                    amount = float(parts[1])
-                    addr = parts[2].strip()
+                    addr = parts[1].strip()
+                    amount = float(parts[2])
                     if amount <= 0:
                         await tg.send_message(chat_id, "❌ Amount must be greater than zero.")
                         await _safe_log(db, chat_id, username, text)
@@ -2699,8 +2645,8 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 await tg.send_message(chat_id, _wizard_start(chat_id, "/sendusd"))
             else:
                 try:
-                    amount = float(parts[1])
-                    recipient_username = parts[2].strip().lstrip("@")
+                    recipient_username = parts[1].strip().lstrip("@")
+                    amount = float(parts[2])
                     if amount <= 0:
                         await tg.send_message(chat_id, "❌ Amount must be greater than zero.")
                         await _safe_log(db, chat_id, username, text)
@@ -2866,8 +2812,8 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 await tg.send_message(chat_id, _wizard_start(chat_id, "/send"))
             else:
                 try:
-                    amount = float(parts[1])
-                    recipient_raw = parts[2].strip()
+                    recipient_raw = parts[1].strip()
+                    amount = float(parts[2])
                     recipient_username = recipient_raw.lstrip("@")
 
                     if amount <= 0:
@@ -3306,17 +3252,88 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
 
         # ==================== /pos ====================
         elif text.startswith("/pos"):
-            parts = text.split(maxsplit=2)
+            parts = text.split(maxsplit=3)
             if len(parts) < 2:
                 await tg.send_message(chat_id, _wizard_start(chat_id, "/pos"))
             else:
-                initial_data = {"amount": parts[1]}
-                start_step = 1
-                if len(parts) > 2:
-                    initial_data["description"] = parts[2]
-                    start_step = 2
-                await tg.send_message(chat_id, _wizard_start(chat_id, "/pos", initial_data, start_step))
+                try:
+                    amount = float(parts[1])
+                    description = parts[2] if len(parts) > 2 else "POS Sale"
+                    terminal_code = parts[3] if len(parts) > 3 else "AUTO"
+
+                    pos_service = POSTerminalService(db)
+                    terminal = None
+                    if terminal_code != "AUTO":
+                        terminal = await pos_service.get_terminal_by_code(terminal_code)
+                    else:
+                        terminals, _ = await pos_service.list_user_terminals(f"tg-{chat_id}", page=1, per_page=1)
+                        if terminals:
+                            terminal = terminals[0]
+
+                    if not terminal:
+                        await tg.send_message(chat_id, "❌ No active terminal found to push this transaction to.")
+                        return {"status": "ok"}
+
+                    # Push logic (same as wizard completion)
+                    order_id = f"pos-{uuid.uuid4().hex[:12]}"
+                    from models.pos_terminal import POSTerminalTransaction
+                    from services.event_bus import event_bus
+
+                    txn = POSTerminalTransaction(
+                        terminal_id=terminal.id, user_id=f"tg-{chat_id}",
+                        order_id=order_id, description=description,
+                        amount=int(amount * 100), currency="PHP",
+                        payment_method="awaiting_tap", status="pending",
+                    )
+                    db.add(txn)
+                    await db.commit()
+
+                    await event_bus.emit("ecr_push", {
+                        "terminal_id": terminal.id, "device_id": terminal.device_id,
+                        "order_id": order_id, "amount": amount, "description": description
+                    })
+
+                    reply = (
+                        f"📲 <b>Transaction Pushed to Terminal</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                        f"📟 Terminal: <b>{terminal.terminal_name}</b> (<code>{terminal.terminal_code}</code>)\n"
+                        f"💰 Amount: <b>₱{amount:,.2f}</b>\n"
+                        f"📝 {description}\n"
+                        f"🆔 <code>{order_id}</code>\n\n"
+                        f"Please tap the card on your terminal app to complete the payment."
+                    )
+                    await tg.send_message(chat_id, reply)
+                except ValueError:
+                    await tg.send_message(chat_id, "❌ Invalid amount.")
+                except Exception as e:
+                    logger.error(f"/pos command error: {e}", exc_info=True)
+                    await tg.send_message(chat_id, "❌ Error processing command.")
             return {"status": "ok"}
+
+        # ==================== /terminal ====================
+        elif text.startswith("/terminal"):
+            try:
+                pos_service = POSTerminalService(db)
+                terminals, _ = await pos_service.list_user_terminals(f"tg-{chat_id}")
+                if not terminals:
+                    await tg.send_message(chat_id, "📟 <b>No Terminals Found</b>\n\nYou don't have any POS terminals assigned yet. Contact your administrator to request one.")
+                else:
+                    lines = ["📟 <b>Your POS Terminals</b>\n━━━━━━━━━━━━━━━━━━━━"]
+                    for t in terminals:
+                        status_emoji = "✅" if t.is_active else "❌"
+                        lines.append(f"{status_emoji} <b>{t.terminal_name}</b>\n   Code: <code>{t.terminal_code}</code>\n   Status: {t.status}")
+                    lines.append("\n💡 Use <code>/pos [amount]</code> to push a transaction to your terminal.")
+                    await tg.send_message(chat_id, "\n".join(lines))
+            except Exception as e:
+                logger.error(f"/terminal error: {e}", exc_info=True)
+                await tg.send_message(chat_id, "❌ Error fetching terminals.")
+            return {"status": "ok"}
+
+        # ==================== /wallet ====================
+        elif text.startswith("/wallet"):
+            # Redirect to balance
+            text = "/balance"
+            # Fall through to /balance logic below
 
         # ==================== /help ====================
         elif text.startswith("/help"):
@@ -3325,80 +3342,48 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
                 "💳 <b>Accept Payments</b>\n"
                 "  /pay — Open payment menu\n"
-                "  /invoice [amt] [desc] — Invoice with payment link\n"
-                "  /qr [amt] [desc] — Dynamic QR code\n"
-                "  /pos [amt] [desc] — Terminal POS payment\n"
-                "  /alipay [amt] [desc] — Alipay QR (PhotonPay)\n"
-                "  /wechat [amt] [desc] — WeChat QR (PhotonPay)\n"
-                "  /link [amt] [desc] — Shareable payment link\n"
-                "  /va [amt] [bank] — Virtual bank account\n"
-                "  /ewallet [amt] [provider] — GCash / Maya / GrabPay\n\n"
-                "📷 <b>Pay via QRPH</b>\n"
-                "  /scanqr [qr_string] [amt] — Scan &amp; pay a merchant QRPH\n\n"
-                "💸 <b>Send Money</b>\n"
-                "  /disburse [amt] [bank] [acct] [name] — Bank transfer\n"
-                "  /refund [id] [amt] — Full or partial refund\n\n"
-                "💰 <b>PHP Wallet</b>\n"
-                "  /balance — PHP &amp; USD balances + history\n"
-                "  /topup [amt] — Top up via USDT (auto-converted)\n"
-                "  /deposit — Deposit via bank / e-wallet transfer\n"
-                "  /send [amt] [to] — Send PHP to another user\n"
+                "  /invoice — Create an invoice\n"
+                "  /qr — Generate a QR code\n"
+                "  /pos — Push to Terminal (Tap to Phone)\n"
+                "  /link — Shareable payment link\n\n"
+                "📟 <b>Terminal Management</b>\n"
+                "  /terminal — List your active terminals\n"
+                "  /status [id] — Check payment status\n\n"
+                "💰 <b>Wallet & Transfers</b>\n"
+                "  /wallet — Wallet summary & balance\n"
+                "  /send [to] [amt] — Transfer PHP to user\n"
+                "  /sendusd [to] [amt] — Transfer USD to user\n"
                 "  /withdraw [amt] — Withdraw PHP\n\n"
-                "💵 <b>USD Wallet (USDT TRC20)</b>\n"
-                "  /usdbalance — USD balance &amp; history\n"
-                "  /sendusdt [amt] [address] — Send USDT to TRC20 address\n"
-                "  /sendusd [amt] [@username] — Send USD to a user\n\n"
-                "📊 <b>Reports &amp; Tools</b>\n"
-                "  /status [id] — Check payment status (or list recent)\n"
-                "  /list — Last 5 transactions\n"
-                "  /cancel [id] — Cancel a pending payment\n"
-                "  /report [daily|weekly|monthly] — Generate report\n"
-                "  /fees [amt] [method] — Fee calculator\n"
-                "  /subscribe [amt] [plan] — Subscription management\n"
-                "  /remind [id] — Send payment reminder\n"
-                "  /help — Show this message 😊\n\n"
-                "💡 <b>Tip:</b> Most commands work step-by-step — just type the command and follow the prompts!"
+                "📥 <b>Top Up</b>\n"
+                "  /topup [amt] — via USDT TRC20\n"
+                "  /deposit — via Bank/E-wallet transfer\n\n"
+                "💡 <b>Tip:</b> Just type a command to start a wizard! 😊"
             )
             help_zh = (
                 "📋 <b>PayBot 命令 — 快速参考</b>\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
                 "💳 <b>收款</b>\n"
                 "  /pay — 打开收款菜单\n"
-                "  /invoice [金额] [说明] — 创建账单\n"
-                "  /qr [金额] [说明] — 动态二维码\n"
-                "  /pos [金额] [说明] — 终端 POS 支付\n"
-                "  /alipay [金额] [说明] — 支付宝 QR（PhotonPay）\n"
-                "  /wechat [金额] [说明] — 微信支付 QR（PhotonPay）\n"
-                "  /link [金额] [说明] — 可分享付款链接\n"
-                "  /va [金额] [银行] — 虚拟银行账户\n"
-                "  /ewallet [金额] [提供商] — GCash / Maya / GrabPay\n\n"
-                "📷 <b>QRPH 付款</b>\n"
-                "  /scanqr [qr字符串] [金额] — 扫描并支付商户 QRPH\n\n"
-                "💸 <b>转账</b>\n"
-                "  /disburse [金额] [银行] [账号] [姓名] — 银行转账\n"
-                "  /refund [ID] [金额] — 全额或部分退款\n\n"
-                "💰 <b>PHP 钱包</b>\n"
-                "  /balance — PHP 和 USD 余额及历史\n"
-                "  /topup [金额] — 通过 USDT 充值（自动换汇）\n"
-                "  /deposit — 通过银行 / 电子钱包存款\n"
-                "  /send [金额] [接收方] — 向用户转账 PHP\n"
+                "  /invoice — 创建账单\n"
+                "  /qr — 生成二维码\n"
+                "  /pos — 终端支付 (Tap to Phone)\n"
+                "  /link — 可分享付款链接\n\n"
+                "📟 <b>终端管理</b>\n"
+                "  /terminal — 查看您的活跃终端\n"
+                "  /status [id] — 查询付款状态\n\n"
+                "💰 <b>钱包与转账</b>\n"
+                "  /wallet — 钱包摘要与余额\n"
+                "  /send [接收方] [金额] — 转账 PHP\n"
+                "  /sendusd [接收方] [金额] — 转账 USD\n"
                 "  /withdraw [金额] — 提现 PHP\n\n"
-                "💵 <b>USD 钱包（USDT TRC20）</b>\n"
-                "  /usdbalance — USD 余额及历史\n"
-                "  /sendusdt [金额] [地址] — 发送 USDT 至 TRC20 地址\n"
-                "  /sendusd [金额] [@用户名] — 向用户转账 USD\n\n"
-                "📊 <b>报表与工具</b>\n"
-                "  /status [ID] — 查询付款状态\n"
-                "  /list — 最近 5 笔交易\n"
-                "  /cancel [ID] — 取消待处理付款\n"
-                "  /report [daily|weekly|monthly] — 生成报表\n"
-                "  /fees [金额] [方式] — 费用计算\n"
-                "  /subscribe [金额] [套餐] — 订阅管理\n"
-                "  /remind [ID] — 发送付款提醒\n"
-                "  /help — 显示本帮助 😊\n\n"
-                "💡 <b>提示：</b>大多数命令支持逐步引导 — 输入命令后按提示操作即可！"
+                "📥 <b>充值</b>\n"
+                "  /topup [金额] — 通过 USDT TRC20\n"
+                "  /deposit — 通过银行/电子钱包转账\n\n"
+                "💡 <b>提示：</b> 直接输入命令即可开始引导！ 😊"
             )
             await tg.send_message(chat_id, _t(chat_id, help_en, help_zh))
+            return {"status": "ok"}
+
 
         # ==================== /topup ====================
         elif text.startswith("/topup"):
