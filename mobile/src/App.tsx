@@ -18,10 +18,11 @@ const Tab = createBottomTabNavigator();
 const queryClient = new QueryClient();
 
 const COLORS = {
-  primary: '#3B82F6',
-  text: '#111827',
-  textSecondary: '#6B7280',
-  light: '#F3F4F6',
+  primary: '#0EA5E9',
+  text: '#0F172A',
+  textSecondary: '#64748B',
+  light: '#F8FAFC',
+  dark: '#0F172A',
 };
 
 // Auth Stack (Login)

@@ -383,8 +383,8 @@ class MayaService:
             "requestReferenceNumber": external_id,
             "items": [
                 {
-                    "name": description or "Card Payment",
-                    "code": "CARD",
+                    "name": description or "Tap to Phone Payment",
+                    "code": "CARD_NFC",
                     "quantity": 1,
                     "unitPrice": {
                         "value": amount_cents,
@@ -401,6 +401,8 @@ class MayaService:
                 "customer_name": customer_name,
                 "customer_email": customer_email,
                 "customer_phone": customer_phone,
+                "payment_type": "TAP_TO_PHONE",
+                "settlement_type": "T0"
             }
         }
 

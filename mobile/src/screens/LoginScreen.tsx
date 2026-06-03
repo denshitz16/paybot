@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
@@ -24,8 +25,7 @@ export const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // Mock login for now
-      // In a real app, you would call your API: https://paybot-backend-production-84b2.up.railway.app/api/v1/auth/login
+      // In a real app, you would call your API: https://paybot-production-7350.up.railway.app/api/v1/auth/login
       console.log('Logging in with:', email);
 
       // Simulate API delay
@@ -44,38 +44,46 @@ export const LoginScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.content}>
-        <Text style={styles.title}>PayBot POS</Text>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoEmoji}>🤖</Text>
+          <Text style={styles.title}>PayBot POS</Text>
+        </View>
         <Text style={styles.subtitle}>Log in to your terminal</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholderTextColor="#94A3B8"
+          />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholderTextColor="#94A3B8"
+          />
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -88,39 +96,60 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 24,
+    padding: 32,
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    textAlign: 'center',
+  logoContainer: {
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  logoEmoji: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 40,
+    fontWeight: '900',
+    color: '#0EA5E9',
+    textAlign: 'center',
+    letterSpacing: -1.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 48,
+    fontWeight: '500',
+  },
+  form: {
+    width: '100%',
   },
   input: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    color: '#0F172A',
   },
   button: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: '#0EA5E9',
+    borderRadius: 16,
+    padding: 20,
     alignItems: 'center',
     marginTop: 16,
+    elevation: 8,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });
