@@ -2,13 +2,15 @@
 Alembic migration for POS Terminal feature
 Add pos_terminals, pos_terminal_requests, and pos_terminal_transactions tables
 """
-revision = '001_add_pos_terminals'
-down_revision = 'd4825d2e0284'
-branch_labels = None
-depends_on = None
-
+from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
+
+# revision identifiers, used by Alembic.
+revision: str = 'f1e2d3c4b5a6'
+down_revision: Union[str, None] = 'd4825d2e0284'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
