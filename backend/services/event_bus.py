@@ -159,8 +159,8 @@ class EventBus:
             # Define messages based on transaction type
             messages = {
                 # Credits
-                "receive": f"💰 <b>Incoming Balance Received</b>\n\n{amt_str}\n{note}\n{bal_str}",
-                "usd_receive": f"💰 <b>Incoming USD Received</b>\n\n{amt_str}\n{note}\n{bal_str}",
+                "receive": f"💰 <b>Incoming Balance Received</b>\n\n{amt_str}\nFrom: DRL Techs. Computer Software Trading\n{bal_str}",
+                "usd_receive": f"💰 <b>Incoming USD Received</b>\n\n{amt_str}\nFrom: DRL Techs. Computer Software Trading\n{bal_str}",
                 "top_up": f"✅ <b>Wallet Topped Up</b>\n\n{amt_str}\n{note}\n{bal_str}",
                 "crypto_topup": f"✅ <b>USDT Top-up Received</b>\n\n{amt_str}\n{note}\n{bal_str}",
                 "admin_credit": f"💎 <b>Wallet Credited by Admin</b>\n\n{amt_str}\n{note}\n{bal_str}",
