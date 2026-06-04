@@ -248,25 +248,3 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 16, fontWeight: '800' },
   loader: { position: 'absolute', top: '50%', left: '50%', marginLeft: -25, marginTop: -25 },
 });
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  content: { flex: 1, padding: 32, justifyContent: 'center' },
-  logoContainer: { alignItems: 'center', marginBottom: 8 },
-  logoEmoji: { fontSize: 64, marginBottom: 16 },
-  title: { fontSize: 40, fontWeight: '900', color: '#0EA5E9', textAlign: 'center' },
-  subtitle: { fontSize: 16, color: '#64748B', textAlign: 'center', marginBottom: 48 },
-  form: { width: '100%' },
-  input: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 20, marginBottom: 16, fontSize: 16, borderWIdth: 1, borderColor: '#E2E8F0', color: '#0F172A' },
-  button: { backgroundColor: '#0EA5E9', borderRadius: 16, padding: 20, alignItems: 'center', marginTop: 16 },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 32 },
-  line: { flex: 1, height: 1, backgroundColor: '#E2E8F0' },
-  dividerText: { marginHorizontal: 16, color: '#94A3B8', fontSize: 12, fontWeight: '700' },
-  telegramButton: { backgroundColor: '#26A5E4', borderRadius: 16, padding: 20, alignItems: 'center' },
-  telegramButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  modalHeader: { height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', backgroundColor: '#fff' },
-  modalTitle: { fontSize: 16, fontWeight: '600', color: '#0F172A' },
-  closeButton: { color: '#0EA5E9', fontSize: 16, fontWeight: '500' },
-  loader: { position: 'absolute', top: '50%', left: '50%', marginLeft: -25, marginTop: -25 },
-});

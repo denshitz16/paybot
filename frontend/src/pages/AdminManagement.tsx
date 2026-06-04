@@ -32,6 +32,7 @@ import {
   Key,
   Database,
   History,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fmt, fmtUsd } from '@/lib/format';

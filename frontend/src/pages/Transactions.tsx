@@ -37,6 +37,7 @@ import {
   Store,
   CreditCard,
   Zap,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
