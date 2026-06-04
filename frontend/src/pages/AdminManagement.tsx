@@ -103,8 +103,15 @@ export default function AdminManagement() {
     try {
       setLoading(true);
       const res = await fetch('/api/v1/admin-users', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-      if (res.ok) setAdmins(await res.json());
-    } catch { /* ignore */ } finally { setLoading(false); }
+      if (res.ok) {
+        const data = await res.json();
+        setAdmins(Array.isArray(data) ? data : []);
+      }
+    } catch {
+      setAdmins([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMaintenance = async () => {

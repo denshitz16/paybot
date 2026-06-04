@@ -1004,16 +1004,20 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 await tg.answer_callback_query(cq_id)
                 lang = cq_data.split(":")[1]
 
-                # Persist the language choice for this user.
+                # Persist the language choice for this session
                 _user_lang[cq_chat_id] = lang
 
-                # Check whether this chat belongs to a registered admin
-                is_registered = False
+                # Persist to DB if user exists
                 try:
-                    adm_res = await db.execute(select(AdminUser).where(AdminUser.telegram_id == cq_chat_id, AdminUser.is_active.is_(True)))
-                    is_registered = adm_res.scalar_one_or_none() is not None
-                except Exception:
-                    pass
+                    adm_res = await db.execute(select(AdminUser).where(AdminUser.telegram_id == cq_chat_id))
+                    admin = adm_res.scalar_one_or_none()
+                    if admin:
+                        admin.language = lang
+                        admin.updated_at = datetime.now(timezone.utc)
+                        await db.commit()
+                except Exception as e:
+                    logger.error(f"Failed to persist language for {cq_chat_id}: {e}")
+                    await db.rollback()
 
                 if is_registered:
                     welcome = _welcome_en(cq_first_name) if lang == "en" else _welcome_zh(cq_first_name)
@@ -1066,7 +1070,14 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
 
         # ==================== Access control ====================
         # Check if this user is an authorized admin.
-        is_admin = await _is_authorized_admin(db, chat_id)
+        admin_record = await _get_admin_user_record(db, chat_id)
+        is_admin = admin_record is not None
+
+        if is_admin and admin_record:
+            # Sync in-memory language if not set
+            if chat_id not in _user_lang:
+                _user_lang[chat_id] = admin_record.language or 'en'
+
         if not is_admin:
             # Auto-authorize users on /start if they are not already in admin_users
             if text and text.startswith("/start"):

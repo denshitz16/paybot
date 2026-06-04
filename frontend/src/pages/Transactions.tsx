@@ -104,12 +104,40 @@ export default function Transactions() {
         limit,
         skip: page * limit,
       });
-      setTransactions(res.data?.items || []);
+
+      const items = res.data?.items;
+      setTransactions(Array.isArray(items) ? items : []);
       setTotal(res.data?.total || 0);
     } catch (err) {
       console.error('Failed to fetch transactions:', err);
+      setTransactions([]);
     }
   }, [user, page, statusFilter, typeFilter]);
+
+  const handleExport = () => {
+    if (transactions.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
+
+    const headers = ["ID", "External ID", "Type", "Amount", "Currency", "Status", "Created At"];
+    const rows = transactions.map(t => [
+      t.id, t.external_id, t.transaction_type, t.amount, t.currency, t.status, t.created_at
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + headers.join(",") + "\n"
+      + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `paybot_transactions_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Ledger exported to CSV");
+  };
 
   const { connected } = usePaymentEvents({
     enabled: !!user,

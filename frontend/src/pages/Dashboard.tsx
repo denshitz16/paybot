@@ -195,7 +195,7 @@ export default function Dashboard() {
 
       if (results[1].status === 'fulfilled') {
         const txnData = results[1].value?.data?.items;
-        if (txnData) setRecentTxns(txnData);
+        setRecentTxns(Array.isArray(txnData) ? txnData : []);
       }
 
       if (isSuperAdmin && results[2] && results[2].status === 'fulfilled') {
@@ -215,7 +215,7 @@ export default function Dashboard() {
 
       if (results[5].status === 'fulfilled') {
         const logData = results[5].value?.data?.items;
-        if (logData) setRecentLogs(logData);
+        setRecentLogs(Array.isArray(logData) ? logData : []);
       }
     } catch (err) {
       console.error('Unexpected error in fetchData:', err);
@@ -646,10 +646,6 @@ export default function Dashboard() {
           </Card>
         </div>
         <div className="h-12" />
-      </div>
-    </Layout>
-  );
-}
       </div>
     </Layout>
   );

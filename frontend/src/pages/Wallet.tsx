@@ -155,8 +155,11 @@ export default function Wallet() {
       ]);
       setPhpBalance(phpRes);
       setUsdBalance(usdRes);
-      setTransactions(txnRes?.items || []);
-    } catch (err) { console.error(err); }
+      setTransactions(Array.isArray(txnRes?.items) ? txnRes.items : []);
+    } catch (err) {
+      console.error(err);
+      setTransactions([]);
+    }
   }, [user]);
 
   useEffect(() => {

@@ -29,6 +29,9 @@ class AdminUser(Base):
     pin_failed_attempts = Column(Integer, default=0, server_default='0', nullable=False)
     pin_locked_until = Column(DateTime(timezone=True), nullable=True)
 
+    # UI Preferences
+    language = Column(String(8), default='en', server_default='en', nullable=False)
+
     added_by = Column(String(64), nullable=True)   # telegram_id of who added
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

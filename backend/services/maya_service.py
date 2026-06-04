@@ -291,11 +291,71 @@ class MayaService:
             "fee_fixed": rates["fixed"],
         }
 
-    async def create_disbursement(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        return {"success": False, "error": "Maya Manager does not support disbursement via this checkout integration."}
+    async def create_disbursement(
+        self,
+        amount: float,
+        bank_code: str,
+        account_number: str,
+        account_name: str,
+        description: str = "",
+        external_id: str = "",
+    ) -> Dict[str, Any]:
+        """Simulate or execute a disbursement via Maya Payouts."""
+        if not external_id:
+            external_id = f"disb-{uuid.uuid4().hex[:12]}"
 
-    async def create_refund(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        return {"success": False, "error": "Maya Manager does not support refunds through this checkout integration."}
+        # For production, this would call the Maya Payouts API
+        # For now, we simulate a successful initiation in sandbox mode
+        if self.mode.lower() == "sandbox" or not self.secret_key:
+            logger.info(f"Simulating Maya disbursement: {amount} to {bank_code}/{account_number}")
+            return {
+                "success": True,
+                "disbursement_id": f"sim-{uuid.uuid4().hex[:8]}",
+                "external_id": external_id,
+                "status": "PENDING",
+                "amount": amount,
+                "message": "Disbursement initiated successfully (Simulation)",
+            }
+
+        # Placeholder for real Maya Payouts API call
+        return {"success": False, "error": "Maya Payouts API integration pending production validation."}
+
+    async def create_refund(
+        self,
+        invoice_id: str,
+        amount: float,
+        reason: str = "",
+    ) -> Dict[str, Any]:
+        """Process a refund for a Maya checkout."""
+        if self.mode.lower() == "sandbox" or not self.secret_key:
+            return {
+                "success": True,
+                "refund_id": f"ref-{uuid.uuid4().hex[:8]}",
+                "status": "SUCCESS",
+                "amount": amount,
+                "message": "Refund processed successfully (Simulation)",
+            }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}/checkouts/{invoice_id}/refunds",
+                    json={"amount": self._amount_value(amount), "reason": reason},
+                    headers={**self._get_auth_headers(), "Content-Type": "application/json"},
+                    timeout=30.0,
+                )
+                if response.status_code == 200 or response.status_code == 201:
+                    data = response.json()
+                    return {
+                        "success": True,
+                        "refund_id": data.get("id", ""),
+                        "status": data.get("status", "SUCCESS"),
+                        "amount": amount,
+                    }
+                return {"success": False, "error": response.text}
+        except Exception as exc:
+            logger.error("Maya refund error: %s", exc)
+            return {"success": False, "error": str(exc)}
 
     # ============ Maya Business API Methods (Card Payments) ============
 

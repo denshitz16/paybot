@@ -43,8 +43,10 @@ def _resolve_bot_token() -> str:
 user_lang: Dict[str, str] = {}
 
 
-def t(chat_id: str, en: str, zh: str = "") -> str:
+def t(chat_id: str, en: str, zh: str = "", db_lang: Optional[str] = None) -> str:
     """Return the localised string based on the user's stored language."""
+    if db_lang:
+        return zh if db_lang == "zh" and zh else en
     if user_lang.get(str(chat_id)) == "zh" and zh:
         return zh
     return en

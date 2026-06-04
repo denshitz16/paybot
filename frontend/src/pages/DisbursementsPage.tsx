@@ -88,10 +88,10 @@ export default function DisbursementsPage() {
         client.apiCall.invoke({ url: '/api/v1/gateway/subscriptions', method: 'GET', data: {} }),
         client.apiCall.invoke({ url: '/api/v1/gateway/customers', method: 'GET', data: {} }),
       ]);
-      setDisbursements(dRes.data?.items || []);
-      setRefunds(rRes.data?.items || []);
-      setSubscriptions(sRes.data?.items || []);
-      setCustomers(cRes.data?.items || []);
+      setDisbursements(Array.isArray(dRes.data?.items) ? dRes.data.items : []);
+      setRefunds(Array.isArray(rRes.data?.items) ? rRes.data.items : []);
+      setSubscriptions(Array.isArray(sRes.data?.items) ? sRes.data.items : []);
+      setCustomers(Array.isArray(cRes.data?.items) ? cRes.data.items : []);
     } catch { /* ignore */ }
     setListLoading(false);
   }, [user]);
@@ -405,11 +405,87 @@ export default function DisbursementsPage() {
           </TabsContent>
 
           {/* Remaining Tabs (Simplified logic to keep response concise, using similar modern styling) */}
-          <TabsContent value="refunds" className="mt-0">
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* ... Modernized Refund form and history list ... */}
-                <Card className="glass-card"><CardHeader><CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">Work in Progress</CardTitle></CardHeader></Card>
-             </div>
+          {/* REFUNDS TAB */}
+          <TabsContent value="refunds" className="mt-0 space-y-8 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <Card className="glass-card overflow-hidden">
+                <div className="h-1.5 bg-orange-500 w-full" />
+                <CardHeader className="pb-8 pt-10 px-10">
+                  <CardTitle className="text-sm font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+                      <RotateCcw className="h-5 w-5 text-orange-500" />
+                    </div>
+                    Process Refund
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-10 pb-12 space-y-6">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Internal Transaction ID</Label>
+                    <Input type="number" placeholder="Enter ID (e.g. 10245)" value={rTxnId} onChange={e => setRTxnId(e.target.value)}
+                      className="h-14 bg-muted/20 border-border/50 rounded-2xl font-black tabular-nums tracking-widest focus:ring-orange-500/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Refund Amount (PHP)</Label>
+                    <div className="relative group">
+                       <span className="absolute left-5 top-1/2 -translate-y-1/2 text-orange-500 font-black text-xl">₱</span>
+                       <Input type="number" placeholder="0.00" value={rAmount} onChange={e => setRAmount(e.target.value)}
+                         className="pl-12 h-14 bg-muted/20 border-border/50 rounded-2xl font-black tabular-nums focus:ring-orange-500/20" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Reason for Reversal</Label>
+                    <Textarea placeholder="Specify adjustment reason..." value={rReason} onChange={e => setRReason(e.target.value)}
+                      className="bg-muted/20 border-border/50 rounded-2xl min-h-[100px] resize-none focus:ring-orange-500/20 p-5 font-semibold" />
+                  </div>
+                  <Button onClick={handleRefund} disabled={rLoading} className="w-full h-16 bg-orange-600 hover:bg-orange-700 text-white font-black rounded-[1.5rem] shadow-xl shadow-orange-500/30 transition-all active:scale-95 uppercase tracking-widest">
+                    {rLoading ? <Loader2 className="h-5 w-5 mr-3 animate-spin" /> : <RotateCcw className="h-5 w-5 mr-3" />}
+                    Commit Refund Flow
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card flex flex-col h-[600px] overflow-hidden">
+                <CardHeader className="pb-6 pt-8 px-8 border-b border-border/40 bg-muted/10">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                     <History className="h-4 w-4 text-muted-foreground/60" />
+                     Adjustment Logs
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 overflow-hidden flex-1">
+                  {listLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full space-y-4">
+                       <Loader2 className="h-10 w-10 animate-spin text-orange-500 opacity-20" />
+                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Parsing adjustment trail...</p>
+                    </div>
+                  ) : refunds.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full py-20 px-10 text-center">
+                      <div className="h-20 w-20 rounded-[1.5rem] bg-muted flex items-center justify-center mb-6 shadow-inner">
+                        <RotateCcw className="h-10 w-10 text-muted-foreground/20" />
+                      </div>
+                      <p className="text-xs font-black uppercase text-muted-foreground tracking-widest">No refund records detected</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-border/20 h-full overflow-y-auto px-4 custom-scrollbar">
+                      {refunds.map(r => (
+                        <div key={r.id} className="p-6 flex items-center justify-between hover:bg-muted/20 transition-all rounded-3xl my-2 border border-transparent hover:border-border/40 group">
+                          <div className="min-w-0 mr-4">
+                            <p className="text-xs font-black text-foreground flex items-center gap-2 uppercase tracking-tight">
+                              <span className="text-muted-foreground/60">TXN_NODE</span> #{r.transaction_id}
+                              <Badge variant="outline" className="text-[8px] uppercase tracking-widest py-0.5 px-2 bg-muted/40 font-black border-border/40 text-muted-foreground">{r.refund_type}</Badge>
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-2 truncate max-w-[220px] font-semibold italic opacity-70 leading-relaxed">"{r.reason || 'SYSTEM_ADJUSTMENT'}"</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-base font-black text-orange-500 tracking-tighter tabular-nums">₱{fmt(r.amount)}</p>
+                            <div className="mt-2 flex justify-end">{statusBadge(r.status)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

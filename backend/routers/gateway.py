@@ -442,8 +442,45 @@ async def create_disbursement(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Disbursements are not supported via Maya Manager checkout integration."""
-    return GatewayResponse(success=False, message="Disbursements are not supported after removing Xendit. Use an alternative payout provider.")
+    try:
+        service = MayaService()
+        result = await service.create_disbursement(
+            amount=data.amount,
+            bank_code=data.bank_code,
+            account_number=data.account_number,
+            account_name=data.account_name,
+            description=data.description,
+        )
+
+        if not result.get("success"):
+            return GatewayResponse(success=False, message=result.get("error", "Failed"))
+
+        # Log to DB
+        now = datetime.now(timezone.utc)
+        disb = Disbursements(
+            user_id=str(current_user.id),
+            external_id=result.get("external_id", ""),
+            amount=data.amount,
+            currency="PHP",
+            bank_code=data.bank_code,
+            account_number=data.account_number,
+            account_name=data.account_name,
+            description=data.description,
+            status="pending",
+            disbursement_type="single",
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(disb)
+        await db.commit()
+
+        return GatewayResponse(success=True, message=result.get("message", "Disbursement created"), data={
+            "disbursement_id": result.get("disbursement_id"),
+            "external_id": result.get("external_id"),
+        })
+    except Exception as e:
+        logger.error(f"Disbursement error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/disbursements")
 async def list_disbursements(
@@ -470,8 +507,52 @@ async def create_refund(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Refunds via Maya Manager checkout integration are not supported."""
-    return GatewayResponse(success=False, message="Refunds are not supported after removing Xendit. Operation not available.")
+    try:
+        # Find transaction
+        txn_res = await db.execute(select(Transactions).where(Transactions.id == data.transaction_id))
+        txn = txn_res.scalar_one_or_none()
+        if not txn:
+            return GatewayResponse(success=False, message="Transaction not found")
+
+        service = MayaService()
+        result = await service.create_refund(
+            invoice_id=txn.gateway_id or txn.external_id,
+            amount=data.amount,
+            reason=data.reason,
+        )
+
+        if not result.get("success"):
+            return GatewayResponse(success=False, message=result.get("error", "Failed"))
+
+        # Log to DB
+        now = datetime.now(timezone.utc)
+        ref = Refunds(
+            user_id=str(current_user.id),
+            transaction_id=txn.id,
+            external_id=result.get("refund_id", ""),
+            amount=data.amount,
+            reason=data.reason,
+            status="completed",
+            refund_type="full" if data.amount >= txn.amount else "partial",
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(ref)
+
+        # Update transaction status
+        if data.amount >= txn.amount:
+            txn.status = "refunded"
+        else:
+            txn.status = "partially_refunded"
+
+        await db.commit()
+
+        return GatewayResponse(success=True, message="Refund processed successfully", data={
+            "refund_id": result.get("refund_id"),
+        })
+    except Exception as e:
+        logger.error(f"Refund error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/refunds")
 async def list_refunds(
