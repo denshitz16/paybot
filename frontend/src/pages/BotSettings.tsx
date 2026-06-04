@@ -250,6 +250,19 @@ export default function BotSettings() {
     finally { setAutoSetupLoading(false); }
   };
 
+  const handleTestBot = async () => {
+    setTestLoading(true);
+    try {
+      const res = await client.apiCall.invoke({ url: '/api/v1/telegram/test', method: 'GET', data: {} });
+      if (res.data) {
+        const checks = (res.data as any).checks;
+        setTestChecks(Array.isArray(checks) ? checks : []);
+        setTestRan(true);
+      }
+    } catch (e) { toast.error(getErr(e)); }
+    finally { setTestLoading(false); }
+  };
+
   const handleSaveConfig = async () => {
     setConfigSaving(true);
     try {

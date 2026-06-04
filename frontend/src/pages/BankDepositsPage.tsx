@@ -45,8 +45,14 @@ export default function BankDepositsPage() {
     try {
       const url = filter ? `/api/v1/bank-deposits?status=${filter}` : '/api/v1/bank-deposits';
       const res = await fetch(url, { credentials: 'include' });
-      if (res.ok) { const d = await res.json(); setRequests(d.items || []); }
-    } catch (e) { console.error(e); }
+      if (res.ok) {
+        const d = await res.json();
+        setRequests(Array.isArray(d.items) ? d.items : []);
+      }
+    } catch (e) {
+      console.error(e);
+      setRequests([]);
+    }
     setLoading(false);
   }, [filter]);
 

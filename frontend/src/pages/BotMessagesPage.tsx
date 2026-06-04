@@ -44,9 +44,12 @@ export default function BotMessagesPage() {
       const res = await fetch('/api/v1/bot-messages/conversations', { credentials: 'include' });
       if (res.ok) {
         const d = await res.json();
-        setConversations(d.items || []);
+        setConversations(Array.isArray(d.items) ? d.items : []);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setConversations([]);
+    }
     setLoading(false);
   }, []);
 
@@ -55,10 +58,13 @@ export default function BotMessagesPage() {
       const res = await fetch(`/api/v1/bot-messages?chat_id=${chatId}&limit=100`, { credentials: 'include' });
       if (res.ok) {
         const d = await res.json();
-        setMessages(d.items || []);
+        setMessages(Array.isArray(d.items) ? d.items : []);
         setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setMessages([]);
+    }
   }, []);
 
   useEffect(() => {

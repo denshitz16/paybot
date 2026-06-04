@@ -251,7 +251,7 @@ export default function AdminManagement() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {admins.map(admin => (
+                {Array.isArray(admins) && admins.map(admin => (
                   <Card key={admin.id} className={`border-border/60 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden ${!admin.is_active && 'opacity-60 grayscale'}`}>
                     {admin.is_super_admin && <div className="absolute top-0 right-0 p-1 bg-amber-400 text-amber-950 font-black text-[8px] px-3 uppercase tracking-tighter rounded-bl-xl shadow-sm z-10">Root</div>}
                     <CardContent className="p-6">
@@ -272,7 +272,7 @@ export default function AdminManagement() {
 
                       <div className="space-y-4">
                          <div className="flex flex-wrap gap-1.5">
-                            {PERMISSION_KEYS.map(p => {
+                            {Array.isArray(PERMISSION_KEYS) && PERMISSION_KEYS.map(p => {
                               const has = admin[p.key as keyof AdminUser] as boolean;
                               return (
                                 <button

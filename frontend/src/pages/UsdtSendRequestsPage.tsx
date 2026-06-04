@@ -39,10 +39,17 @@ export default function UsdtSendRequestsPage() {
       const res = await fetch('/api/v1/wallet/usdt-send-requests', { credentials: 'include' });
       if (res.ok) {
         const d = await res.json();
-        const items: UsdtSendRequest[] = d.items || [];
-        setRequests(filter ? items.filter(r => r.status === filter) : items);
+        const items = d.items;
+        if (Array.isArray(items)) {
+          setRequests(filter ? items.filter(r => r.status === filter) : items);
+        } else {
+          setRequests([]);
+        }
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setRequests([]);
+    }
     setLoading(false);
   }, [filter]);
 

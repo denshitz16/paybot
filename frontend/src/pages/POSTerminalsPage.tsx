@@ -63,13 +63,15 @@ export default function POSTerminalsPage() {
       const terminalsData = await terminalsRes.json();
 
       if (devicesData.success) {
-        setDevices(devicesData.data || []);
+        const devList = devicesData.data;
+        setDevices(Array.isArray(devList) ? devList : []);
       } else {
         throw new Error(devicesData.error || 'Failed to load devices');
       }
 
       if (terminalsData.success) {
-        setTerminals(terminalsData.data || []);
+        const termList = terminalsData.data;
+        setTerminals(Array.isArray(termList) ? termList : []);
       } else {
         throw new Error(terminalsData.error || 'Failed to load terminals');
       }

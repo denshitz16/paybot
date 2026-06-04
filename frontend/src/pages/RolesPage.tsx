@@ -119,9 +119,11 @@ export default function RolesPage() {
     try {
       const res = await fetch('/api/v1/roles');
       if (!res.ok) throw new Error(await res.text());
-      setRoles(await res.json());
+      const data = await res.json();
+      setRoles(Array.isArray(data) ? data : []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load roles');
+      setRoles([]);
     } finally {
       setRolesLoading(false);
     }
@@ -132,9 +134,11 @@ export default function RolesPage() {
     try {
       const res = await fetch('/api/v1/admin-users');
       if (!res.ok) throw new Error(await res.text());
-      setAdmins(await res.json());
+      const data = await res.json();
+      setAdmins(Array.isArray(data) ? data : []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load admins');
+      setAdmins([]);
     } finally {
       setAdminsLoading(false);
     }

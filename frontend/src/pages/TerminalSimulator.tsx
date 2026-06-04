@@ -53,8 +53,14 @@ export default function TerminalSimulator() {
   useEffect(() => {
     fetch('/api/v1/pos-terminals/all')
       .then(res => res.json())
-      .then(data => setTerminals(data.data || []))
-      .catch(err => toast.error('Failed to load terminals'));
+      .then(data => {
+        const termList = data.data;
+        setTerminals(Array.isArray(termList) ? termList : []);
+      })
+      .catch(err => {
+        toast.error('Failed to load terminals');
+        setTerminals([]);
+      });
 
     // Setup SSE listener for status updates
     const ev = new EventSource('/api/v1/events/stream');

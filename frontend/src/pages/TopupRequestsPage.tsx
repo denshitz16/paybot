@@ -146,8 +146,14 @@ export default function TopupRequestsPage() {
     try {
       const url = filter ? `/api/v1/topup?status=${filter}` : '/api/v1/topup';
       const res = await fetch(url, { credentials: 'include' });
-      if (res.ok) { const d = await res.json(); setRequests(d.items || []); }
-    } catch (e) { console.error(e); }
+      if (res.ok) {
+        const d = await res.json();
+        setRequests(Array.isArray(d.items) ? d.items : []);
+      }
+    } catch (e) {
+      console.error(e);
+      setRequests([]);
+    }
     setLoading(false);
   }, [filter]);
 

@@ -316,7 +316,7 @@ export const POSTerminalAdminPanel: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ) : pendingQuery.data?.data?.length > 0 ? (
+          ) : pendingQuery.data?.data?.length > 0 && Array.isArray(pendingQuery.data.data) ? (
             <div className="grid grid-cols-1 gap-4">
               {pendingQuery.data.data.map((request: TerminalRequest) => (
                 <RequestCard
@@ -375,13 +375,13 @@ export const POSTerminalAdminPanel: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {allTerminalsQuery.data?.data?.map((terminal: Terminal) => (
+                      {Array.isArray(allTerminalsQuery.data?.data) ? allTerminalsQuery.data.data.map((terminal: Terminal) => (
                         <TerminalRow
                           key={terminal.id}
                           terminal={terminal}
                           onDeactivate={() => allTerminalsQuery.refetch()}
                         />
-                      ))}
+                      )) : null}
                     </tbody>
                   </table>
                 </div>

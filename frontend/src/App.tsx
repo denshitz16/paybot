@@ -8,6 +8,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import React, { useEffect, useState } from 'react';
 import TopProgressBar from '@/components/TopProgressBar';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
+import { XCircle } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Wallet from './pages/Wallet';
 import Transactions from './pages/Transactions';
@@ -93,6 +94,50 @@ function PageFade({ children }: { children: React.ReactNode }) {
  * Must be rendered inside BrowserRouter so TopProgressBar / PageFade can call useLocation().
  * The AppLoadingScreen plays an exit animation before it is unmounted.
  */
+// Error Boundary Component to prevent total app crashes
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
+          <div className="max-w-md space-y-6">
+            <div className="h-20 w-20 bg-rose-500/10 rounded-3xl flex items-center justify-center mx-auto border border-rose-500/20">
+               <XCircle className="h-10 w-10 text-rose-500" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-black text-white uppercase tracking-tighter">System Kernel Panic</h1>
+              <p className="text-slate-400 text-sm font-medium">The interface encountered an unexpected sequence error. Our automated repair systems are notified.</p>
+            </div>
+            <div className="p-4 bg-black/40 rounded-2xl border border-white/5 text-left overflow-auto max-h-32">
+               <code className="text-[10px] text-rose-300/70 font-mono break-all">{this.state.error?.toString()}</code>
+            </div>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="w-full h-12 bg-white text-black font-black rounded-xl uppercase tracking-widest active:scale-95 transition-all"
+            >
+              Reboot UI
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function AuthAwareShell() {
   const { loading } = useAuth();
   const [showLoader, setShowLoader] = useState(true);
@@ -164,7 +209,9 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
-            <AuthAwareShell />
+            <ErrorBoundary>
+              <AuthAwareShell />
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
         </AuthProvider>
