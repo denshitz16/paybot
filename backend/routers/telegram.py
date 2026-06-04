@@ -629,27 +629,51 @@ def _short_address(address: str) -> str:
 
 async def _get_or_promote_recipient(db: AsyncSession, identifier: str) -> Optional[AdminUser]:
     """Find a recipient AdminUser by username or Telegram ID."""
+    if not identifier:
+        return None
     identifier = identifier.strip().lstrip("@")
     if not identifier:
         return None
 
-    # 1. Try username match
-    res = await db.execute(select(AdminUser).where(func.lower(AdminUser.telegram_username) == identifier.lower()))
+    from sqlalchemy import or_
+
+    # Build search variants to handle common issues:
+    # 1. Optional @ prefix in database
+    # 2. Case sensitivity (using lower)
+    # 3. Numeric ID vs Username
+    # 4. Common 'l' (lowercase L) vs 'I' (uppercase I) confusion
+    variants = [identifier.lower(), f"@{identifier.lower()}"]
+
+    # Add variants for l/I confusion if applicable
+    if identifier.lower().startswith('l'):
+        confused = 'i' + identifier[1:].lower()
+        variants.append(confused)
+        variants.append(f"@{confused}")
+    elif identifier.lower().startswith('i'):
+        confused = 'l' + identifier[1:].lower()
+        variants.append(confused)
+        variants.append(f"@{confused}")
+
+    # 1. Try username match in AdminUser
+    res = await db.execute(
+        select(AdminUser).where(
+            or_(
+                func.lower(AdminUser.telegram_username).in_(variants),
+                AdminUser.telegram_id == identifier
+            )
+        )
+    )
     admin = res.scalar_one_or_none()
     if admin:
         return admin
 
-    # 2. Try ID match (numeric chat ID)
-    res = await db.execute(select(AdminUser).where(AdminUser.telegram_id == identifier))
-    admin = res.scalar_one_or_none()
-    if admin:
-        return admin
-
-    # 3. Try KYB promotion (if approved but no AdminUser row yet)
+    # 2. Try KYB promotion (if approved but no AdminUser row yet)
     res = await db.execute(
         select(KybRegistration).where(
-            (func.lower(KybRegistration.telegram_username) == identifier.lower()) |
-            (KybRegistration.chat_id == identifier)
+            or_(
+                func.lower(KybRegistration.telegram_username).in_(variants),
+                KybRegistration.chat_id == identifier
+            )
         )
     )
     kyb = res.scalar_one_or_none()
@@ -2901,7 +2925,8 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                         await tg.send_message(
                             chat_id,
                             f"❌ User @{recipient_username} not found in our system.\n"
-                            "They must have started the bot or submitted a registration at least once."
+                            "They must have started the bot or submitted a registration at least once.\n\n"
+                            "💡 <b>Tip:</b> If the username starts with 'l' or 'I', make sure it's the correct character!"
                         )
                         await _safe_log(db, chat_id, username, text)
                         return {"status": "ok"}
@@ -3059,11 +3084,31 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     recipient_admin = await _get_or_promote_recipient(db, recipient_username)
 
                     if not recipient_admin:
-                        await tg.send_message(
-                            chat_id,
-                            f"❌ User <code>{recipient_raw}</code> not found in our system.\n"
-                            "They must have started the bot or submitted a registration at least once."
+                        # Before giving up, check if they exist in KYB but aren't approved
+                        from sqlalchemy import or_
+                        kyb_res = await db.execute(
+                            select(KybRegistration).where(
+                                or_(
+                                    func.lower(KybRegistration.telegram_username) == recipient_username.lower(),
+                                    KybRegistration.chat_id == recipient_username
+                                )
+                            )
                         )
+                        kyb_pending = kyb_res.scalar_one_or_none()
+
+                        if kyb_pending:
+                            await tg.send_message(
+                                chat_id,
+                                f"⏳ User <code>{recipient_raw}</code> found but their registration is <b>{kyb_pending.status}</b>.\n"
+                                f"They must be approved by an admin before they can receive funds."
+                            )
+                        else:
+                            await tg.send_message(
+                                chat_id,
+                                f"❌ User <code>{recipient_raw}</code> not found in our system.\n"
+                                "They must have started the bot or submitted a registration at least once.\n\n"
+                                "💡 <b>Tip:</b> If the username starts with 'l' or 'I', make sure it's the correct character!"
+                            )
                         return {"status": "ok"}
 
                     recipient_tg_user_id = f"tg-{recipient_admin.telegram_id}"
