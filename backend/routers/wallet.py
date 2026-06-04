@@ -15,6 +15,7 @@ from models.admin_users import AdminUser
 from schemas.auth import UserResponse
 from dependencies.auth import get_current_user
 from services.paymongo_service import PayMongoService
+from services.telegram_service import t
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/wallet", tags=["wallet"])
@@ -990,15 +991,23 @@ async def admin_approve_withdrawal(
     if disb.user_id.startswith("tg-"):
         chat_id = disb.user_id[3:]
         tg = TelegramService()
-        await tg.send_message(
-            chat_id,
+        await tg.send_chat_action(chat_id, "typing")
+
+        msg = t(chat_id,
             f"✅ <b>Withdrawal Approved!</b>\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
             f"💰 Amount: <b>₱{disb.amount:,.2f}</b>\n"
             f"🏦 {disb.bank_code} ({disb.account_number})\n"
             f"🆔 Ref: <code>{disb.external_id}</code>\n\n"
-            f"Funds are now being transferred to your account."
+            f"⏳ The bank will now validating your withdraw, pleease wait for your balance credited to your bank patiently",
+            f"✅ <b>提款已批准</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"💰 金额: <b>₱{disb.amount:,.2f}</b>\n"
+            f"🏦 {disb.bank_code} ({disb.account_number})\n"
+            f"🆔 参考: <code>{disb.external_id}</code>\n\n"
+            f"⏳ 银行正在验证您的提款，请耐心等待余额存入您的银行。"
         )
+        await tg.send_message(chat_id, msg)
 
     return {"success": True, "message": "Withdrawal approved and payout initiated", "payout_id": disb.xendit_id}
 

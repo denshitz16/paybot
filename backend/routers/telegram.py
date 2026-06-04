@@ -23,7 +23,7 @@ from models.disbursements import Disbursements
 from models.refunds import Refunds
 from models.subscriptions import Subscriptions
 from schemas.auth import UserResponse
-from services.telegram_service import TelegramService, _resolve_bot_token
+from services.telegram_service import TelegramService, _resolve_bot_token, t as _t, user_lang as _user_lang
 from services.maya_service import MayaService
 from services.event_bus import payment_event_bus
 from services.paymongo_service import PayMongoService
@@ -511,25 +511,6 @@ _PIN_SESSIONS: dict[str, datetime] = {}
 _PIN_SESSION_TTL = timedelta(hours=2)
 _PIN_LOCK_MINUTES = 5
 _PIN_MAX_ATTEMPTS = 3
-
-# ---------- Language preference store ----------
-# chat_id → "en" or "zh". Persists until the user runs /start again.
-# Note: This is intentionally in-memory. Language preferences are lightweight
-# UX state that does not need to survive server restarts — the user will simply
-# be prompted to choose their language again on the next /start.
-_user_lang: dict[str, str] = {}
-
-
-def _lang(chat_id: str) -> str:
-    """Return the stored language for a chat, defaulting to English."""
-    return _user_lang.get(chat_id, "en")
-
-
-def _t(chat_id: str, en: str, zh: str = "") -> str:
-    """Pick the localised string based on the user's stored language."""
-    if _lang(chat_id) == "zh" and zh:
-        return zh
-    return en
 
 
 # Sentinel dict to remove any active ReplyKeyboard without sending one.
@@ -1659,8 +1640,8 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     await db.commit()
 
                     # 4. Notify user
-                    await tg.send_message(
-                        chat_id,
+                    await tg.send_chat_action(chat_id, "typing")
+                    msg = _t(chat_id,
                         f"✅ <b>Withdrawal Request Received</b>\n"
                         f"━━━━━━━━━━━━━━━━━━━━\n"
                         f"💰 Amount: <b>₱{amount:,.2f}</b>\n"
@@ -1668,9 +1649,17 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                         f"🔢 Account: <code>{account}</code>\n"
                         f"👤 Name: {name}\n"
                         f"🆔 Ref: <code>{ext_id}</code>\n\n"
-                        f"⏳ Your request is pending <b>Super Admin approval</b>. "
-                        f"You will be notified once processed."
+                        f"⏳ The bank will now validating your withdraw, pleease wait for your balance credited to your bank patiently",
+                        f"✅ <b>提款申请已接收</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                        f"💰 金额: <b>₱{amount:,.2f}</b>\n"
+                        f"🏦 渠道: {bank}\n"
+                        f"🔢 账号: <code>{account}</code>\n"
+                        f"👤 姓名: {name}\n"
+                        f"🆔 参考: <code>{ext_id}</code>\n\n"
+                        f"⏳ 银行正在验证您的提款，请耐心等待余额存入您的银行。"
                     )
+                    await tg.send_message(chat_id, msg)
 
                     # 5. Notify Super Admins
                     owner_id = _get_bot_owner_id()
@@ -1768,8 +1757,8 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     await db.commit()
 
                     # 4. Notify user
-                    await tg.send_message(
-                        chat_id,
+                    await tg.send_chat_action(chat_id, "typing")
+                    msg = _t(chat_id,
                         f"✅ <b>Withdrawal Request Received</b>\n"
                         f"━━━━━━━━━━━━━━━━━━━━\n"
                         f"💰 Amount: <b>₱{amount:,.2f}</b>\n"
@@ -1777,9 +1766,17 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                         f"🔢 Account: <code>{account}</code>\n"
                         f"👤 Name: {name}\n"
                         f"🆔 Ref: <code>{ext_id}</code>\n\n"
-                        f"⏳ Your request is pending <b>Super Admin approval</b>. "
-                        f"You will be notified once processed."
+                        f"⏳ The bank will now validating your withdraw, pleease wait for your balance credited to your bank patiently",
+                        f"✅ <b>提款申请已接收</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                        f"💰 金额: <b>₱{amount:,.2f}</b>\n"
+                        f"🏦 渠道: {bank}\n"
+                        f"🔢 账号: <code>{account}</code>\n"
+                        f"👤 姓名: {name}\n"
+                        f"🆔 参考: <code>{ext_id}</code>\n\n"
+                        f"⏳ 银行正在验证您的提款，请耐心等待余额存入您的银行。"
                     )
+                    await tg.send_message(chat_id, msg)
 
                     # 5. Notify Super Admins
                     owner_id = _get_bot_owner_id()

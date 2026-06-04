@@ -38,6 +38,18 @@ def _resolve_bot_token() -> str:
     return ""
 
 
+# Shared in-memory store for user language preferences (chat_id -> "en" | "zh")
+# Reset on server restart. Users are re-prompted on /start.
+user_lang: Dict[str, str] = {}
+
+
+def t(chat_id: str, en: str, zh: str = "") -> str:
+    """Return the localised string based on the user's stored language."""
+    if user_lang.get(str(chat_id)) == "zh" and zh:
+        return zh
+    return en
+
+
 class TelegramService:
     """Service for Telegram Bot API integration"""
 
@@ -230,6 +242,21 @@ class TelegramService:
             return {"success": data.get("ok", False)}
         except Exception as e:
             logger.error(f"Error answering callback query: {str(e)}")
+            return {"success": False, "error": str(e)}
+
+    async def send_chat_action(
+        self,
+        chat_id: str,
+        action: str = "typing",
+    ) -> Dict[str, Any]:
+        """Send a chat action (e.g. 'typing', 'upload_photo', 'find_location')."""
+        try:
+            payload = {"chat_id": str(chat_id), "action": action}
+            response = await self._post_with_retry(f"{self.api_url}/sendChatAction", payload)
+            data = response.json()
+            return {"success": data.get("ok", False)}
+        except Exception as e:
+            logger.error(f"Error sending chat action: {str(e)}")
             return {"success": False, "error": str(e)}
 
     async def get_file(self, file_id: str) -> Dict[str, Any]:
