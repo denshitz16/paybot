@@ -3020,7 +3020,6 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                                     "transaction_type": "withdraw", "amount": amount,
                                     "transaction_id": wtxn.id,
                                 })
-                                })
                             except Exception as e:
                                 logger.error(f"DB save failed for /withdraw: {e}", exc_info=True)
                                 try:
