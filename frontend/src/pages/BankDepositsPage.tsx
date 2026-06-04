@@ -132,7 +132,7 @@ export default function BankDepositsPage() {
               </div>
             ))}
           </div>
-        ) : requests.length === 0 ? (
+        ) : (!Array.isArray(requests) || requests.length === 0) ? (
           <div className="bg-background border border-border/40 rounded-2xl p-12 flex flex-col items-center text-center">
             <div className="h-12 w-12 bg-muted rounded-2xl flex items-center justify-center mb-3">
               <Building2 className="h-6 w-6 text-muted-foreground" />

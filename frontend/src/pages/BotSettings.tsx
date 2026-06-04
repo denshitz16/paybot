@@ -534,7 +534,7 @@ export default function BotSettings() {
 
                   {testRan && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                      {testChecks.map(check => (
+                      {Array.isArray(testChecks) && testChecks.map(check => (
                         <div key={check.name} className={`p-4 rounded-2xl border-2 ${check.passed ? 'bg-emerald-50 border-emerald-500/30' : 'bg-rose-50 border-rose-500/30'}`}>
                            <div className="flex items-center gap-2 mb-2">
                              {check.passed ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <XCircle className="h-4 w-4 text-rose-600" />}

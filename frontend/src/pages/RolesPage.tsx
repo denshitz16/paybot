@@ -252,7 +252,7 @@ export default function RolesPage() {
         {/* Role Cards */}
         {!rolesLoading && (
           <div className="space-y-4">
-            {roles.map((role) => {
+            {Array.isArray(roles) && roles.map((role) => {
               const colorCls = BADGE_COLORS[role.color] || BADGE_COLORS['blue'];
               const icon = ROLE_ICONS[role.id] ?? <Shield className="h-4 w-4 text-blue-400" />;
 
@@ -302,7 +302,7 @@ export default function RolesPage() {
                             Apply to admin
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            {activeAdmins.map((admin) => {
+                            {Array.isArray(activeAdmins) && activeAdmins.map((admin) => {
                               const key = `${role.id}-${admin.id}`;
                               const isApplying = applying === key;
                               return (

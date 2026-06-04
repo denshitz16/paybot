@@ -293,7 +293,7 @@ export default function Transactions() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.map((txn) => {
+                    {Array.isArray(transactions) && transactions.map((txn) => {
                       const sc = statusConfig[txn.status] || statusConfig.pending;
                       const tc = typeIcons[txn.transaction_type] || { icon: <FileText className="h-4 w-4" />, bg: 'bg-muted' };
                       const isUpdated = updatedTxnIds.has(txn.id);

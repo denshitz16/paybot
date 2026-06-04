@@ -354,7 +354,7 @@ export default function DisbursementsPage() {
                     </div>
                   ) : (
                     <div className="divide-y divide-border/20 overflow-y-auto h-full px-4 custom-scrollbar">
-                      {disbursements.map(d => (
+                      {Array.isArray(disbursements) && disbursements.map(d => (
                         <div key={d.id} className="p-5 hover:bg-muted/30 transition-all rounded-3xl my-2 border border-transparent hover:border-border/40 group">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-4 min-w-0">
@@ -446,7 +446,7 @@ export default function DisbursementsPage() {
                     </div>
                   ) : (
                     <div className="divide-y divide-border/20 h-full overflow-y-auto px-4 custom-scrollbar">
-                      {refunds.map(r => (
+                      {Array.isArray(refunds) && refunds.map(r => (
                         <div key={r.id} className="p-6 flex items-center justify-between hover:bg-muted/20 transition-all rounded-3xl my-2 border border-transparent hover:border-border/40 group">
                           <div className="min-w-0 mr-4">
                             <p className="text-xs font-black text-foreground flex items-center gap-2 uppercase tracking-tight">

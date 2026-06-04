@@ -419,7 +419,7 @@ export default function Wallet() {
                      </div>
                    ) : (
                      <div className="divide-y divide-border/20 px-4">
-                       {transactions.map(txn => {
+                       {Array.isArray(transactions) && transactions.map(txn => {
                          const cfg = txnTypeConfig[txn.transaction_type] || { label: txn.transaction_type, color: 'text-foreground', icon: <History className="h-4 w-4" />, sign: '', bg: 'bg-muted' };
                          const isCrypto = txn.transaction_type.includes('usd');
                          return (

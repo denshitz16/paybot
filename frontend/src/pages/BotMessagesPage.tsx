@@ -155,7 +155,7 @@ export default function BotMessagesPage() {
                     </div>
                   ))}
                 </div>
-              ) : filtered.length === 0 ? (
+              ) : (!Array.isArray(filtered) || filtered.length === 0) ? (
                 <div className="p-8 text-center text-muted-foreground text-sm">No conversations yet</div>
               ) : (
                 filtered.map(c => (
@@ -224,7 +224,7 @@ export default function BotMessagesPage() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                  {messages.map(m => {
+                  {Array.isArray(messages) && messages.map(m => {
                     const isAdmin = m.log_type === 'admin_reply';
                     return (
                       <div key={m.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>

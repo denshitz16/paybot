@@ -139,7 +139,7 @@ const RequestCard: React.FC<{ request: TerminalRequest; onAction: () => void }> 
           <div>
             <Label className="text-xs font-semibold text-gray-600">Requested Methods</Label>
             <div className="flex flex-wrap gap-1 mt-1">
-              {request.required_payment_methods.map((method) => (
+              {Array.isArray(request.required_payment_methods) && request.required_payment_methods.map((method) => (
                 <Badge key={method} variant="outline" className="text-xs">
                   {method}
                 </Badge>
@@ -235,12 +235,12 @@ const TerminalRow: React.FC<{ terminal: Terminal; onDeactivate: () => void }> = 
       <td className="px-4 py-3">{terminal.location || '-'}</td>
       <td className="px-4 py-3">
         <div className="flex flex-wrap gap-1">
-          {terminal.enabled_payment_methods.slice(0, 3).map((method) => (
+          {Array.isArray(terminal.enabled_payment_methods) && terminal.enabled_payment_methods.slice(0, 3).map((method) => (
             <Badge key={method} variant="outline" className="text-xs">
               {method}
             </Badge>
           ))}
-          {terminal.enabled_payment_methods.length > 3 && (
+          {Array.isArray(terminal.enabled_payment_methods) && terminal.enabled_payment_methods.length > 3 && (
             <Badge variant="outline" className="text-xs">
               +{terminal.enabled_payment_methods.length - 3}
             </Badge>

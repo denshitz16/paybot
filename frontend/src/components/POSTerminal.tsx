@@ -213,7 +213,7 @@ const TerminalCard: React.FC<{ terminal: Terminal }> = ({ terminal }) => {
         <div>
           <span className="text-sm font-medium">Supported Methods:</span>
           <div className="flex flex-wrap gap-2 mt-2">
-            {terminal.enabled_payment_methods.map((method) => (
+            {Array.isArray(terminal.enabled_payment_methods) && terminal.enabled_payment_methods.map((method) => (
               <Badge key={method} variant="outline">
                 {method.toUpperCase()}
               </Badge>
@@ -228,7 +228,7 @@ const TerminalCard: React.FC<{ terminal: Terminal }> = ({ terminal }) => {
           </TabsList>
 
           <TabsContent value="transactions" className="mt-4 space-y-2">
-            {transactionsQuery.data?.data?.length > 0 ? (
+            {Array.isArray(transactionsQuery.data?.data) && transactionsQuery.data.data.length > 0 ? (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {transactionsQuery.data.data.map((txn: Transaction) => (
                   <div key={txn.id} className="border rounded-lg p-3 flex justify-between items-start">
@@ -307,7 +307,7 @@ export const POSTerminalDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      ) : terminalsQuery.data?.data?.length > 0 ? (
+      ) : Array.isArray(terminalsQuery.data?.data) && terminalsQuery.data.data.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {terminalsQuery.data.data.map((terminal: Terminal) => (
             <TerminalCard key={terminal.id} terminal={terminal} />

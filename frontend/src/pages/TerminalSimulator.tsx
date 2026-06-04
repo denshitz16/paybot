@@ -204,7 +204,7 @@ export default function TerminalSimulator() {
                     className="w-full bg-background border border-input rounded-md h-10 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="">Select a terminal...</option>
-                    {terminals.map(t => (
+                    {Array.isArray(terminals) && terminals.map(t => (
                       <option key={t.id} value={t.id}>{t.terminal_name} ({t.terminal_code})</option>
                     ))}
                   </select>
@@ -305,7 +305,7 @@ export default function TerminalSimulator() {
                       Waiting for simulator activity...
                     </div>
                   )}
-                  {logs.map((log, i) => (
+                  {Array.isArray(logs) && logs.map((log, i) => (
                     <div key={i} className="flex gap-3 leading-relaxed border-l border-white/5 pl-3">
                       <span className="text-slate-500 shrink-0">{log.timestamp}</span>
                       <span className={`

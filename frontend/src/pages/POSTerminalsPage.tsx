@@ -137,7 +137,7 @@ export default function POSTerminalsPage() {
               <div className="animate-pulse space-y-3">
                 {[1, 2, 3].map(i => <div key={i} className="h-24 bg-muted rounded-xl" />)}
               </div>
-            ) : devices.length === 0 ? (
+            ) : (!Array.isArray(devices) || devices.length === 0) ? (
               <Card><CardContent className="py-10 text-center text-muted-foreground">No devices registered yet</CardContent></Card>
             ) : (
               devices.map(device => {
@@ -189,7 +189,7 @@ export default function POSTerminalsPage() {
               <div className="animate-pulse space-y-3">
                 {[1, 2, 3].map(i => <div key={i} className="h-24 bg-muted rounded-xl" />)}
               </div>
-            ) : terminals.length === 0 ? (
+            ) : (!Array.isArray(terminals) || terminals.length === 0) ? (
               <Card><CardContent className="py-10 text-center text-muted-foreground">No terminals created yet</CardContent></Card>
             ) : (
               terminals.map(terminal => (

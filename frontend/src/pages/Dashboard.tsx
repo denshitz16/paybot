@@ -398,8 +398,8 @@ export default function Dashboard() {
 
             <Card className="glass-card overflow-hidden">
               <CardHeader className="pb-4 pt-8 px-8"><CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-3">Bot Stream</CardTitle></CardHeader>
-              <CardContent className="px-6 pb-8 space-y-4">
-                {recentLogs.map(log => (
+            <CardContent className="px-6 pb-8 space-y-4">
+                {Array.isArray(recentLogs) && recentLogs.map(log => (
                   <div key={log.id} className="flex gap-4 items-center p-3 rounded-2xl bg-muted/20 border border-border/40 hover:bg-muted/30 transition-all duration-300">
                     <MessageSquare className="h-4 w-4 text-brand-blue-500 shrink-0" />
                     <div className="min-w-0 flex-1">
@@ -408,7 +408,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
-                {recentLogs.length === 0 && <p className="text-center py-10 text-muted-foreground text-xs italic">System standby...</p>}
+                {(!Array.isArray(recentLogs) || recentLogs.length === 0) && <p className="text-center py-10 text-muted-foreground text-xs italic">System standby...</p>}
               </CardContent>
             </Card>
           </div>
@@ -417,7 +417,7 @@ export default function Dashboard() {
             <Card className="glass-card h-full flex flex-col overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between pb-6 pt-8 px-8"><CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-3">Global Activity</CardTitle><Link to="/transactions"><Button variant="ghost" size="sm" className="h-10 px-5 text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue-500">View Ledger <ArrowRight className="h-3 w-3 ml-2" /></Button></Link></CardHeader>
               <CardContent className="px-4 pb-8 flex-1 overflow-hidden space-y-2">
-                {recentTxns.map((txn) => {
+                {Array.isArray(recentTxns) && recentTxns.map((txn) => {
                   const sc = statusConfig[txn.status] || statusConfig.pending;
                   const tc = typeConfig[txn.transaction_type] || { icon: <FileText className="h-4 w-4" />, bg: 'bg-muted' };
                   return (
@@ -436,7 +436,7 @@ export default function Dashboard() {
                     </div>
                   );
                 })}
-                {recentTxns.length === 0 && !loading && (
+                {(!Array.isArray(recentTxns) || recentTxns.length === 0) && !loading && (
                   <div className="flex flex-col items-center justify-center py-20 opacity-30"><CreditCard className="h-12 w-12 mb-4" /><p className="text-xs font-black uppercase tracking-widest">No activity</p></div>
                 )}
               </CardContent>
