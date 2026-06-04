@@ -433,3 +433,65 @@ class PayMongoService:
         except Exception as e:
             logger.error("PayMongo get_balance error: %s", str(e))
             return {"success": False, "error": str(e)}
+
+    async def create_payout(
+        self,
+        amount: float,
+        bank_code: str,
+        account_number: str,
+        account_name: str,
+        description: str = "",
+        external_id: str = "",
+    ) -> Dict[str, Any]:
+        """Create a PayMongo Payout (Disbursement).
+
+        Note: The Payouts API may require activation on your PayMongo account.
+
+        Args:
+            amount: Amount in PHP.
+            bank_code: Bank or e-wallet code (e.g. 'gcash', 'maya', 'bdo').
+            account_number: Destination account number.
+            account_name: Destination account holder name.
+            description: Optional description.
+            external_id: Reference ID to store in metadata.
+        """
+        amount_centavos = int(round(amount * 100))
+
+        payload = {
+            "data": {
+                "attributes": {
+                    "amount": amount_centavos,
+                    "currency": "PHP",
+                    "bank_code": bank_code.lower(),
+                    "account_number": account_number,
+                    "account_name": account_name,
+                    "description": description or f"Withdrawal {external_id}",
+                    "metadata": {
+                        "external_id": external_id
+                    }
+                }
+            }
+        }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                r = await client.post(
+                    f"{PAYMONGO_BASE_URL}/payouts",
+                    json=payload,
+                    auth=self._get_auth(),
+                    timeout=30.0,
+                )
+                r.raise_for_status()
+                data = r.json().get("data", {})
+                return {
+                    "success": True,
+                    "payout_id": data.get("id"),
+                    "status": data.get("attributes", {}).get("status"),
+                    "response": data
+                }
+        except httpx.HTTPStatusError as e:
+            logger.error(f"PayMongo payout failed: {e.response.text}")
+            return {"success": False, "error": e.response.text}
+        except Exception as e:
+            logger.error(f"PayMongo payout error: {str(e)}")
+            return {"success": False, "error": str(e)}

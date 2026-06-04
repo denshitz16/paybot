@@ -34,7 +34,7 @@ const COLORS = {
 
 const api = {
   getTerminals: async (token) => {
-    const response = await fetch('https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/', {
+    const response = await fetch('https://mayaproduction.up.railway.app/api/v1/pos-terminals/', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ const api = {
 
   createTransaction: async (token, terminalId, data) => {
     const response = await fetch(
-      `https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/${terminalId}/transactions`,
+      `https://mayaproduction.up.railway.app/api/v1/pos-terminals/${terminalId}/transactions`,
       {
         method: 'POST',
         headers: {

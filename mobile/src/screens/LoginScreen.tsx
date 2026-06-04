@@ -25,7 +25,7 @@ export const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // In a real app, you would call your API: https://paybot-production-7350.up.railway.app/api/v1/auth/login
+      // In a real app, you would call your API: https://mayaproduction.up.railway.app/api/v1/auth/login
       console.log('Logging in with:', email);
 
       // Simulate API delay

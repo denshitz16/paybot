@@ -45,7 +45,7 @@ const PAYMENT_METHODS = [
 const api = {
   createTransaction: async (token, terminalId, data) => {
     const response = await fetch(
-      `https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/${terminalId}/transactions`,
+      `https://mayaproduction.up.railway.app/api/v1/pos-terminals/${terminalId}/transactions`,
       {
         method: 'POST',
         headers: {
@@ -149,7 +149,7 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
       interval = setInterval(async () => {
         try {
           const response = await fetch(
-            `https://paybot-production-7350.up.railway.app/api/v1/pos-terminals/transactions/${orderId}`,
+            `https://mayaproduction.up.railway.app/api/v1/pos-terminals/transactions/${orderId}`,
             {
               headers: {
                 'Authorization': `Bearer ${token}`,

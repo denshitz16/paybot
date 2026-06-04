@@ -165,7 +165,48 @@ async def get_maya_stats(
 
 @router.get("/balance")
 async def get_maya_balance(current_user: UserResponse = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """Fetch user balance from local wallet (replaces Xendit balance)"""
+    """Fetch user balance.
+    Super admins get the live PayMongo balance on /balance.
+    Others get their internal wallet balance.
+    """
+    perms = current_user.permissions
+    if perms and perms.is_super_admin:
+        try:
+            from services.paymongo_service import PayMongoService
+            pm_svc = PayMongoService()
+            pm_bal = await pm_svc.get_balance()
+            if pm_bal.get("success"):
+                available = pm_bal.get("available", [])
+                php_entry = next((e for e in available if e.get("currency", "").upper() == "PHP"), None)
+                if php_entry is not None:
+                    return {
+                        "success": True,
+                        "balance": float(php_entry["amount"]) / 100.0,
+                        "currency": "PHP",
+                        "is_live": True
+                    }
+        except Exception as e:
+            logger.warning(f"PayMongo balance fetch failed for super admin: {e}")
+
+    # Fallback to internal wallet balance
+    res = await db.execute(
+        select(Wallets.balance).where(Wallets.user_id == str(current_user.id), Wallets.currency == "PHP")
+    )
+    balance = res.scalar() or 0.0
+    return {
+        "success": True,
+        "balance": balance,
+        "currency": "PHP",
+        "is_live": False
+    }
+
+
+@router.get("/wallet")
+async def get_maya_internal_wallet(current_user: UserResponse = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Fetch the internal wallet balance explicitly, even for superadmins.
+
+    As requested: /wallet fetches the internal wallet balance.
+    """
     res = await db.execute(
         select(Wallets.balance).where(Wallets.user_id == str(current_user.id), Wallets.currency == "PHP")
     )

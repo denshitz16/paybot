@@ -242,8 +242,8 @@ export default function Wallet() {
     if (!user) return;
     try {
       const [phpRes, usdRes, txnRes] = await Promise.all([
-        fetch('/api/v1/wallet/balance?currency=PHP').then(r => r.json()),
-        fetch('/api/v1/wallet/balance?currency=USD').then(r => r.json()),
+        fetch('/api/v1/wallet/wallet?currency=PHP').then(r => r.json()),
+        fetch('/api/v1/wallet/wallet?currency=USD').then(r => r.json()),
         fetch('/api/v1/wallet/transactions').then(r => r.json()),
       ]);
       setPhpBalance(phpRes);

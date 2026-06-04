@@ -190,9 +190,7 @@ export default function Dashboard() {
       const results = await Promise.allSettled([
         client.apiCall.invoke({ url: '/api/v1/xendit/transaction-stats', method: 'GET', data: {} }),
         client.entities.transactions.query({ query: {}, sort: '-created_at', limit: 8 }),
-        isSuperAdmin 
-          ? client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=PHP', method: 'GET', data: {} })
-          : Promise.resolve(null),
+        client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=PHP', method: 'GET', data: {} }),
         client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=USD', method: 'GET', data: {} }),
       ]);
 

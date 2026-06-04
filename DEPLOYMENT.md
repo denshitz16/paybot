@@ -457,7 +457,7 @@ bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --latest --follo
 Use `--health` after monitoring to validate the backend health endpoint:
 
 ```bash
-bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://paybot-production-7350.up.railway.app/health"
+bash scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://mayaproduction.up.railway.app/health"
 ```
 
 ### Database Backups

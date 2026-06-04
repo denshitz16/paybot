@@ -72,7 +72,7 @@ bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --latest --fo
 To run a health check after log monitoring:
 
 ```bash
-bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://paybot-production-7350.up.railway.app/health"
+bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://mayaproduction.up.railway.app/health"
 ```
 
 ## 🧪 Testing

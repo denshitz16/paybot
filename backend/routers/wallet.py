@@ -292,32 +292,44 @@ async def get_balance(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get wallet balance.
+    """Get live gateway balance for super admins, or internal wallet balance for others.
 
-    - PHP (super admin): always synced real-time from the live Xendit account
-      balance so the value never diverges from what Xendit holds.
-    - PHP (other users): returns the stored wallet balance.
-    - USD: always computed from wallet transaction history (credits minus
-      debits) so the balance can never be stuck at 0 due to a stale row.
-    - Other currencies: returns the stored balance as-is.
+    As requested:
+    - /balance fetches the PayMongo balance for superadmins.
+    - /wallet (and this endpoint for regular users) fetches the internal wallet balance.
     """
     user_id = str(current_user.id)
     currency_upper = currency.upper()
+    perms = current_user.permissions
+    is_super = bool(perms and perms.is_super_admin)
 
+    if currency_upper == "PHP" and is_super:
+        try:
+            # Live PayMongo balance for super admin on /balance
+            pm_svc = PayMongoService()
+            pm_bal = await pm_svc.get_balance()
+            if pm_bal.get("success"):
+                available = pm_bal.get("available", [])
+                php_entry = next((e for e in available if e.get("currency", "").upper() == "PHP"), None)
+                if php_entry is not None:
+                    # We still need a wallet_id to satisfy the schema,
+                    # fetch the internal wallet for metadata but return live balance.
+                    wallet = await get_or_create_wallet(db, user_id, "PHP")
+                    return WalletBalanceResponse(
+                        wallet_id=wallet.id,
+                        balance=float(php_entry["amount"]) / 100.0,
+                        currency="PHP",
+                    )
+        except Exception as pe:
+            logger.warning(f"PayMongo balance fetch failed for /balance: {pe}")
+
+    # Fallback/Default: Internal wallet balance
     if currency_upper == "PHP":
         wallet = await get_or_create_wallet(db, user_id, "PHP")
-
-        # Super admin: live gateway balance sync removed (Xendit deprecated).
-        # Maya Manager does not provide a balance endpoint via the checkout API,
-        # so we rely on the stored wallet balance here.
-        perms = current_user.permissions
-        if perms and perms.is_super_admin:
-            logger.debug("Live gateway balance sync disabled: using stored wallet balance for super admin")
-
         return WalletBalanceResponse(
             wallet_id=wallet.id,
             balance=wallet.balance,
-            currency=wallet.currency or "PHP",
+            currency="PHP",
         )
 
     if currency_upper == "USD":
@@ -340,6 +352,46 @@ async def get_balance(
         )
 
     # Any other currency — return stored balance as-is
+    wallet = await get_or_create_wallet(db, user_id, currency_upper)
+    return WalletBalanceResponse(
+        wallet_id=wallet.id,
+        balance=wallet.balance,
+        currency=wallet.currency or currency_upper,
+    )
+
+
+@router.get("/wallet", response_model=WalletBalanceResponse)
+async def get_wallet_internal_balance(
+    currency: str = "PHP",
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Explicitly fetch the internal wallet balance, even for superadmins.
+
+    As requested: /wallet fetches the internal wallet balance.
+    """
+    user_id = str(current_user.id)
+    currency_upper = currency.upper()
+
+    if currency_upper == "PHP":
+        wallet = await get_or_create_wallet(db, user_id, "PHP")
+        return WalletBalanceResponse(
+            wallet_id=wallet.id,
+            balance=wallet.balance,
+            currency="PHP",
+        )
+
+    # Re-use the computation logic for USD
+    if currency_upper == "USD":
+        tg_user_id = _tg_user_id(user_id)
+        computed = await _compute_usd_balance(db, tg_user_id)
+        wallet = await get_or_create_wallet(db, tg_user_id, "USD")
+        return WalletBalanceResponse(
+            wallet_id=wallet.id,
+            balance=computed,
+            currency="USD",
+        )
+
     wallet = await get_or_create_wallet(db, user_id, currency_upper)
     return WalletBalanceResponse(
         wallet_id=wallet.id,
@@ -845,3 +897,187 @@ async def reject_crypto_topup(
 
     # TODO: Implement
     return {"success": True, "message": "Request rejected"}
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Disbursement (Withdrawal) Management
+# ────────────────────────────────────────────────────────────────────────────────
+
+@router.get("/admin/withdrawals")
+async def admin_list_withdrawals(
+    status: Optional[str] = Query(None, description="Filter by status (pending, completed, failed)"),
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all withdrawal requests. Super admin only."""
+    perms = current_user.permissions
+    if not perms or not perms.is_super_admin:
+        raise HTTPException(status_code=403, detail="Super admin access required.")
+
+    from models.disbursements import Disbursements
+    query = select(Disbursements).order_by(Disbursements.created_at.desc())
+    if status:
+        query = query.where(Disbursements.status == status)
+
+    result = await db.execute(query)
+    items = result.scalars().all()
+
+    return {"items": items, "total": len(items)}
+
+
+@router.post("/admin/withdrawals/{disb_id}/approve")
+async def admin_approve_withdrawal(
+    disb_id: int,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Approve a withdrawal request. Initiates real-money transfer via PayMongo for Admins."""
+    perms = current_user.permissions
+    if not perms or not perms.is_super_admin:
+        raise HTTPException(status_code=403, detail="Super admin access required.")
+
+    from models.disbursements import Disbursements
+    from services.paymongo_service import PayMongoService
+    from services.telegram_service import TelegramService
+
+    res = await db.execute(select(Disbursements).where(Disbursements.id == disb_id))
+    disb = res.scalar_one_or_none()
+
+    if not disb:
+        raise HTTPException(status_code=404, detail="Withdrawal request not found")
+    if disb.status != "pending":
+        raise HTTPException(status_code=400, detail=f"Request is already {disb.status}")
+
+    # 1. Initiate Real-Money Transfer via PayMongo
+    pm_svc = PayMongoService()
+    payout_res = await pm_svc.create_payout(
+        amount=disb.amount,
+        bank_code=disb.bank_code,
+        account_number=disb.account_number,
+        account_name=disb.account_name,
+        description=f"PayBot Withdrawal #{disb.external_id}",
+        external_id=disb.external_id
+    )
+
+    if not payout_res.get("success"):
+        logger.error(f"PayMongo payout failed for withdrawal {disb_id}: {payout_res.get('error')}")
+        # Note: We don't fail the whole request here, but we mark the disbursement as failed
+        # depending on your business logic. For now, let's stop and notify.
+        raise HTTPException(
+            status_code=502,
+            detail=f"Real-money transfer failed via PayMongo: {payout_res.get('error')}"
+        )
+
+    # 2. Update Disbursement record
+    disb.status = "completed"
+    disb.updated_at = datetime.now()
+    disb.xendit_id = payout_res.get("payout_id") # Reuse xendit_id col for PayMongo Payout ID
+
+    # 3. Update the pending ledger entry
+    ledger_res = await db.execute(
+        select(Wallet_transactions).where(
+            Wallet_transactions.reference_id == disb.external_id,
+            Wallet_transactions.transaction_type == "withdraw"
+        )
+    )
+    ledger = ledger_res.scalar_one_or_none()
+    if ledger:
+        ledger.status = "completed"
+
+    await db.commit()
+
+    # 4. Notify User via Telegram
+    if disb.user_id.startswith("tg-"):
+        chat_id = disb.user_id[3:]
+        tg = TelegramService()
+        await tg.send_message(
+            chat_id,
+            f"✅ <b>Withdrawal Approved!</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"💰 Amount: <b>₱{disb.amount:,.2f}</b>\n"
+            f"🏦 {disb.bank_code} ({disb.account_number})\n"
+            f"🆔 Ref: <code>{disb.external_id}</code>\n\n"
+            f"Funds are now being transferred to your account."
+        )
+
+    return {"success": True, "message": "Withdrawal approved and payout initiated", "payout_id": disb.xendit_id}
+
+
+@router.post("/admin/withdrawals/{disb_id}/reject")
+async def admin_reject_withdrawal(
+    disb_id: int,
+    reason: str = Query("Rejected by admin"),
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Reject a withdrawal request and refund internal wallet."""
+    perms = current_user.permissions
+    if not perms or not perms.is_super_admin:
+        raise HTTPException(status_code=403, detail="Super admin access required.")
+
+    from models.disbursements import Disbursements
+    from services.telegram_service import TelegramService
+
+    res = await db.execute(select(Disbursements).where(Disbursements.id == disb_id))
+    disb = res.scalar_one_or_none()
+
+    if not disb:
+        raise HTTPException(status_code=404, detail="Withdrawal request not found")
+    if disb.status != "pending":
+        raise HTTPException(status_code=400, detail=f"Request is already {disb.status}")
+
+    # 1. Mark as failed/rejected
+    disb.status = "failed"
+    disb.description = f"Rejected: {reason}"
+    disb.updated_at = datetime.now()
+
+    # 2. Update ledger and REFUND internal wallet
+    ledger_res = await db.execute(
+        select(Wallet_transactions).where(
+            Wallet_transactions.reference_id == disb.external_id,
+            Wallet_transactions.transaction_type == "withdraw"
+        )
+    )
+    ledger = ledger_res.scalar_one_or_none()
+    if ledger:
+        ledger.status = "failed"
+
+        # Refund
+        wallet_res = await db.execute(select(Wallets).where(Wallets.id == ledger.wallet_id))
+        wallet = wallet_res.scalar_one_or_none()
+        if wallet:
+            balance_before = wallet.balance
+            wallet.balance = round(wallet.balance + disb.amount, 2)
+            wallet.updated_at = datetime.now()
+
+            refund_txn = Wallet_transactions(
+                user_id=disb.user_id,
+                wallet_id=wallet.id,
+                transaction_type="receive",
+                amount=disb.amount,
+                balance_before=balance_before,
+                balance_after=wallet.balance,
+                note=f"Refund for rejected withdrawal #{disb.external_id}",
+                status="completed",
+                reference_id=f"ref-{disb.external_id}",
+                created_at=datetime.now(),
+            )
+            db.add(refund_txn)
+
+    await db.commit()
+
+    # 3. Notify User
+    if disb.user_id.startswith("tg-"):
+        chat_id = disb.user_id[3:]
+        tg = TelegramService()
+        await tg.send_message(
+            chat_id,
+            f"❌ <b>Withdrawal Rejected</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"💰 Amount: <b>₱{disb.amount:,.2f}</b>\n"
+            f"📝 Reason: {reason}\n"
+            f"🆔 Ref: <code>{disb.external_id}</code>\n\n"
+            f"The amount has been refunded to your internal wallet."
+        )
+
+    return {"success": True, "message": "Withdrawal rejected and funds refunded"}
