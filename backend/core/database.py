@@ -551,21 +551,37 @@ class DatabaseManager:
 
         if default is not None:
             # Handle different data types for default values
+            ctype_upper = column_type.upper()
+            is_text_type = False
+            for t in ["TEXT", "VARCHAR", "STRING", "CHAR"]:
+                if t in ctype_upper:
+                    is_text_type = True
+                    break
+            
             if default == "":
-                if column_type.upper() in ["TEXT", "VARCHAR", "STRING"]:
+                if is_text_type:
                     sql += " DEFAULT ''"
                 else:
                     # For non-text types with empty string default, use appropriate default
-                    if column_type.upper() in ["INTEGER", "BIGINT"]:
+                    is_int_type = False
+                    for t in ["INTEGER", "BIGINT", "INT", "SMALLINT"]:
+                        if t in ctype_upper:
+                            is_int_type = True
+                            break
+                    if is_int_type:
                         sql += " DEFAULT 0"
-                    elif column_type.upper() in ["BOOLEAN"]:
+                    elif "BOOLEAN" in ctype_upper:
                         sql += " DEFAULT false"
                     else:
                         sql += " DEFAULT ''"
             else:
                 # Quote string values for text types
-                if column_type.upper() in ["TEXT", "VARCHAR", "STRING"] and not default.isdigit():
-                    sql += f" DEFAULT '{default}'"
+                if is_text_type and not default.isdigit():
+                    # Check if it's already quoted (SQLAlchemy might provide it quoted)
+                    if not (default.startswith("'") and default.endswith("'")):
+                        sql += f" DEFAULT '{default}'"
+                    else:
+                        sql += f" DEFAULT {default}"
                 else:
                     sql += f" DEFAULT {default}"
         logger.debug(f"ALTER SQL: {sql}")
