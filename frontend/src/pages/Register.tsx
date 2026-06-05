@@ -108,7 +108,10 @@ export default function Register() {
                <img src="/logo.svg" alt="Logo" className="h-8 w-8" />
             </div>
             <div>
-              <h2 className="text-3xl font-black text-white uppercase tracking-tighter">{APP_NAME}</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter">{APP_NAME}</h2>
+                <ShieldCheck className="h-5 w-5 text-brandblue-400 fill-brandblue-400/10" />
+              </div>
               <p className="text-brandblue-400 text-[11px] font-black uppercase tracking-[0.4em] mt-1.5">Philippines</p>
             </div>
           </Link>

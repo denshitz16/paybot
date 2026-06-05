@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import TelegramLoginWidget from '@/components/TelegramLoginWidget';
 import {
     ArrowRight, ChevronRight, CheckCircle2,
-    UserPlus, Menu, X, Lock, Mail, Key, Eye, EyeOff, Loader2, XCircle
+    UserPlus, Menu, X, Lock, Mail, Key, Eye, EyeOff, Loader2, XCircle, ShieldCheck
 } from 'lucide-react';
 import { APP_NAME, SUPPORT_LINKS, SUPPORT_URL } from '@/lib/brand';
 import AppFooter from '@/components/AppFooter';
@@ -153,7 +153,10 @@ export default function Login() {
                             <img src="/logo.svg" alt="Logo" className="h-7 w-7" />
                         </div>
                         <div className="hidden sm:block">
-                            <h2 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">{APP_NAME}</h2>
+                            <div className="flex items-center gap-1.5">
+                                <h2 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">{APP_NAME}</h2>
+                                <ShieldCheck className="h-4 w-4 text-brandblue-400 fill-brandblue-400/10" />
+                            </div>
                             <p className="text-[10px] font-black text-brandblue-400 uppercase tracking-[0.4em] mt-1.5 leading-none">Philippines</p>
                         </div>
                     </div>

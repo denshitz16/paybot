@@ -313,7 +313,10 @@ export default function Layout({ children, connected }: LayoutProps) {
             <img src="/logo.svg" alt={APP_NAME} className="h-7 w-7 shrink-0 animate-logo-bounce" />
           </div>
           <div>
-            <p className="text-lg font-black tracking-tighter text-foreground uppercase">{APP_NAME}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-lg font-black tracking-tighter text-foreground uppercase">{APP_NAME}</p>
+              <ShieldCheck className="h-4 w-4 text-brand-blue-500 fill-brand-blue-500/10" />
+            </div>
             <p className="text-[9px] text-muted-foreground/60 font-black uppercase tracking-[0.3em]">{APP_SUBTITLE}</p>
           </div>
         </Link>
@@ -351,7 +354,10 @@ export default function Layout({ children, connected }: LayoutProps) {
                 <div className="h-11 w-11 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-2xl shadow-brandblue-500/40">
                   <img src="/logo.svg" alt={APP_NAME} className="h-7 w-7" />
                 </div>
-                <p className="text-xl font-black tracking-tighter text-white uppercase">{APP_NAME}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-black tracking-tighter text-white uppercase">{APP_NAME}</p>
+                  <ShieldCheck className="h-5 w-5 text-brandblue-400 fill-brandblue-400/10" />
+                </div>
               </Link>
               <button onClick={() => setSidebarOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 text-white/40 hover:text-white transition-all active:scale-90">
                 <X className="h-5 w-5" />
@@ -390,7 +396,10 @@ export default function Layout({ children, connected }: LayoutProps) {
             <div className="h-10 w-10 rounded-2xl bg-[#0A0F1E] flex items-center justify-center shadow-xl border border-white/5">
               <img src="/logo.svg" alt={APP_NAME} className="h-6 w-6" />
             </div>
-            <span className="text-base font-black tracking-tighter text-foreground uppercase">{APP_NAME}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-base font-black tracking-tighter text-foreground uppercase">{APP_NAME}</span>
+              <ShieldCheck className="h-3.5 w-3.5 text-brand-blue-500 fill-brand-blue-500/10" />
+            </div>
           </div>
 
           <div className="flex-1" />

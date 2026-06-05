@@ -13,6 +13,7 @@ from models.wallet_transactions import Wallet_transactions
 from models.admin_users import AdminUser
 from models.disbursements import Disbursements
 from models.crypto_topup import CryptoTopupRequest
+from models.topup_requests import TopupRequest
 
 logger = logging.getLogger(__name__)
 
@@ -257,7 +258,6 @@ class WalletsService:
 
         # 5. Send SMS notifications (async, non-blocking)
         from services.notification_service import SMSService
-        from models.admin_users import AdminUser
         
         # Get mobile numbers if available (try to fetch from user profiles or fallback)
         try:
@@ -471,7 +471,6 @@ class WalletsService:
 
     async def get_usdt_stats(self) -> Dict[str, Any]:
         """Aggregate USDT settlement statistics."""
-        from models.topup_requests import TopupRequest
 
         now = datetime.now()
         start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -491,7 +490,7 @@ class WalletsService:
         row_usd = res_usd.one()
 
         settlement = float(row_php[0] or 0.0) + float(row_usd[0] or 0.0)
-        txnCount = int(row_php[1] or 0) + int(row_usd[1] or 0)
+        txn_count = int(row_php[1] or 0) + int(row_usd[1] or 0)
 
         # Incoming USDT yesterday
         res_php_y = await self.db.execute(
@@ -521,7 +520,7 @@ class WalletsService:
 
         return {
             "settlement": settlement,
-            "txnCount": txnCount,
+            "txnCount": txn_count,
             "change": change,
             "pending": pending
         }

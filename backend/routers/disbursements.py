@@ -1,11 +1,12 @@
 import json
 import logging
+import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import ConfigDict, BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
@@ -187,7 +188,6 @@ async def approve_disbursements(
         disb.updated_at = datetime.now(timezone.utc)
 
         # Update wallet transaction status
-        from sqlalchemy import update
         await db.execute(
             update(Wallet_transactions)
             .where(Wallet_transactions.reference_id == disb.external_id)
@@ -380,7 +380,6 @@ async def create_disbursements(
     service = DisbursementsService(db)
     try:
         # 1. Create a pending Disbursement record
-        import uuid
         now = datetime.now(timezone.utc)
         ext_id = f"wd-ent-{uuid.uuid4().hex[:12]}"
 

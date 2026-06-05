@@ -45,6 +45,7 @@ import {
   RotateCcw,
   Power,
   Wrench,
+  ShieldCheck,
   Globe,
   Hash,
   ChevronDown,
@@ -334,7 +335,10 @@ export default function BotSettings() {
                             <Bot className="h-8 w-8 text-emerald-400" />
                           </div>
                           <div className="space-y-1">
-                            <p className="text-base font-black text-white uppercase tracking-tight">{cloneInfo.bot_name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-base font-black text-white uppercase tracking-tight">{cloneInfo.bot_name}</p>
+                              <ShieldCheck className="h-4 w-4 text-brandblue-400 fill-brandblue-400/20" />
+                            </div>
                             <p className="text-[11px] font-bold text-emerald-400/60 uppercase tracking-[0.2em]">@{cloneInfo.bot_username}</p>
                           </div>
                         </div>
@@ -370,7 +374,10 @@ export default function BotSettings() {
                               <Sparkles className="h-10 w-10 animate-float" />
                             </div>
                             <div className="flex-1 space-y-1">
-                              <p className="text-xl font-black text-brandblue-900 uppercase tracking-tight">{cloneValidated.first_name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xl font-black text-brandblue-900 uppercase tracking-tight">{cloneValidated.first_name}</p>
+                                <ShieldCheck className="h-5 w-5 text-brandblue-600 fill-brandblue-600/10" />
+                              </div>
                               <p className="text-[11px] font-bold text-brandblue-600 uppercase tracking-[0.2em]">@{cloneValidated.username}</p>
                             </div>
                          </div>

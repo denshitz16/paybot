@@ -313,7 +313,10 @@ export const HomeScreen = ({ navigation }) => {
       <Animated.View style={[styles.header, { height: headerHeight, backgroundColor: isDark ? colors.surface : common.primary }]}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.headerTitle}>PayBot</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.headerTitle}>PayBot</Text>
+              <MaterialIcons name="verified" size={20} color="#fff" style={{ marginTop: 2 }} />
+            </View>
             <View style={styles.statusRow}>
                <View style={styles.statusDot} />
                <Text style={styles.headerSubtitle}>BANK GRADE INFRASTRUCTURE</Text>

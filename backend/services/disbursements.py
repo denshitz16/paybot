@@ -1,8 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import logging
+import uuid
 from typing import Optional, Dict, Any, List
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.disbursements import Disbursements
@@ -223,9 +224,6 @@ class DisbursementsService:
         self, user_ids: List[str], bank_code: str, priority: str = "normal"
     ) -> Dict[str, Any]:
         """Create a settlement batch for multiple users going to the same bank."""
-        import uuid
-        from datetime import datetime, timezone
-        
         batch_id = f"batch-{bank_code}-{uuid.uuid4().hex[:8]}"
         now = datetime.now(timezone.utc)
         
@@ -276,8 +274,6 @@ class DisbursementsService:
 
     async def mark_settlement_completed(self, batch_id: str) -> Dict[str, Any]:
         """Mark all disbursements in a batch as completed."""
-        from datetime import datetime, timezone
-        
         result = await self.db.execute(
             select(Disbursements).where(Disbursements.settlement_batch_id == batch_id)
         )
@@ -304,9 +300,6 @@ class DisbursementsService:
 
     async def get_settlement_stats(self) -> Dict[str, Any]:
         """Get settlement statistics for super admin dashboard."""
-        from datetime import datetime, timedelta, timezone
-        from sqlalchemy import func, case
-        
         now = datetime.now(timezone.utc)
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         week_start = today_start - timedelta(days=7)

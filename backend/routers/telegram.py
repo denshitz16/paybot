@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
@@ -26,6 +26,7 @@ from models.subscriptions import Subscriptions
 from schemas.auth import UserResponse
 from services.telegram_service import TelegramService, _resolve_bot_token, t as _t, user_lang as _user_lang
 from services.maya_service import MayaService
+from services.xendit_service import XenditService
 from services.event_bus import payment_event_bus
 from services.paymongo_service import PayMongoService
 from services.photonpay_service import PhotonPayService
@@ -298,6 +299,9 @@ _CMD_STEPS: Dict[str, List[Dict]] = {
         {"key": "amount",      "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 500</i>"},
         {"key": "description", "type": "str",   "prompt": "📝 Enter the <b>description</b>:\n<i>e.g. WeChat payment</i>\n\nOr type <code>skip</code> to use the default.", "optional": True, "default": "WeChat payment"},
     ],
+    "/topup": [
+        {"key": "amount", "type": "float", "prompt": "💰 Enter the <b>USDT amount</b> to top up:\n<i>e.g. 50</i>\n\nYour wallet will be credited in PHP at the current market rate."},
+    ],
     "/disburse": [
         {"key": "bank",    "type": "str",   "prompt": "🏦 Enter the <b>channel / bank</b>:\n<i>GCASH · MAYA · BDO · BPI · UNIONBANK · METROBANK · LANDBANK</i>"},
         {"key": "account", "type": "str",   "prompt": "🔢 Enter the <b>account / mobile number</b>:\n<i>e.g. 09XXXXXXXXX or 1234567890</i>"},
@@ -411,7 +415,7 @@ def _lang_kb() -> dict:
 def _welcome_en(name: str = "") -> str:
     greeting = f"Hi {name}! 🎉" if name else "🎉 You're in!"
     return (
-        f"👋 <b>Welcome to PayBot Philippines!</b>\n"
+        f"👋 <b>PayBot Philippines ✅</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"{greeting} Your all-in-one payment terminal is ready.\n\n"
         f"💳 <b>Accept Payments</b>\n"
@@ -432,7 +436,7 @@ def _welcome_en(name: str = "") -> str:
 def _welcome_zh(name: str = "") -> str:
     greeting = f"嗨 {name}！🎉" if name else "🎉 欢迎回来！"
     return (
-        f"👋 <b>欢迎使用 PayBot Philippines！</b>\n"
+        f"👋 <b>PayBot Philippines ✅</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"{greeting} 您的一站式支付终端已就绪。\n\n"
         f"💳 <b>收款功能</b>\n"
@@ -448,6 +452,79 @@ def _welcome_zh(name: str = "") -> str:
         f"  /topup [金额] — 通过 USDT 充值\n\n"
         f"💡 <b>提示：</b> 输入命令即可开始。输入 /help 查看完整参考。"
     )
+
+
+async def _send_start_panel(db: AsyncSession, chat_id: str, first_name: str):
+    """Sends the high-end dashboard panel as requested in the reference image."""
+    from services.wallets import WalletsService
+    svc = WalletsService(db)
+    
+    # Fetch balances
+    php_bal = 0.0
+    usd_bal = 0.0
+    try:
+        php_res = await svc.get_balance(chat_id, "PHP")
+        php_bal = php_res.get("balance", 0.0)
+        
+        usd_res = await svc.get_balance(chat_id, "USD")
+        usd_bal = usd_res.get("balance", 0.0)
+    except Exception as e:
+        logger.error(f"Error fetching balances for start panel: {e}")
+
+    # Construct Message Text
+    text = (
+        f"🛡️ <b>PayBot Philippines ✅</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"👤 <b>昵称:</b> {_escape_html(first_name)}\n"
+        f"🆔 <b>ID:</b> <code>{chat_id}</code>\n\n"
+        f"₮ <b>USDT :</b> {usd_bal:,.2f}\n"
+        f"₱ <b>PHP :</b> {php_bal:,.2f}\n"
+        f"💎 <b>POINTS :</b> 0.00\n\n"
+        f"📢 <b>官方频道 :</b> @PayBotPH"
+    )
+
+    # Construct Inline Keyboard (matching layout of image)
+    # Row 1: 🏦 充值 (Deposit), 💸 提币 (Withdraw)
+    # Row 2: ⬆️ 转账 (Transfer), ⬇️ 收款 (Receive)
+    # Row 3: 🧧 红包 (Red Envelope) - full width
+    # Row 4: ⚡ 闪兑 (Swap), 💳 匿名信用卡 (Anonymous Credit Card)
+    # Row 5: 💎 电报会员/星星 (Telegram Premium/Stars), 👤 个人中心 (Personal Center)
+    # Row 6: 👥 添加到群组 (Add to Group), 🏧 自由承兑群(OTC) (OTC Group)
+    # Row 7: 🎮 OK游戏中心 (Game Center) - full width
+
+    kb = {
+        "inline_keyboard": [
+            [
+                {"text": "🏦 充值", "callback_data": "wizard:/topup"},
+                {"text": "💸 提币", "callback_data": "wizard:/disburse"}
+            ],
+            [
+                {"text": "⬆️ 转账", "callback_data": "wizard:/send"},
+                {"text": "⬇️ 收款", "callback_data": "wizard:/qr"}
+            ],
+            [
+                {"text": "🧧 红包", "callback_data": "action:red_packet"}
+            ],
+            [
+                {"text": "⚡ 闪兑", "callback_data": "action:swap"},
+                {"text": "💳 匿名信用卡", "callback_data": "action:virtual_card"}
+            ],
+            [
+                {"text": "💎 电报会员", "callback_data": "action:tg_premium"},
+                {"text": "👤 个人中心", "callback_data": "wizard:/wallet"}
+            ],
+            [
+                {"text": "👥 添加到群组", "url": f"https://t.me/{settings.telegram_bot_username}?startgroup=true"},
+                {"text": "🏧 自由承兑群(OTC)", "url": "https://t.me/PayBotOTC"}
+            ],
+            [
+                {"text": "🎮 游戏中心", "url": "https://t.me/PayBotGames"}
+            ]
+        ]
+    }
+
+    tg = TelegramService()
+    await tg.send_message(chat_id, text, reply_markup=kb)
 
 
 def _pay_kb() -> dict:
@@ -610,8 +687,6 @@ async def _get_or_promote_recipient(db: AsyncSession, identifier: str) -> Option
     identifier = identifier.strip().lstrip("@")
     if not identifier:
         return None
-
-    from sqlalchemy import or_
 
     # Build search variants to handle common issues:
     # 1. Optional @ prefix in database
@@ -1013,6 +1088,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 _user_lang[cq_chat_id] = lang
 
                 # Persist to DB if user exists
+                admin = None
                 try:
                     adm_res = await db.execute(select(AdminUser).where(AdminUser.telegram_id == cq_chat_id))
                     admin = adm_res.scalar_one_or_none()
@@ -1025,13 +1101,12 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     await db.rollback()
 
                 if admin:
-                    welcome = _welcome_en(cq_first_name) if lang == "en" else _welcome_zh(cq_first_name)
-                    await tg.send_message(cq_chat_id, welcome)
+                    await _send_start_panel(db, cq_chat_id, cq_first_name)
                 else:
                     if lang == "en":
                         greeting = f"Hi {cq_first_name}! 👋" if cq_first_name else "👋 Hello!"
                         msg = (
-                            f"🌟 <b>Welcome to PayBot Philippines!</b>\n"
+                            f"🌟 <b>PayBot Philippines ✅</b>\n"
                             f"━━━━━━━━━━━━━━━━━━━━\n"
                             f"{greeting} Great to have you here! 😊\n\n"
                             f"This bot is currently available to <b>registered merchants</b> only.\n\n"
@@ -1051,6 +1126,14 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                             f"👉 输入 /register 开始注册，只需几分钟！"
                         )
                     await tg.send_message(cq_chat_id, msg)
+
+            elif cq_data.startswith("wizard:"):
+                await tg.answer_callback_query(cq_id)
+                cmd = cq_data.split(":")[1]
+                await tg.send_message(cq_chat_id, _wizard_start(cq_chat_id, cmd))
+
+            elif cq_data.startswith("action:"):
+                await tg.answer_callback_query(cq_id, text="Feature coming soon! / 功能即将推出！")
 
             return {"status": "ok"}
 
@@ -1110,7 +1193,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
             if not is_admin:
                 await tg.send_message(
                     chat_id,
-                    "👋 <b>Welcome to PayBot Philippines!</b>\n"
+                    "👋 <b>PayBot Philippines ✅</b>\n"
                     "━━━━━━━━━━━━━━━━━━━━\n"
                     "Please type /start to begin."
                 )
@@ -1500,6 +1583,44 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     await tg.send_message(chat_id, "❌ An error occurred saving your deposit. Please try /deposit again.")
                 return {"status": "ok"}
 
+            if cmd == "/topup":
+                try:
+                    amount = float(collected.get("amount", 0))
+                    rate = await get_usdt_php_rate(db)
+                    trc20_address = await get_usdt_trc20_address(db)
+                    if amount <= 0:
+                        await tg.send_message(chat_id, "❌ Amount must be greater than zero.")
+                    else:
+                        amount_php = round(amount * rate, 2)
+                        now = datetime.now(timezone.utc)
+                        req = TopupRequest(
+                            chat_id=chat_id,
+                            telegram_username=username,
+                            amount_usdt=amount,
+                            currency="PHP",
+                            status="pending",
+                            created_at=now,
+                        )
+                        db.add(req)
+                        await db.commit()
+                        await db.refresh(req)
+                        qr_url = _usdt_static_qr_url()
+                        caption = (
+                            f"💵 <b>Top Up PHP Wallet via USDT TRC20</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━\n"
+                            f"📤 Send exactly <b>${amount:.2f} USDT</b> to:\n\n"
+                            f"<code>{trc20_address}</code>\n\n"
+                            f"⚠️ <b>Network:</b> TRC20 (TRON) only\n"
+                            f"💱 <b>Expected credit:</b> ₱{amount_php:,.2f} PHP\n"
+                            f"🆔 Request ID: <code>#{req.id}</code>\n\n"
+                            f"📷 <b>Next step:</b> Upload your transfer receipt (photo) to this chat."
+                        )
+                        await tg.send_photo(chat_id, qr_url, caption=caption)
+                except Exception as exc:
+                    logger.error(f"/topup wizard completion error: {exc}", exc_info=True)
+                    await tg.send_message(chat_id, "❌ An error occurred. Please try /topup [amount] directly.")
+                return {"status": "ok"}
+
             if cmd == "/withdraw":
                 try:
                     bank = str(collected.get("bank", "")).upper()
@@ -1615,14 +1736,17 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
 
         # ==================== /start ====================
         if text.startswith("/start"):
-            # Clear stored language so the user is prompted to pick again.
-            _user_lang.pop(chat_id, None)
-            greeting = f"Hi {first_name}! 👋" if first_name else "👋 Hello!"
-            await tg.send_message(
-                chat_id,
-                f"🌐 {greeting}\n\n<b>Select your language / 请选择语言</b>",
-                reply_markup=_lang_kb(),
-            )
+            lang = _user_lang.get(chat_id)
+            if not lang:
+                greeting = f"Hi {first_name}! 👋" if first_name else "👋 Hello!"
+                await tg.send_message(
+                    chat_id,
+                    f"🌐 {greeting}\n\n<b>PayBot Philippines ✅</b>\n<b>Select your language / 请选择语言</b>",
+                    reply_markup=_lang_kb(),
+                )
+            else:
+                await _send_start_panel(db, chat_id, first_name)
+            return {"status": "ok"}
 
 # Removed KYB commands
 
@@ -1696,8 +1820,9 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                         await _safe_log(db, chat_id, username, text)
                         return {"status": "ok"}
                     description = parts[2] if len(parts) > 2 else "QR payment"
-                    maya = MayaService()
-                    result = await maya.create_qr_code(amount=amount, description=description)
+                    xendit_svc = XenditService()
+                    ext_id = f"qr-{uuid.uuid4().hex[:8]}"
+                    result = await xendit_svc.create_qr_code(amount=amount, external_id=ext_id, description=description)
                     if result.get("success"):
                         reply = (
                             f"✅ <b>QR Code Generated</b>\n"
@@ -1812,9 +1937,11 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                             )
                             await _safe_log(db, chat_id, username, text)
                             return {"status": "ok"}
-                        result = await maya.create_qr_code(amount=amount, description=description)
+                        
+                        xendit_svc = XenditService()
+                        result = await xendit_svc.create_qr_code(amount=amount, description=description)
                         if result.get("success"):
-                            qr_url = result.get("qr_string", "")
+                            qr_url = result.get("qr_image_url", "")
                             ref_num = result.get("external_id", "")
                             caption = (
                                 f"✅ <b>Alipay Payment Ready!</b>\n"
@@ -1992,8 +2119,8 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                         await _safe_log(db, chat_id, username, text)
                         return {"status": "ok"}
                     bank_code = parts[2].upper()
-                    xendit = MayaService()
-                    result = await xendit.create_virtual_account(amount=amount, bank_code=bank_code, name=username)
+                    xendit_svc = XenditService()
+                    result = await xendit_svc.create_virtual_account(amount=amount, bank_code=bank_code, account_name=username)
                     if result.get("success"):
                         reply = (
                             f"✅ <b>Virtual Account Created!</b>\n\n🏦 Bank: {bank_code}\n💰 ₱{amount:,.2f}\n"

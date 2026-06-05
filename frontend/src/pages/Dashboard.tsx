@@ -37,6 +37,9 @@ import {
   Moon,
   Radio,
   MessageCircle,
+  ArrowDownLeft,
+  RefreshCcw,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface Stats {
@@ -336,18 +339,23 @@ export default function Dashboard() {
 
               <div className="flex items-center gap-4 sm:gap-6 self-start lg:self-center">
                 <div className="flex items-center gap-1 bg-white/5 backdrop-blur-3xl p-1.5 sm:p-2 rounded-2xl sm:rounded-[2.5rem] border border-white/10 shadow-2xl">
-                      <div className="text-center px-4 py-3 sm:px-10 sm:py-5">
+                      <div className="text-center px-4 py-3 sm:px-8 sm:py-5">
                         <p className="text-xl sm:text-4xl font-black text-white tracking-tighter tabular-nums">
                           {loading ? '---' : stats.total_count}
                         </p>
                         <p className="text-white/20 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1 sm:mt-2">Volume</p>
                       </div>
                       <div className="w-px h-8 sm:h-16 bg-white/5 mx-1" />
-                      <div className="text-center px-4 py-3 sm:px-10 sm:py-5">
+                      <div className="text-center px-4 py-3 sm:px-8 sm:py-5">
                         <p className="text-xl sm:text-4xl font-black text-emerald-400 tracking-tighter tabular-nums">
                           {loading ? '---' : stats.paid_count}
                         </p>
                         <p className="text-white/20 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1 sm:mt-2">Settled</p>
+                      </div>
+                      <div className="w-px h-8 sm:h-16 bg-white/5 mx-1" />
+                      <div className="text-center px-4 py-3 sm:px-8 sm:py-5">
+                        <p className="text-xl sm:text-4xl font-black text-brandblue-400 tracking-tighter tabular-nums">0.00</p>
+                        <p className="text-white/20 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1 sm:mt-2">Points</p>
                       </div>
                 </div>
                 <Button
@@ -370,7 +378,7 @@ export default function Dashboard() {
                 <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center shadow-inner group-hover:rotate-12 transition-transform">
                   <CreditCard className="h-6 w-6" />
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Collect Payment</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Charge</span>
               </div>
             </Link>
             <Link to="/disbursements" className="group">
@@ -381,28 +389,28 @@ export default function Dashboard() {
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Payout</span>
               </div>
             </Link>
-            <Link to="/scan-qrph" className="group hidden sm:flex">
-              <div className="h-full flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-card border border-border/40 hover:bg-muted/50 hover:scale-[1.05] transition-all shadow-sm">
-                <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
-                  <QrCode className="h-6 w-6" />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Scan QR</span>
-              </div>
-            </Link>
             <Link to="/wallet" className="group hidden sm:flex">
               <div className="h-full flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-card border border-border/40 hover:bg-muted/50 hover:scale-[1.05] transition-all shadow-sm">
-                <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-                  <Wallet className="h-6 w-6" />
+                <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                  <ArrowRight className="h-6 w-6" />
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Vault</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Transfer</span>
+              </div>
+            </Link>
+            <Link to="/create-payment?type=qr_code" className="group hidden sm:flex">
+              <div className="h-full flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-card border border-border/40 hover:bg-muted/50 hover:scale-[1.05] transition-all shadow-sm">
+                <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                  <ArrowDownLeft className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Receive</span>
               </div>
             </Link>
             <div className="sm:hidden grid grid-cols-2 gap-4 col-span-2">
-               <Link to="/scan-qrph" className="flex items-center justify-center gap-3 p-5 rounded-2xl bg-card border border-border/40 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  <QrCode className="h-4 w-4" /> Scan
-               </Link>
                <Link to="/wallet" className="flex items-center justify-center gap-3 p-5 rounded-2xl bg-card border border-border/40 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  <Wallet className="h-4 w-4" /> Vault
+                  <ArrowRight className="h-4 w-4" /> Transfer
+               </Link>
+               <Link to="/create-payment?type=qr_code" className="flex items-center justify-center gap-3 p-5 rounded-2xl bg-card border border-border/40 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  <ArrowDownLeft className="h-4 w-4" /> Receive
                </Link>
             </div>
         </div>
@@ -462,8 +470,8 @@ export default function Dashboard() {
                   {([
                     { to: '/create-payment', icon: CreditCard, label: 'Charge', bg: 'bg-brandblue-500/10', text: 'text-brandblue-500', shadow: 'shadow-brandblue-500/20' },
                     { to: '/disbursements', icon: Send, label: 'Payout', bg: 'bg-emerald-500/10', text: 'text-emerald-500', shadow: 'shadow-emerald-500/20' },
-                    { to: '/transactions', icon: FileText, label: 'Ledger', bg: 'bg-cyan-500/10', text: 'text-cyan-500', shadow: 'shadow-cyan-500/20' },
-                    { to: '/wallet', icon: Wallet, label: 'Vault', bg: 'bg-indigo-500/10', text: 'text-indigo-500', shadow: 'shadow-indigo-500/20' },
+                    { to: '/wallet', icon: ArrowRight, label: 'Transfer', bg: 'bg-cyan-500/10', text: 'text-cyan-500', shadow: 'shadow-cyan-500/20' },
+                    { to: '/create-payment?type=qr_code', icon: ArrowDownLeft, label: 'Receive', bg: 'bg-amber-500/10', text: 'text-amber-500', shadow: 'shadow-amber-500/20' },
                   ] as const).map(({ to, icon: Icon, label, bg, text, shadow }) => (
                     <Link key={label} to={to} className="block group">
                       <div className={`w-full flex flex-col items-center gap-4 p-8 rounded-[2.5rem] transition-all duration-500 ${bg} ${text} hover:scale-[1.08] hover:-translate-y-1 border border-transparent hover:border-white/20 shadow-lg ${shadow}`}>
@@ -477,6 +485,29 @@ export default function Dashboard() {
             </Card>
 
             <Card className="fintech-card overflow-hidden bg-[#0A0F1E] border-white/5">
+              <CardHeader className="pb-6 pt-10 px-10 border-b border-white/5">
+                 <div className="flex items-center justify-between">
+                    <CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 flex items-center gap-3">Lab Protocols</CardTitle>
+                    <Badge className="bg-amber-500/20 text-amber-400 border-0 text-[8px] font-black px-2 py-0.5">EXPERIMENTAL</Badge>
+                 </div>
+              </CardHeader>
+              <CardContent className="px-8 pb-10 pt-8">
+                 <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { icon: LayoutGrid, label: 'Swap', color: 'text-brandblue-400' },
+                      { icon: Radio, label: 'Packet', color: 'text-rose-400' },
+                      { icon: ShieldCheck, label: 'V-Card', color: 'text-emerald-400' },
+                    ].map(node => (
+                      <button key={node.label} className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/10 transition-all group/node">
+                         <node.icon className={`h-5 w-5 ${node.color} group-hover/node:scale-110 transition-transform`} />
+                         <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">{node.label}</span>
+                      </button>
+                    ))}
+                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="fintech-card overflow-hidden bg-[#0A0F1E] border-white/5">
               <CardHeader className="pb-6 pt-10 px-10 border-b border-white/5"><CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 flex items-center gap-3">Kernel Interaction</CardTitle></CardHeader>
               <CardContent className="px-8 pb-10 pt-8 space-y-6">
                 <div className="flex items-center justify-between p-5 rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-xl">
@@ -485,7 +516,10 @@ export default function Dashboard() {
                          <Bot className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                         <p className="text-sm font-black uppercase text-white tracking-tight">PayBot AI</p>
+                         <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-black uppercase text-white tracking-tight">PayBot AI</p>
+                            <ShieldCheck className="h-3.5 w-3.5 text-brandblue-400 fill-brandblue-400/10" />
+                         </div>
                          <div className="flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                             <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-widest">Protocol Active</p>

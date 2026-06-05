@@ -24,6 +24,9 @@ import {
     ShieldCheck,
     Zap,
     Radio,
+    CreditCard as CardIcon,
+    Globe,
+    MessageCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
@@ -40,6 +43,8 @@ export default function CreatePayment() {
     const [description, setDescription] = useState(searchParams.get('description') || '');
     const [customerName, setCustomerName] = useState(searchParams.get('customer_name') || '');
     const [customerEmail, setCustomerEmail] = useState(searchParams.get('customer_email') || '');
+    const [channelCode, setChannelCode] = useState('PH_GCASH');
+    const [bankCode, setBankCode] = useState('BDO');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
@@ -47,6 +52,9 @@ export default function CreatePayment() {
         { id: 'invoice', label: 'E-Invoice', icon: FileText, color: 'blue', desc: 'Enterprise billing with full tax support' },
         { id: 'qr_code', label: 'Static QR', icon: QrCode, color: 'purple', desc: 'Instant mobile scanning via QR PH standard' },
         { id: 'payment_link', label: 'Universal', icon: LinkIcon, color: 'cyan', desc: 'Secure reusable links for social commerce' },
+        { id: 'ewallet', label: 'E-Wallet', icon: Smartphone, color: 'emerald', desc: 'Direct charge for GCash, Maya, or GrabPay' },
+        { id: 'alipay', label: 'Alipay QR', icon: QrCode, color: 'rose', desc: 'Global Alipay HK / CN settlement' },
+        { id: 'wechat', label: 'WeChat QR', icon: MessageCircle, color: 'emerald', desc: 'Direct WeChat Pay settlement' },
     ];
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -69,9 +77,18 @@ export default function CreatePayment() {
             } else if (paymentType === 'qr_code') {
                 endpoint = '/api/v1/xendit/create-qr-code';
                 payload = { amount: parseFloat(amount), description };
-            } else {
+            } else if (paymentType === 'payment_link') {
                 endpoint = '/api/v1/xendit/create-payment-link';
                 payload = { amount: parseFloat(amount), description, customer_name: customerName, customer_email: customerEmail };
+            } else if (paymentType === 'ewallet') {
+                endpoint = '/api/v1/gateway/ewallet-charge';
+                payload = { amount: parseFloat(amount), channel_code: channelCode };
+            } else if (paymentType === 'alipay') {
+                endpoint = '/api/v1/photonpay/alipay-session';
+                payload = { amount: parseFloat(amount), description };
+            } else if (paymentType === 'wechat') {
+                endpoint = '/api/v1/photonpay/wechat-session';
+                payload = { amount: parseFloat(amount), description };
             }
 
             const res = await client.apiCall.invoke({
@@ -131,7 +148,7 @@ export default function CreatePayment() {
                         <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/60 backdrop-blur-sm">
                             <div className="bg-[#0A0F1E] border-b border-white/5 p-8">
                                 <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 mb-8 ml-1">Order Configuration</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {typeOptions.map((option) => {
                                         const Icon = option.icon;
                                         const isActive = paymentType === option.id;
@@ -141,14 +158,14 @@ export default function CreatePayment() {
                                                 key={option.id}
                                                 type="button"
                                                 onClick={() => setPaymentType(option.id)}
-                                                className={`flex flex-col items-center justify-center p-8 rounded-[2rem] border-2 transition-all duration-500 relative overflow-hidden group ${isActive
+                                                className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-500 relative overflow-hidden group ${isActive
                                                     ? 'bg-brandblue-500 border-brandblue-500 text-white shadow-2xl shadow-brandblue-500/40 scale-105'
                                                     : 'bg-white/5 border-white/5 text-white/40 hover:border-white/10 hover:bg-white/[0.08] hover:text-white/60'
                                                     }`}
                                             >
-                                                <Icon className={`h-8 w-8 mb-5 transition-all duration-500 ${isActive ? 'text-white scale-110' : 'opacity-20 group-hover:opacity-40 group-hover:scale-110'}`} />
-                                                <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-white' : ''}`}>{option.label}</span>
-                                                {isActive && <div className="absolute top-3 right-3 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,1)]" />}
+                                                <Icon className={`h-6 w-6 mb-4 transition-all duration-500 ${isActive ? 'text-white scale-110' : 'opacity-20 group-hover:opacity-40 group-hover:scale-110'}`} />
+                                                <span className={`text-[9px] font-black uppercase tracking-widest text-center ${isActive ? 'text-white' : ''}`}>{option.label}</span>
+                                                {isActive && <div className="absolute top-3 right-3 h-1 w-1 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,1)]" />}
                                             </button>
                                         );
                                     })}
@@ -183,11 +200,29 @@ export default function CreatePayment() {
                                             placeholder="Specify transmission intent, node metadata, or customer references..."
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
-                                            className="bg-muted/20 border-border/40 rounded-[2rem] min-h-[160px] resize-none focus:ring-brandblue-500/10 text-base font-black uppercase tracking-tight p-8 border-2 shadow-inner"
+                                            className="bg-muted/20 border-border/40 rounded-[2rem] min-h-[120px] resize-none focus:ring-brandblue-500/10 text-base font-black uppercase tracking-tight p-8 border-2 shadow-inner"
                                         />
                                     </div>
 
-                                    {paymentType !== 'qr_code' && (
+                                    {paymentType === 'ewallet' && (
+                                        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                                            <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Provider Node</Label>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                {['PH_GCASH', 'PH_MAYA', 'PH_GRABPAY'].map(p => (
+                                                    <button
+                                                        key={p}
+                                                        type="button"
+                                                        onClick={() => setChannelCode(p)}
+                                                        className={`p-4 rounded-xl border-2 transition-all font-black text-[10px] uppercase tracking-widest ${channelCode === p ? 'bg-brandblue-500 border-brandblue-500 text-white' : 'bg-muted/20 border-border/40 text-muted-foreground'}`}
+                                                    >
+                                                        {p.replace('PH_', '')}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {['invoice', 'payment_link'].includes(paymentType) && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
                                             <div className="space-y-4">
                                                 <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Target Identity (Name)</Label>
