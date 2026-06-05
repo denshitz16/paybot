@@ -305,75 +305,113 @@ export default function Dashboard() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-brandblue-500/10 blur-[120px] group-hover:bg-brandblue-500/20 transition-all duration-1000" />
           <div className="absolute left-1/3 bottom-0 h-64 w-64 rounded-full bg-emerald-500/5 blur-[100px]" />
 
-          <div className="relative px-12 py-12 sm:py-16">
+          <div className="relative px-6 py-10 sm:px-12 sm:py-16">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
               <div className="space-y-8">
-                <div className="flex items-center gap-6">
-                  <div className="h-20 w-20 rounded-[2rem] bg-white/5 backdrop-blur-3xl flex items-center justify-center shadow-2xl border border-white/10 ring-1 ring-white/5 animate-logo-entrance">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2rem] bg-white/5 backdrop-blur-3xl flex items-center justify-center shadow-2xl border border-white/10 ring-1 ring-white/5 animate-logo-entrance shrink-0">
                     {greeting.icon}
                   </div>
-                  <div className="space-y-2">
-                    <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
+                  <div className="space-y-1">
+                    <h1 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-tight">
                       {greeting.text}{userName ? `, ${userName}` : ''}
                     </h1>
-                    <p className="text-brandblue-100/40 text-lg font-medium tracking-wide">
-                      Node Infrastructure: <span className="text-brandblue-400">mayaproduction-mainnet</span>
+                    <p className="text-brandblue-100/40 text-xs sm:text-lg font-medium tracking-wide truncate max-w-[200px] sm:max-w-none">
+                      Node: <span className="text-brandblue-400">mayaproduction-mainnet</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 flex-wrap">
-                  <div className="fintech-badge bg-white/5 text-white border-white/10 backdrop-blur-md">
-                    {isSuperAdmin ? <Crown className="h-3 w-3 mr-2 inline text-amber-400" /> : <ShieldCheck className="h-3 w-3 mr-2 inline text-brandblue-400" />}
-                    {isSuperAdmin ? 'Full System Access' : 'Administrative Account'}
+                <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                  <div className="fintech-badge bg-white/5 text-white border-white/10 backdrop-blur-md text-[9px] sm:text-xs">
+                    {isSuperAdmin ? <Crown className="h-3 w-3 mr-1 sm:mr-2 inline text-amber-400" /> : <ShieldCheck className="h-3 w-3 mr-1 sm:mr-2 inline text-brandblue-400" />}
+                    {isSuperAdmin ? 'Full Access' : 'Operator'}
                   </div>
-                  <div className="fintech-badge bg-emerald-500/10 text-emerald-400 border-emerald-500/20 backdrop-blur-md">
-                    <Radio className="h-3 w-3 mr-2 inline animate-pulse" />
-                    Network Live
+                  <div className="fintech-badge bg-emerald-500/10 text-emerald-400 border-emerald-500/20 backdrop-blur-md text-[9px] sm:text-xs">
+                    <Radio className="h-3 w-3 mr-1 sm:mr-2 inline animate-pulse" />
+                    Live
                   </div>
-                  {!loading && stats.total_count > 0 && (
-                    <div className="fintech-badge bg-brandblue-500/10 text-brandblue-400 border-brandblue-500/20 backdrop-blur-md">
-                      <TrendingUp className="h-3 w-3 mr-2 inline" />
-                      Efficiency: {successRate}%
-                    </div>
-                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 self-start lg:self-center">
-                <div className="flex items-center gap-1 bg-white/5 backdrop-blur-3xl p-2 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                      <div className="text-center px-10 py-5">
-                        <p className="text-3xl sm:text-4xl font-black text-white tracking-tighter tabular-nums">
+              <div className="flex items-center gap-4 sm:gap-6 self-start lg:self-center">
+                <div className="flex items-center gap-1 bg-white/5 backdrop-blur-3xl p-1.5 sm:p-2 rounded-2xl sm:rounded-[2.5rem] border border-white/10 shadow-2xl">
+                      <div className="text-center px-4 py-3 sm:px-10 sm:py-5">
+                        <p className="text-xl sm:text-4xl font-black text-white tracking-tighter tabular-nums">
                           {loading ? '---' : stats.total_count}
                         </p>
-                        <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Volume</p>
+                        <p className="text-white/20 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1 sm:mt-2">Volume</p>
                       </div>
-                      <div className="w-px h-16 bg-white/5 mx-1" />
-                      <div className="text-center px-10 py-5">
-                        <p className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tighter tabular-nums">
+                      <div className="w-px h-8 sm:h-16 bg-white/5 mx-1" />
+                      <div className="text-center px-4 py-3 sm:px-10 sm:py-5">
+                        <p className="text-xl sm:text-4xl font-black text-emerald-400 tracking-tighter tabular-nums">
                           {loading ? '---' : stats.paid_count}
                         </p>
-                        <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Settled</p>
+                        <p className="text-white/20 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1 sm:mt-2">Settled</p>
                       </div>
                 </div>
                 <Button
                   variant="ghost"
                   onClick={() => { setLoading(true); fetchData().finally(() => setLoading(false)); }}
                   disabled={loading}
-                  className="h-20 w-20 rounded-[2.5rem] bg-white/5 text-white hover:bg-white/10 border border-white/10 transition-all active:scale-95 shadow-2xl"
+                  className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/5 text-white hover:bg-white/10 border border-white/10 transition-all active:scale-95 shadow-2xl shrink-0"
                 >
-                  <RefreshCw className={`h-8 w-8 ${loading ? 'animate-spin' : 'animate-float'}`} />
+                  <RefreshCw className={`h-6 w-6 sm:h-8 sm:w-8 ${loading ? 'animate-spin' : 'animate-float'}`} />
                 </Button>
               </div>
             </div>
           </div>
         </div>
 
+        {/* QUICK ACTIONS BAR */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-12">
+            <Link to="/create-payment" className="group">
+              <div className="h-full flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-brandblue-600 text-white shadow-xl shadow-brandblue-500/20 hover:scale-[1.05] transition-all border border-white/10">
+                <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center shadow-inner group-hover:rotate-12 transition-transform">
+                  <CreditCard className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Collect Payment</span>
+              </div>
+            </Link>
+            <Link to="/disbursements" className="group">
+              <div className="h-full flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-card border border-border/40 hover:bg-muted/50 hover:scale-[1.05] transition-all shadow-sm">
+                <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                  <Send className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Payout</span>
+              </div>
+            </Link>
+            <Link to="/scan-qrph" className="group hidden sm:flex">
+              <div className="h-full flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-card border border-border/40 hover:bg-muted/50 hover:scale-[1.05] transition-all shadow-sm">
+                <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                  <QrCode className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Scan QR</span>
+              </div>
+            </Link>
+            <Link to="/wallet" className="group hidden sm:flex">
+              <div className="h-full flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-card border border-border/40 hover:bg-muted/50 hover:scale-[1.05] transition-all shadow-sm">
+                <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                  <Wallet className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Vault</span>
+              </div>
+            </Link>
+            <div className="sm:hidden grid grid-cols-2 gap-4 col-span-2">
+               <Link to="/scan-qrph" className="flex items-center justify-center gap-3 p-5 rounded-2xl bg-card border border-border/40 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  <QrCode className="h-4 w-4" /> Scan
+               </Link>
+               <Link to="/wallet" className="flex items-center justify-center gap-3 p-5 rounded-2xl bg-card border border-border/40 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  <Wallet className="h-4 w-4" /> Vault
+               </Link>
+            </div>
+        </div>
+
         {/* WALLET CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12">
           <Link to="/wallet" className="group block">
-            <div className="fintech-gradient-card bg-brandblue-600 h-full p-10 shadow-brandblue-500/20">
-              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:rotate-12 group-hover:scale-150 transition-all duration-1000"><Wallet className="h-40 w-40" /></div>
+            <div className="fintech-gradient-card bg-brandblue-600 h-full p-6 sm:p-10 shadow-brandblue-500/20">
+              <div className="absolute top-0 right-0 p-4 sm:p-6 opacity-10 group-hover:rotate-12 group-hover:scale-150 transition-all duration-1000"><Wallet className="h-24 w-24 sm:h-40 sm:w-40" /></div>
               <div className="relative z-10 space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 bg-white/15 rounded-2xl flex items-center justify-center border border-white/10"><Wallet className="h-6 w-6 text-white" /></div>

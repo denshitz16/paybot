@@ -107,6 +107,7 @@ export default function Layout({ children, connected }: LayoutProps) {
     {
       label: t('nav_payments'),
       items: [
+        { to: '/create-payment', icon: CreditCard, label: 'Collect Payment', badge: 'New' },
         {
           type: 'group' as const,
           key: 'gateways',
@@ -174,11 +175,13 @@ export default function Layout({ children, connected }: LayoutProps) {
   ];
 
   /* ─── NavLinks renderer ─────────────────────────────────────── */
-  const NavLinks = ({ onNav }: { onNav?: () => void }) => (
+  const NavLinks = ({ onNav, isMobile }: { onNav?: () => void; isMobile?: boolean }) => (
     <nav className="flex-1 overflow-y-auto py-3 px-2">
       {navSections.map((section) => (
         <div key={section.label} className="mb-1">
-          <p className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+          <p className={`px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest ${
+            isMobile ? 'text-white/40' : 'text-muted-foreground/70'
+          }`}>
             {section.label}
           </p>
           {section.items.map((entry) => {
@@ -194,7 +197,9 @@ export default function Layout({ children, connected }: LayoutProps) {
                     className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 ${
                       hasActiveChild
                         ? 'text-primary bg-primary/10 border-primary dark:bg-primary/15'
-                        : 'text-foreground/70 hover:text-foreground hover:bg-muted border-transparent'
+                        : isMobile
+                          ? 'text-white/70 hover:text-white hover:bg-white/5 border-transparent'
+                          : 'text-foreground/70 hover:text-foreground hover:bg-muted border-transparent'
                     }`}
                   >
                     <div className={`flex items-center justify-center h-6 w-6 rounded-lg shrink-0 transition-all duration-150 ${
@@ -224,7 +229,9 @@ export default function Layout({ children, connected }: LayoutProps) {
                             className={`flex items-center gap-3 pl-7 pr-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 ${
                               active
                                 ? 'bg-primary/10 text-primary border-primary font-semibold dark:bg-primary/15'
-                                : 'text-foreground/60 hover:text-foreground hover:bg-muted border-transparent'
+                                : isMobile
+                                  ? 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'
+                                  : 'text-foreground/60 hover:text-foreground hover:bg-muted border-transparent'
                             }`}
                           >
                             <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -254,7 +261,9 @@ export default function Layout({ children, connected }: LayoutProps) {
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 ${
                   active
                     ? 'bg-primary/10 text-primary border-primary font-semibold dark:bg-primary/15'
-                    : 'text-foreground/70 hover:text-foreground hover:bg-muted border-transparent'
+                    : isMobile
+                      ? 'text-white/70 hover:text-white hover:bg-white/5 border-transparent'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted border-transparent'
                 }`}
               >
                 <div className={`flex items-center justify-center h-6 w-6 rounded-lg shrink-0 transition-all duration-150 ${
@@ -280,7 +289,9 @@ export default function Layout({ children, connected }: LayoutProps) {
           href={SUPPORT_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-150 border-l-2 border-transparent"
+          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 border-transparent ${
+            isMobile ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          }`}
         >
           <div className="flex items-center justify-center h-6 w-6 rounded-lg shrink-0">
             <MessageCircle className="h-3.5 w-3.5" />
@@ -347,15 +358,15 @@ export default function Layout({ children, connected }: LayoutProps) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 py-6">
-               <NavLinks onNav={() => setSidebarOpen(false)} />
+               <NavLinks onNav={() => setSidebarOpen(false)} isMobile />
             </div>
-            <div className="shrink-0 border-t border-white/5 p-8">
+            <div className="shrink-0 border-t border-white/5 p-6">
               <button
                 onClick={() => logout()}
-                className="w-full h-16 flex items-center justify-center gap-4 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.3em] text-white bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 transition-all active:scale-95 shadow-xl"
+                className="w-full h-12 flex items-center justify-center gap-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-white bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 transition-all active:scale-95 shadow-xl"
               >
-                <LogOut className="h-5 w-5" />
-                TERMINATE_SESSION
+                <LogOut className="h-4 w-4" />
+                SIGN OUT
               </button>
             </div>
           </aside>
