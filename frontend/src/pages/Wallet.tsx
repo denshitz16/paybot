@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import { walletApi } from '@/api/wallet';
@@ -36,6 +36,7 @@ import {
   ArrowRight,
   History,
   PhilippinePeso,
+  QrCode,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
@@ -105,7 +106,7 @@ interface UsdtSendRequest {
   created_at: string | null;
 }
 
-const txnTypeConfig: Record<string, { label: string; color: string; icon: React.ReactNode; sign: string; bg: string }> = {
+const txnTypeConfig: Record<string, { label: string; color: string; icon: ReactNode; sign: string; bg: string }> = {
   top_up: { label: 'Deposit', color: 'text-emerald-500', icon: <ArrowDownLeft className="h-4 w-4" />, sign: '+', bg: 'bg-emerald-50' },
   send: { label: 'Transfer', color: 'text-rose-500', icon: <Send className="h-4 w-4" />, sign: '-', bg: 'bg-rose-50' },
   withdraw: { label: 'Cash Out', color: 'text-amber-500', icon: <ArrowUpFromLine className="h-4 w-4" />, sign: '-', bg: 'bg-amber-50' },

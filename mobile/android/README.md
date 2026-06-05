@@ -3,7 +3,7 @@
 Official POS Terminal application for the PayBot Philippines ecosystem. Built with React Native.
 
 ## 🚀 Live Configuration
-- **Production API**: `https://telegram.drl-developers.info/api/v1`
+- **Production API**: `https://mayaproduction.up.railway.app/api/v1`
 - **Build Target**: Release APK
 - **Payment Engine**: Maya Business (Live Mode)
 - **Settlement**: T+0 (Immediate)

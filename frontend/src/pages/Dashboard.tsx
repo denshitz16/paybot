@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { client } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -107,7 +107,7 @@ const statusConfig: Record<string, { color: string; dot: string }> = {
   expired: { color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',        dot: 'bg-rose-500' },
 };
 
-const typeConfig: Record<string, { icon: React.ReactNode; bg: string }> = {
+const typeConfig: Record<string, { icon: ReactNode; bg: string }> = {
   invoice:      { icon: <FileText className="h-4 w-4 text-brand-blue-500" />,   bg: 'bg-brand-blue-50' },
   qr_code:      { icon: <QrCode className="h-4 w-4 text-purple-500" />,     bg: 'bg-purple-50' },
   payment_link: { icon: <LinkIcon className="h-4 w-4 text-cyan-500" />,     bg: 'bg-cyan-50' },
@@ -145,7 +145,7 @@ function StatCard({
   label: string;
   value: string | number;
   sub?: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   color: string;
   loading: boolean;
 }) {
@@ -203,44 +203,52 @@ export default function Dashboard() {
       ]);
 
       if (results[0].status === 'fulfilled') {
-        const statsData = results[0].value?.data;
+        const res = results[0] as PromiseFulfilledResult<any>;
+        const statsData = res.value?.data;
         if (statsData) setStats(statsData);
       } else {
         setApiStatus('degrading');
       }
 
       if (results[1].status === 'fulfilled') {
-        const txnData = results[1].value?.data?.items;
+        const res = results[1] as PromiseFulfilledResult<any>;
+        const txnData = res.value?.data?.items;
         setRecentTxns(Array.isArray(txnData) ? txnData : []);
       }
 
-      if (isSuperAdmin && results[2] && results[2].status === 'fulfilled') {
-        const walletData = results[2].value?.data;
+      if (isSuperAdmin && results[2]?.status === 'fulfilled') {
+        const res = results[2] as PromiseFulfilledResult<any>;
+        const walletData = res.value?.data;
         if (walletData?.balance != null) setWalletBalance(walletData.balance);
       }
 
-      if (results[3].status === 'fulfilled') {
-        const usdData = results[3].value?.data;
+      if (results[3]?.status === 'fulfilled') {
+        const res = results[3] as PromiseFulfilledResult<any>;
+        const usdData = res.value?.data;
         if (usdData?.balance != null) setUsdWalletBalance(usdData.balance);
       }
 
-      if (results[4].status === 'fulfilled') {
-        const usdtData = results[4].value?.data;
+      if (results[4]?.status === 'fulfilled') {
+        const res = results[4] as PromiseFulfilledResult<any>;
+        const usdtData = res.value?.data;
         if (usdtData) setUsdtStats(usdtData);
       }
 
       if (results[5].status === 'fulfilled') {
-        const logData = results[5].value?.data?.items;
+        const res = results[5] as PromiseFulfilledResult<any>;
+        const logData = res.value?.data?.items;
         setRecentLogs(Array.isArray(logData) ? logData : []);
       }
 
-      if (results[6].status === 'fulfilled') {
-        const rateData = results[6].value?.data;
+      if (results[6]?.status === 'fulfilled') {
+        const res = results[6] as PromiseFulfilledResult<any>;
+        const rateData = res.value?.data;
         if (rateData?.usdt_php_rate) setExchangeRate(rateData.usdt_php_rate);
       }
 
       if (isSuperAdmin && results[7]?.status === 'fulfilled') {
-          const telemetryData = results[7].value?.data;
+          const res = results[7] as PromiseFulfilledResult<any>;
+          const telemetryData = res.value?.data;
           if (telemetryData) setTelemetry(telemetryData);
       }
     } catch (err) {
@@ -589,7 +597,7 @@ export default function Dashboard() {
           </div>
           <div className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.1em] text-center md:text-right leading-relaxed">
              Secure Node Operation • Licensed by traxionpay integration • verified as Traxion PH production cluster <br />
-             node_id: railway-prod-7350-mainnet • © 2024 PayBot Infrastructure
+             node_id: mayaproduction-mainnet • © 2024 PayBot Infrastructure
           </div>
         </div>
 

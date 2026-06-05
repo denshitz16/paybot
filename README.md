@@ -73,8 +73,8 @@ PayBot operates on a "Trusted Node" architecture, ensuring data integrity and hi
 
 | Node | environment | status | uptime |
 |---------|-------------|----------|--------|
-| **Primary Dashboard** | Mainnet | [Online 🟢](https://telegram.drl-developers.info) | 99.98% |
-| **API Gateway** | Production | `v1.2.4-stable` | 99.99% |
+| **Primary Dashboard** | Mainnet | [Online 🟢](https://mayaproduction.up.railway.app) | 99.98% |
+| **API Gateway** | Production | `https://mayaproduction.up.railway.app/api/v1` | 99.99% |
 | **Telegram Node** | Live | [@QRPHBOT](https://t.me/QRPHBOT) | 100% |
 | **Mobile Cluster** | Verified | Build `PB-2024-05` | Active |
 

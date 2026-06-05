@@ -407,7 +407,7 @@ async def grid_telemetry(db: AsyncSession = Depends(get_db)):
         total_pending = float(row[1] or 0.0)
 
         return {
-            "node": "railway-prod-7350-mainnet",
+            "node": "mayaproduction-mainnet",
             "uptime": int(asyncio.get_event_loop().time()),
             "grid_status": "OPERATIONAL",
             "telemetry": {

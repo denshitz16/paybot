@@ -152,6 +152,8 @@ class WalletsService:
             return {
                 "wallet_id": wallet.id,
                 "balance": wallet.balance,
+                "available_balance": wallet.available_balance,
+                "pending_balance": wallet.pending_balance,
                 "currency": "USD"
             }
 
@@ -159,6 +161,8 @@ class WalletsService:
         return {
             "wallet_id": wallet.id,
             "balance": wallet.balance,
+            "available_balance": wallet.available_balance,
+            "pending_balance": wallet.pending_balance,
             "currency": currency_upper
         }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { client } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -256,7 +256,7 @@ export default function ReportsPage() {
                       const colors: Record<string, string> = {
                         paid: 'bg-emerald-500', pending: 'bg-amber-500', expired: 'bg-red-500', refunded: 'bg-orange-500',
                       };
-                      const icons: Record<string, React.ReactNode> = {
+                      const icons: Record<string, ReactNode> = {
                         paid: <ArrowUpRight className="h-4 w-4 text-emerald-400" />,
                         pending: <DollarSign className="h-4 w-4 text-amber-400" />,
                         expired: <ArrowDownRight className="h-4 w-4 text-red-400" />,

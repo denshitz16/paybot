@@ -557,7 +557,7 @@ class POSTerminalService:
     async def update_transaction_status(
         self, order_id: str, status: str, failure_reason: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Update transaction status with idempotency check."""
+        """Update transaction status."""
         try:
             # Use with_for_update to ensure atomic status transition
             query = select(POSTerminalTransaction).where(POSTerminalTransaction.order_id == order_id).with_for_update()
