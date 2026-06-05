@@ -218,32 +218,34 @@ export default function Login() {
                 </div>
             </section>
 
-            <section ref={loginSectionRef} className="py-32 lg:py-48 bg-[#F8FAFC] relative overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] pointer-events-none" />
+            <section ref={loginSectionRef} className="py-32 lg:py-60 bg-[#0A0F1E] relative overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+
                 <div className="max-w-xl w-full mx-auto px-10 relative z-10">
-                    <div className="fintech-card bg-white border-0 rounded-[3rem] p-12 lg:p-16 shadow-[0_40px_80px_rgba(0,0,0,0.1)] relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2.5 bg-brandblue-600 shadow-[0_0_15px_rgba(0,122,255,0.3)]" />
+                    <div className="fintech-card bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[3rem] p-12 lg:p-16 shadow-[0_40px_100px_rgba(0,0,0,0.4)] relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-brandblue-600 shadow-[0_0_20px_rgba(0,122,255,0.5)]" />
 
                         <div className="text-center mb-16">
-                            <div className="w-24 h-24 bg-[#0A0F1E] rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-2xl border border-white/5 transition-transform hover:rotate-3 duration-500">
-                                <Lock className="h-10 w-10 text-brandblue-400" />
+                            <div className="w-24 h-24 bg-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-2xl border border-white/10 transition-transform hover:rotate-3 duration-500 group">
+                                <Lock className="h-10 w-10 text-brandblue-400 group-hover:scale-110 transition-transform" />
                             </div>
-                            <h2 className="text-4xl font-black text-[#0A0F1E] uppercase tracking-tighter">OPERATOR_LOGIN</h2>
-                            <p className="text-muted-foreground/60 font-black text-[10px] mt-4 uppercase tracking-[0.4em]">Institutional Dashboard Access</p>
+                            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">OPERATOR_LOGIN</h2>
+                            <p className="text-white/40 font-black text-[10px] mt-4 uppercase tracking-[0.4em]">Institutional Dashboard Access</p>
                         </div>
 
                         <form onSubmit={handleLogin} className="space-y-8">
                             <div className="space-y-4">
-                                <Label className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.3em] ml-1">Terminal Endpoint (Email)</Label>
+                                <Label className="text-[11px] font-black text-white/40 uppercase tracking-[0.3em] ml-1">Terminal Endpoint (Email)</Label>
                                 <div className="relative group">
-                                    <div className="absolute inset-0 bg-brandblue-500/5 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity blur-xl" />
-                                    <Mail className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/30 group-focus-within:text-brandblue-600 group-focus-within:scale-110 transition-all duration-300" />
+                                    <div className="absolute inset-0 bg-brandblue-500/10 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity blur-xl" />
+                                    <Mail className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-brandblue-400 group-focus-within:scale-110 transition-all duration-300" />
                                     <Input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="OPERATOR@DOMAIN.COM"
-                                        className="w-full h-18 bg-white border-border/40 rounded-2xl py-4 pl-14 pr-6 focus:ring-brandblue-500/20 focus:border-brandblue-500/50 border-2 outline-none transition-all text-sm font-black uppercase tracking-widest shadow-sm relative z-10"
+                                        className="w-full h-18 bg-white/5 border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-brandblue-500/20 focus:border-brandblue-500/50 border-2 outline-none transition-all text-sm font-black uppercase tracking-widest shadow-sm relative z-10 text-white placeholder:text-white/10"
                                         required
                                     />
                                 </div>
@@ -251,24 +253,24 @@ export default function Login() {
 
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center ml-1">
-                                    <Label className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Access Sequence (Password)</Label>
-                                    <Link to="/forgot-password" className="text-[9px] font-black text-brandblue-600 uppercase tracking-widest hover:underline">RECOVER_KEY</Link>
+                                    <Label className="text-[11px] font-black text-white/40 uppercase tracking-[0.3em]">Access Sequence (Password)</Label>
+                                    <Link to="/forgot-password" university-data-toggle="tooltip" title="Recover your access key" className="text-[9px] font-black text-brandblue-500 uppercase tracking-widest hover:text-brandblue-400 transition-colors">RECOVER_KEY</Link>
                                 </div>
                                 <div className="relative group">
-                                    <div className="absolute inset-0 bg-brandblue-500/5 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity blur-xl" />
-                                    <Key className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/30 group-focus-within:text-brandblue-600 group-focus-within:scale-110 transition-all duration-300" />
+                                    <div className="absolute inset-0 bg-brandblue-500/10 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity blur-xl" />
+                                    <Key className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-brandblue-400 group-focus-within:scale-110 transition-all duration-300" />
                                     <Input
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
-                                        className="w-full h-18 bg-white border-border/40 rounded-2xl py-4 pl-14 pr-14 focus:ring-brandblue-500/20 focus:border-brandblue-500/50 border-2 outline-none transition-all text-sm font-black tracking-widest shadow-sm relative z-10"
+                                        className="w-full h-18 bg-white/5 border-white/10 rounded-2xl py-4 pl-14 pr-14 focus:ring-brandblue-500/20 focus:border-brandblue-500/50 border-2 outline-none transition-all text-sm font-black tracking-widest shadow-sm relative z-10 text-white placeholder:text-white/10"
                                         required
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-brandblue-600 transition-colors z-20"
+                                        className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 hover:text-brandblue-400 transition-colors z-20"
                                     >
                                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
@@ -276,7 +278,7 @@ export default function Login() {
                             </div>
 
                             {(localError || authError) && (
-                                <div className="bg-rose-50 border-2 border-rose-100 text-rose-600 text-[10px] px-6 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest animate-shake">
+                                <div className="bg-rose-500/10 border-2 border-rose-500/20 text-rose-400 text-[10px] px-6 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest animate-shake">
                                     <XCircle className="h-5 w-5 shrink-0" />
                                     <span>{localError || authError}</span>
                                 </div>
@@ -285,7 +287,7 @@ export default function Login() {
                             <Button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full h-20 bg-[#0A0F1E] hover:bg-black text-white rounded-[2rem] font-black text-sm shadow-2xl active:scale-95 transition-all uppercase tracking-[0.4em] group mt-10"
+                                className="w-full h-20 bg-white text-[#0A0F1E] hover:bg-white/90 rounded-[2rem] font-black text-sm shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase tracking-[0.4em] group mt-10"
                             >
                                 {submitting ? (
                                     <div className="flex items-center gap-4">
@@ -302,13 +304,13 @@ export default function Login() {
                         </form>
 
                         {botUsername && (
-                            <div className="mt-12 space-y-8 pt-10 border-t border-border/10">
+                            <div className="mt-12 space-y-8 pt-10 border-t border-white/5">
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center">
-                                        <span className="w-full border-t border-border/20"></span>
+                                        <span className="w-full border-t border-white/10"></span>
                                     </div>
                                     <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]">
-                                        <span className="bg-white px-4 text-muted-foreground/40">NEURAL_ID_LOGIN</span>
+                                        <span className="bg-[#111827] px-4 text-white/30">NEURAL_ID_LOGIN</span>
                                     </div>
                                 </div>
 
@@ -321,30 +323,43 @@ export default function Login() {
                                         }}
                                     />
                                 </div>
-                                <p className="text-[9px] text-center text-muted-foreground/40 font-black uppercase tracking-[0.2em] px-8 leading-relaxed">
+                                <p className="text-[9px] text-center text-white/20 font-black uppercase tracking-[0.2em] px-8 leading-relaxed">
                                     Fast-track authentication via Telegram creates a verified node identity automatically.
                                 </p>
                             </div>
                         )}
 
-                        <div className="mt-16 pt-10 border-t border-border/10 text-center space-y-6">
-                            <p className="text-muted-foreground/60 text-[11px] font-black uppercase tracking-[0.3em]">
+                        <div className="mt-16 pt-10 border-t border-white/5 text-center space-y-6">
+                            <p className="text-white/40 text-[11px] font-black uppercase tracking-[0.3em]">
                                 NEW_TERMINAL_OPERATOR?{' '}
-                                <Link to="/register" className="text-brand-blue-600 hover:underline ml-2">REGISTER_NODE</Link>
+                                <Link to="/register" className="text-brandblue-400 hover:text-brandblue-300 transition-colors ml-2">REGISTER_NODE</Link>
                             </p>
                             <div className="flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest">PCI-DSS_COMPLIANT</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-white">PCI-DSS_COMPLIANT</span>
                                 </div>
-                                <div className="h-3 w-px bg-border/20" />
+                                <div className="h-3 w-px bg-white/10" />
                                 <div className="flex items-center gap-2">
                                     <Lock className="h-3 w-3 text-brandblue-500" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest">AES-256_ENCRYPTED</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-white">AES-256_ENCRYPTED</span>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div className="mt-12 text-center space-y-8 opacity-40 hover:opacity-100 transition-opacity duration-700">
+                        <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.4em]">Network_Support_Channels</p>
+                        <div className="flex justify-center gap-8">
+                            {SUPPORT_LINKS.map(link => (
+                                <a key={link.handle} href={link.href} className="text-xs font-black text-white hover:text-brandblue-400 transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-brandblue-500/20 pb-1">
+                                    {link.handle}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
 
                     <div className="mt-12 text-center space-y-8 opacity-40 hover:opacity-100 transition-opacity duration-700">
                         <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.4em]">Network_Support_Channels</p>

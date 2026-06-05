@@ -42,7 +42,7 @@ from services.auth import AuthService
 from services.telegram_service import TelegramService
 # Xendit removed; KYC via Xendit is no longer performed. Maya Manager checkout
 # integration does not provide customer KYC creation via this API.
-from sqlalchemy import select, and_, inspect
+from sqlalchemy import select, and_, inspect, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
@@ -428,6 +428,14 @@ async def telegram_login_widget(payload: TelegramWidgetLoginRequest, request: Re
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Authentication service is not configured. Ensure JWT_SECRET_KEY is set in environment variables.",
         )
+
+    user_resp = UserResponse(
+        id=user.id,
+        email=user.email,
+        name=user.name,
+        role=user.role,
+        permissions=perms
+    )
 
     logger.info("[telegram-login-widget] Bot admin authenticated: %s", telegram_user_id)
     # Set a short-lived cookie to mark Turnstile verification for this session
