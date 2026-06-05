@@ -179,4 +179,3 @@ export default function AppFooter({ variant = 'public' }: AppFooterProps) {
     </footer>
   );
 }
-}
