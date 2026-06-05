@@ -21,6 +21,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/webhooks", tags=["Webhooks"])
 
 
+@router.get("/maya/payment-status")
+async def maya_payment_webhook_verify():
+    """Verify endpoint is reachable via GET."""
+    return {"status": "active", "message": "Maya webhook endpoint is ready for POST requests"}
+
+
 @router.post("/maya/payment-status")
 async def maya_payment_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     """
