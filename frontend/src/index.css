@@ -164,6 +164,18 @@
   @apply bg-card border-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300;
 }
 
+.fintech-card {
+  @apply bg-card border border-border/40 shadow-[0_2px_10px_rgba(0,0,0,0.02),0_10px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_10px_rgba(0,0,0,0.02),0_15px_45px_rgba(0,0,0,0.08)] transition-all duration-500 rounded-[2rem];
+}
+
+.fintech-gradient-card {
+  @apply relative overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl transition-all duration-500 hover:-translate-y-1;
+}
+
+.fintech-badge {
+  @apply px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border transition-all duration-300;
+}
+
 /* Modern Table Styles */
 .modern-table {
   @apply w-full text-left border-separate border-spacing-0;

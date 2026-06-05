@@ -115,26 +115,29 @@ export default function PaymentsHub() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight">Payments Hub</h1>
-            <p className="text-muted-foreground text-sm font-medium mt-1">Generate multi-channel payment orders for your customers</p>
+      <div className="max-w-7xl mx-auto pb-16 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase">Merchant Terminal</h1>
+            <p className="text-muted-foreground font-medium flex items-center gap-3">
+               <span className="flex h-2 w-2 rounded-full bg-brand-blue-500 shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
+               <span className="uppercase tracking-[0.2em] text-[10px] font-black">Secure Multi-Channel Hub</span>
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-             <Badge className="bg-brandblue-500/10 text-brandblue-600 border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-               <Zap className="h-3 w-3 mr-1.5 inline" /> Live Gateway
-             </Badge>
+          <div className="flex items-center gap-4">
+             <div className="fintech-badge bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-6 py-2.5 backdrop-blur-md">
+               <Zap className="h-4 w-4 mr-2 inline animate-pulse" /> NETWORK ACTIVE
+             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Method Selection & Form */}
-          <div className="lg:col-span-7 space-y-6">
-            <Card className="border-border/60 shadow-sm overflow-hidden">
-              <div className="bg-muted/20 border-b border-border/40 p-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Select Channel</p>
-                <div className="flex flex-wrap gap-2">
+          <div className="lg:col-span-7 space-y-10">
+            <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/60 backdrop-blur-sm">
+              <div className="bg-[#0A0F1E] border-b border-white/5 p-8">
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 mb-6 ml-1">Transmission Protocol</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {methods.map((m) => {
                     const Icon = m.icon;
                     const isActive = tab === m.id;
@@ -142,26 +145,29 @@ export default function PaymentsHub() {
                       <button
                         key={m.id}
                         onClick={() => { setTab(m.id); setResult(null); }}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all duration-200 border-2 ${
+                        className={`flex flex-col items-center justify-center gap-3 p-5 rounded-2xl text-[10px] font-black transition-all duration-500 border-2 ${
                           isActive
-                            ? 'bg-brandblue-500 border-brandblue-500 text-white shadow-md shadow-brandblue-500/20 scale-[1.02]'
-                            : 'bg-card border-border/60 text-muted-foreground hover:border-brandblue-500/40 hover:bg-brandblue-50/50'
+                            ? 'bg-brandblue-500 border-brandblue-500 text-white shadow-xl shadow-brandblue-500/40 scale-105'
+                            : 'bg-white/5 border-white/5 text-white/40 hover:border-white/10 hover:bg-white/[0.08] hover:text-white/60'
                         }`}
                       >
-                        <Icon className="h-4 w-4" />
-                        <span className="uppercase tracking-wider">{m.label}</span>
+                        <Icon className={`h-6 w-6 ${isActive ? 'text-white' : 'text-white/20'}`} />
+                        <span className="uppercase tracking-widest">{m.label}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              <CardContent className="pt-8 pb-8 px-8 space-y-6">
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Payment Amount (PHP)</Label>
+              <CardContent className="p-10 space-y-10">
+                <div className="space-y-10">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between ml-1">
+                       <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">Payment Amount (PHP)</Label>
+                       <span className="text-[9px] font-black text-brandblue-500 uppercase tracking-widest bg-brandblue-500/5 px-2 py-0.5 rounded">T+0 Priority</span>
+                    </div>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-muted-foreground group-focus-within:text-brandblue-500 transition-colors">₱</div>
+                      <div className="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-brand-blue-500 group-focus-within:scale-110 transition-transform">₱</div>
                       <Input
                         type="number"
                         step="0.01"
@@ -169,44 +175,44 @@ export default function PaymentsHub() {
                         placeholder="0.00"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="pl-10 h-16 text-2xl font-black bg-muted/20 border-border/60 focus-visible:ring-brandblue-500/20 transition-all"
+                        className="pl-12 h-24 text-4xl font-black bg-muted/20 border-border/40 rounded-3xl tabular-nums focus:ring-brandblue-500/10 transition-all border-2"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Order Description</Label>
+                  <div className="space-y-4">
+                    <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Order Specification</Label>
                     <Textarea
-                      placeholder="What is the customer paying for?"
+                      placeholder="Transaction details, product IDs, or memo..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="bg-muted/20 border-border/60 min-h-[100px] resize-none focus-visible:ring-brandblue-500/20 text-sm font-medium"
+                      className="bg-muted/20 border-border/40 min-h-[140px] rounded-[2rem] resize-none focus:ring-brandblue-500/10 text-base font-black uppercase tracking-tight p-8 border-2"
                     />
                   </div>
 
                   {/* Contextual Fields */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-2 duration-500">
                     {(tab === 'invoice' || tab === 'payment_link' || tab === 'virtual_account') && (
-                      <div className="space-y-2">
-                        <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Customer Name</Label>
-                        <Input placeholder="Full Name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="bg-muted/20 border-border/60 h-11 text-sm font-medium" />
+                      <div className="space-y-4">
+                        <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Beneficiary Name</Label>
+                        <Input placeholder="Full Name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="bg-muted/20 border-border/40 h-16 rounded-2xl px-6 text-sm font-black uppercase tracking-widest border-2" />
                       </div>
                     )}
                     {(tab === 'invoice' || tab === 'payment_link') && (
-                      <div className="space-y-2">
-                        <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Customer Email</Label>
-                        <Input type="email" placeholder="email@example.com" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="bg-muted/20 border-border/60 h-11 text-sm font-medium" />
+                      <div className="space-y-4">
+                        <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Transmission Email</Label>
+                        <Input type="email" placeholder="customer@domain.com" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="bg-muted/20 border-border/40 h-16 rounded-2xl px-6 text-sm font-black border-2" />
                       </div>
                     )}
                     {tab === 'virtual_account' && (
-                      <div className="space-y-2">
-                        <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Bank</Label>
+                      <div className="space-y-4">
+                        <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Node Target Bank</Label>
                         <Select value={bankCode} onValueChange={setBankCode}>
-                          <SelectTrigger className="bg-muted/20 border-border/60 h-11 text-sm font-medium"><SelectValue /></SelectTrigger>
-                          <SelectContent className="bg-card">
+                          <SelectTrigger className="bg-muted/20 border-border/40 h-16 rounded-2xl px-6 font-black uppercase text-[11px] tracking-widest border-2"><SelectValue /></SelectTrigger>
+                          <SelectContent className="rounded-2xl border-border/40 shadow-2xl p-2">
                             {['BDO', 'BPI', 'UNIONBANK', 'RCBC', 'CHINABANK', 'PNB'].map(b => (
-                              <SelectItem key={b} value={b}>{b}</SelectItem>
+                              <SelectItem key={b} value={b} className="py-3 font-black rounded-xl mb-1">{b}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -214,20 +220,20 @@ export default function PaymentsHub() {
                     )}
                     {tab === 'ewallet' && (
                       <>
-                        <div className="space-y-2">
-                          <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Provider</Label>
+                        <div className="space-y-4">
+                          <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Channel Provider</Label>
                           <Select value={ewalletProvider} onValueChange={setEwalletProvider}>
-                            <SelectTrigger className="bg-muted/20 border-border/60 h-11 text-sm font-medium"><SelectValue /></SelectTrigger>
-                            <SelectContent className="bg-card">
+                            <SelectTrigger className="bg-muted/20 border-border/40 h-16 rounded-2xl px-6 font-black uppercase text-[11px] tracking-widest border-2"><SelectValue /></SelectTrigger>
+                            <SelectContent className="rounded-2xl border-border/40 shadow-2xl p-2">
                               {[['PH_GCASH', 'GCash'], ['PH_MAYA', 'Maya'], ['PH_GRABPAY', 'GrabPay']].map(([v, l]) => (
-                                <SelectItem key={v} value={v}>{l}</SelectItem>
+                                <SelectItem key={v} value={v} className="py-3 font-black rounded-xl mb-1">{l}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mobile Number</Label>
-                          <Input placeholder="09XXXXXXXXX" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} className="bg-muted/20 border-border/60 h-11 text-sm font-medium" />
+                        <div className="space-y-4">
+                          <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Identity (Mobile)</Label>
+                          <Input placeholder="09XXXXXXXXX" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} className="bg-muted/20 border-border/40 h-16 rounded-2xl px-6 font-black tracking-widest border-2" />
                         </div>
                       </>
                     )}
@@ -236,17 +242,17 @@ export default function PaymentsHub() {
                   <Button
                     onClick={handleCreate}
                     disabled={loading}
-                    className="w-full h-16 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-brandblue-500/20 transition-all active:scale-[0.98]"
+                    className="w-full h-20 bg-brandblue-600 hover:bg-brandblue-700 text-white font-black text-lg rounded-[2rem] shadow-2xl shadow-brandblue-500/30 transition-all active:scale-95 uppercase tracking-[0.4em]"
                   >
                     {loading ? (
-                      <div className="flex items-center gap-3">
-                        <Loader2 className="h-6 w-6 animate-spin" />
+                      <div className="flex items-center gap-4">
+                        <Loader2 className="h-7 w-7 animate-spin" />
                         <span>PROCESSING...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-3">
-                        <Plus className="h-6 w-6" />
-                        <span>GENERATE {currentMethod.label.toUpperCase()}</span>
+                      <div className="flex items-center gap-4">
+                        <Plus className="h-7 w-7" />
+                        <span>DEPLOY {currentMethod.label}</span>
                       </div>
                     )}
                   </Button>
@@ -254,84 +260,88 @@ export default function PaymentsHub() {
               </CardContent>
             </Card>
 
-            <div className="bg-muted/20 rounded-2xl p-5 border border-dashed border-border/60 flex items-start gap-4">
-              <div className="h-10 w-10 rounded-full bg-brandblue-50 flex items-center justify-center shrink-0 shadow-sm">
-                <Info className="h-5 w-5 text-brandblue-500" />
+            <div className="bg-[#0A0F1E] rounded-[2.5rem] p-8 border border-white/5 flex items-start gap-6 shadow-xl group">
+              <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 group-hover:bg-brandblue-500 transition-colors duration-500">
+                <ShieldCheck className="h-7 w-7 text-brandblue-400 group-hover:text-white transition-colors" />
               </div>
-              <div>
-                <p className="text-[10px] font-black text-foreground uppercase tracking-widest mb-1">Payment Security</p>
-                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                  Orders are processed via the Maya Secure Gateway. All transactions are PCI-DSS compliant and monitored for fraud in real-time.
-                  Users can pay with any major Philippine bank or e-wallet.
+              <div className="space-y-2">
+                <p className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Institutional Compliance</p>
+                <p className="text-xs text-white/40 leading-relaxed font-medium uppercase tracking-tight">
+                  Transactions are routed through the Maya PCI-DSS verified production cluster. Real-time AML monitoring and fraud prevention protocols are active across all regional nodes.
                 </p>
               </div>
             </div>
           </div>
 
           {/* Result / Live View */}
-          <div className="lg:col-span-5 space-y-6 sticky top-6">
+          <div className="lg:col-span-5 space-y-8 sticky top-10">
             {!result ? (
-              <Card className="border-border/40 bg-muted/10 border-dashed min-h-[500px] flex flex-col items-center justify-center text-center p-10">
-                <div className="h-24 w-24 rounded-[2.5rem] bg-muted flex items-center justify-center mb-8 shadow-inner">
-                  <Smartphone className="h-12 w-12 text-muted-foreground/20" />
+              <div className="fintech-card border-dashed border-2 border-border/60 min-h-[600px] flex flex-col items-center justify-center text-center p-12 bg-muted/5 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                <div className="h-28 w-28 rounded-[2.5rem] bg-muted/20 flex items-center justify-center mb-10 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                  <Smartphone className="h-14 w-14 text-muted-foreground/20 group-hover:text-brandblue-500/20 transition-colors" />
                 </div>
-                <h3 className="text-xl font-black text-foreground/40 uppercase tracking-tighter">Awaiting Generation</h3>
-                <p className="text-xs text-muted-foreground/60 mt-2 max-w-[220px] font-medium leading-relaxed">
-                  Fill in the amount and order details to generate a secure checkout link
+                <h3 className="text-2xl font-black text-foreground/40 uppercase tracking-tighter mb-4">Awaiting Signal</h3>
+                <p className="text-[11px] text-muted-foreground/60 max-w-[280px] font-black uppercase tracking-[0.3em] leading-relaxed">
+                  Configure channel parameters to generate encrypted network assets
                 </p>
-                <div className="mt-12 flex flex-col items-center gap-2 opacity-20">
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                    <ShieldCheck className="h-4 w-4" />
-                    PayBot Secured
-                  </div>
+
+                <div className="mt-16 pt-10 border-t border-border/10 w-full flex flex-col items-center gap-4 opacity-20 group-hover:opacity-40 transition-opacity">
+                   <div className="flex items-center gap-3">
+                      <ShieldCheck className="h-5 w-5 text-brandblue-500" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.4em]">Node-Secured</span>
+                   </div>
+                   <div className="flex gap-2">
+                      <div className="h-1 w-1 rounded-full bg-brandblue-500" />
+                      <div className="h-1 w-1 rounded-full bg-brandblue-500 opacity-50" />
+                      <div className="h-1 w-1 rounded-full bg-brandblue-500 opacity-20" />
+                   </div>
                 </div>
-              </Card>
+              </div>
             ) : (
-              <Card className="border-emerald-500/30 bg-emerald-500/5 shadow-2xl shadow-emerald-500/10 overflow-hidden animate-in zoom-in-95 duration-500">
-                <div className="bg-emerald-500 h-2 w-full" />
-                <CardHeader className="pb-4">
+              <Card className="fintech-card border-0 bg-[#0A0F1E] shadow-[0_40px_80px_rgba(0,0,0,0.4)] overflow-hidden animate-in zoom-in-95 duration-700">
+                <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2.5 w-full shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
+                <CardHeader className="p-10 border-b border-white/5">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-black flex items-center text-emerald-600 uppercase tracking-tight">
-                      <CheckCircle className="h-5 w-5 mr-2" />
-                      Ready to Send
+                    <CardTitle className="text-xl font-black flex items-center text-emerald-400 uppercase tracking-tight">
+                      <CheckCircle className="h-6 w-6 mr-3" />
+                      Protocol Emitted
                     </CardTitle>
-                    <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px] uppercase tracking-widest px-3">CREATED</Badge>
+                    <div className="bg-white/5 text-white/60 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest border border-white/10">ASSET_READY</div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-6 pb-8">
-                  <div className="bg-card border border-border/60 rounded-[2rem] p-8 shadow-sm text-center relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-5">
-                      <Zap className="h-24 w-24" />
-                    </div>
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Checkout Total</p>
-                    <h2 className="text-4xl font-black text-foreground tracking-tight">{fmtCurrencyPhp(parseFloat(amount))}</h2>
-                    {description && <p className="text-sm text-muted-foreground mt-4 font-bold italic">"{description}"</p>}
+                <CardContent className="p-10 space-y-10">
+                  <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-10 text-center relative overflow-hidden group/res">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Zap className="h-32 w-32 text-white" /></div>
+                    <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] mb-4">Transmission Value</p>
+                    <h2 className="text-5xl font-black text-white tracking-tighter tabular-nums">{fmtCurrencyPhp(parseFloat(amount))}</h2>
+                    {description && <p className="text-xs text-white/40 mt-6 font-black uppercase tracking-widest italic leading-relaxed">"{description}"</p>}
 
-                    <div className="mt-8 pt-8 border-t border-border/40 space-y-6 text-left">
+                    <div className="mt-10 pt-10 border-t border-white/5 space-y-8 text-left">
                       {Object.entries(result).map(([key, value]) => {
                         if (!value || key === 'success' || key === 'message') return null;
                         const isUrl = typeof value === 'string' && (value.startsWith('http') || value.startsWith('https'));
 
                         return (
-                          <div key={key} className="space-y-2">
+                          <div key={key} className="space-y-3">
                             <div className="flex items-center justify-between px-1">
-                              <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                              <Label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">
                                 {key.replace(/_/g, ' ')}
                               </Label>
-                              <button onClick={() => copy(String(value))} className="text-[10px] font-black text-brandblue-500 hover:text-brandblue-600 transition-colors uppercase tracking-widest flex items-center gap-1">
-                                <Copy className="h-3 w-3" /> Copy
+                              <button onClick={() => copy(String(value))} className="text-[10px] font-black text-brandblue-400 hover:text-white transition-colors uppercase tracking-[0.2em] flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg">
+                                <Copy className="h-3 w-3" /> COPY
                               </button>
                             </div>
 
-                            <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-2xl border border-border/40 overflow-hidden">
+                            <div className="flex items-center gap-4 p-5 bg-black/40 rounded-2xl border border-white/5 overflow-hidden group/field">
                               {isUrl ? (
-                                <a href={value as string} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-blue-600 font-bold truncate underline flex-1">{value as string}</a>
+                                <a href={value as string} target="_blank" rel="noopener noreferrer" className="text-xs text-brandblue-400 font-bold truncate underline flex-1 hover:text-white transition-colors">{value as string}</a>
                               ) : (
-                                <code className="text-xs text-foreground font-black truncate flex-1 leading-none tabular-nums">{String(value)}</code>
+                                <code className="text-sm text-white/90 font-black truncate flex-1 leading-none tabular-nums tracking-widest">{String(value)}</code>
                               )}
                               {isUrl && (
-                                <a href={value as string} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-xl bg-brandblue-500 flex items-center justify-center text-white hover:bg-brandblue-600 transition-all shrink-0">
-                                  <ExternalLink className="h-4 w-4" />
+                                <a href={value as string} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-xl bg-brandblue-500 flex items-center justify-center text-white hover:bg-brandblue-400 hover:scale-110 transition-all shrink-0 shadow-lg shadow-brandblue-500/30">
+                                  <ExternalLink className="h-5 w-5" />
                                 </a>
                               )}
                             </div>
@@ -341,28 +351,28 @@ export default function PaymentsHub() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-5">
                     <Button
-                      className="bg-brandblue-500 hover:bg-brandblue-600 text-white font-black h-16 rounded-2xl group shadow-lg shadow-brandblue-500/20 active:scale-[0.95] transition-all"
+                      className="bg-brandblue-600 hover:bg-brandblue-700 text-white font-black h-20 rounded-[1.5rem] group shadow-2xl shadow-brandblue-500/20 active:scale-95 transition-all text-sm tracking-[0.2em]"
                       onClick={() => {
                         const url = result.invoice_url || result.payment_link_url || result.checkout_url || result.payment_url;
                         if (url) window.open(url as string, '_blank');
                       }}
                     >
-                      <span>GO TO CHECKOUT PAGE</span>
-                      <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      <span>INITIATE GATEWAY ACCESS</span>
+                      <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-1.5 transition-transform" />
                     </Button>
                     <Button
-                      variant="outline"
-                      className="border-border/60 hover:bg-muted font-black h-14 rounded-2xl text-[11px] uppercase tracking-widest transition-all"
+                      variant="ghost"
+                      className="text-white/40 hover:text-white hover:bg-white/5 font-black h-16 rounded-[1.5rem] text-[11px] uppercase tracking-[0.4em] transition-all border border-white/5"
                       onClick={() => {
                         setResult(null);
                         setAmount('');
                         setDescription('');
                       }}
                     >
-                      <History className="h-4 w-4 mr-2" />
-                      Create Another Order
+                      <History className="h-5 w-5 mr-3" />
+                      NEW REQUISITION
                     </Button>
                   </div>
                 </CardContent>
@@ -373,4 +383,5 @@ export default function PaymentsHub() {
       </div>
     </Layout>
   );
+}
 }

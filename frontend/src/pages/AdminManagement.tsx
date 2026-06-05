@@ -166,112 +166,124 @@ export default function AdminManagement() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight">Security Kernel</h1>
-            <p className="text-muted-foreground text-sm font-medium mt-1">Manage infrastructure access and administrative permissions</p>
+      <div className="max-w-7xl mx-auto pb-16 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+          <div className="space-y-3">
+            <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase flex items-center gap-4">
+               <div className="h-14 w-14 rounded-2xl bg-brandblue-500/10 flex items-center justify-center border border-brandblue-500/20 shadow-inner">
+                 <ShieldCheck className="h-8 w-8 text-brandblue-600" />
+               </div>
+               Security Kernel
+            </h1>
+            <p className="text-muted-foreground font-medium flex items-center gap-3">
+               <span className="flex h-2 w-2 rounded-full bg-brand-blue-500 shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
+               <span className="uppercase tracking-[0.2em] text-[10px] font-black">Identity & Access Management (IAM)</span>
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {isSuperAdmin && (
               <Button
                 onClick={() => setShowAdd(!showAdd)}
-                className={`${showAdd ? 'bg-muted text-foreground' : 'bg-brand-blue-500 text-white shadow-brand-blue-500/20'} font-black text-[10px] uppercase tracking-widest h-10 px-6 rounded-xl shadow-lg transition-all active:scale-95`}
+                className={`h-14 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl transition-all active:scale-95 border-2 ${
+                  showAdd
+                  ? 'bg-[#0A0F1E] border-white/10 text-white'
+                  : 'bg-brandblue-600 hover:bg-brandblue-700 text-white border-brandblue-500/20'
+                }`}
               >
-                {showAdd ? <X className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-                {showAdd ? 'Abort' : 'Register Admin'}
+                {showAdd ? <X className="h-5 w-5 mr-3" /> : <Plus className="h-5 w-5 mr-3" />}
+                {showAdd ? 'ABORT_OPERATION' : 'REGISTER_NODE_ADMIN'}
               </Button>
             )}
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as AdminTab)} className="space-y-8">
-           <TabsList className="bg-muted/50 border border-border/60 p-1 h-auto flex-wrap sm:inline-flex gap-1 rounded-xl">
-             <TabsTrigger value="admins" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[10px] uppercase tracking-widest">
-               <ShieldCheck className="h-3.5 w-3.5 mr-2 text-brand-blue-500" /> Admins
-             </TabsTrigger>
-             <TabsTrigger value="users" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[10px] uppercase tracking-widest">
-               <Users className="h-3.5 w-3.5 mr-2 text-cyan-500" /> Web Users
-             </TabsTrigger>
-             {isSuperAdmin && (
-               <>
-                 <TabsTrigger value="keys" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[10px] uppercase tracking-widest">
-                   <Key className="h-3.5 w-3.5 mr-2 text-amber-500" /> API Keys
-                 </TabsTrigger>
-                 <TabsTrigger value="wallets" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[10px] uppercase tracking-widest">
-                   <Database className="h-3.5 w-3.5 mr-2 text-emerald-500" /> Ledger Audits
-                 </TabsTrigger>
-               </>
-             )}
+        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as AdminTab)} className="space-y-10">
+           <TabsList className="bg-[#0A0F1E] border border-white/5 p-1.5 h-auto flex-wrap sm:inline-flex gap-2 rounded-[1.5rem] shadow-2xl">
+             {[
+               { id: 'admins', icon: ShieldCheck, label: 'Kernel_Admins', color: 'text-brandblue-500' },
+               { id: 'users', icon: Users, label: 'Cloud_Users', color: 'text-cyan-500' },
+               { id: 'keys', icon: Key, label: 'Access_Vault', color: 'text-amber-500', super: true },
+               { id: 'wallets', icon: Database, label: 'Ledger_Audits', color: 'text-emerald-500', super: true },
+             ].map(t => (!t.super || isSuperAdmin) && (
+               <TabsTrigger key={t.id} value={t.id} className="rounded-xl py-3.5 px-8 data-[state=active]:bg-white/10 data-[state=active]:text-white font-black text-[11px] uppercase tracking-[0.3em] transition-all text-white/30 border border-transparent data-[state=active]:border-white/10">
+                 <t.icon className={`h-4 w-4 mr-3 ${t.color}`} /> {t.label}
+               </TabsTrigger>
+             ))}
            </TabsList>
 
-           <TabsContent value="admins" className="mt-0 space-y-6">
+           <TabsContent value="admins" className="mt-0 space-y-10 animate-in fade-in slide-in-from-top-4 duration-500">
               {showAdd && isSuperAdmin && (
-                <Card className="border-brand-blue-500/20 bg-brand-blue-50/10 shadow-xl overflow-hidden animate-in zoom-in-95">
-                   <div className="h-1 bg-brand-blue-500 w-full" />
-                   <CardHeader>
-                     <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                       <UserPlus className="h-5 w-5 text-brand-blue-500" />
+                <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/60 backdrop-blur-sm">
+                   <div className="h-2.5 bg-brandblue-500 w-full shadow-[0_0_15px_rgba(0,122,255,0.4)]" />
+                   <CardHeader className="p-10 border-b border-border/10">
+                     <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-4">
+                       <UserPlus className="h-7 w-7 text-brand-blue-600" />
                        Administrative Onboarding
                      </CardTitle>
+                     <CardDescription className="font-black text-[10px] uppercase tracking-widest text-muted-foreground/40 mt-2">Initialize new node supervisor credentials</CardDescription>
                    </CardHeader>
-                   <CardContent className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                         <div className="space-y-2">
-                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Telegram ID</Label>
-                           <Input placeholder="e.g. 123456789" value={form.telegram_id} onChange={e => setForm(f => ({...f, telegram_id: e.target.value}))} className="h-12 bg-muted/20 border-border/60 font-mono font-black rounded-xl" />
+                   <CardContent className="p-10 space-y-10">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                         <div className="space-y-4">
+                           <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Telegram Identifier</Label>
+                           <Input placeholder="UID_64BIT" value={form.telegram_id} onChange={e => setForm(f => ({...f, telegram_id: e.target.value}))} className="h-16 bg-muted/20 border-border/40 font-mono font-black rounded-2xl px-6 border-2 shadow-inner" />
                          </div>
-                         <div className="space-y-2">
-                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Username</Label>
-                           <Input placeholder="@handle" value={form.telegram_username} onChange={e => setForm(f => ({...f, telegram_username: e.target.value}))} className="h-12 bg-muted/20 border-border/60 font-bold rounded-xl" />
+                         <div className="space-y-4">
+                           <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Username Hub</Label>
+                           <Input placeholder="@HANDLE" value={form.telegram_username} onChange={e => setForm(f => ({...f, telegram_username: e.target.value}))} className="h-16 bg-muted/20 border-border/40 font-black rounded-2xl px-6 uppercase border-2 shadow-inner" />
                          </div>
-                         <div className="space-y-2">
-                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Full Name</Label>
-                           <Input placeholder="John Doe" value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} className="h-12 bg-muted/20 border-border/60 font-bold rounded-xl" />
+                         <div className="space-y-4">
+                           <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Full Legal Alias</Label>
+                           <Input placeholder="ENTITY_NAME" value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} className="h-16 bg-muted/20 border-border/40 font-black rounded-2xl px-6 uppercase border-2 shadow-inner" />
                          </div>
                       </div>
-                      <div className="space-y-4">
-                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Privilege Allocation</p>
-                         <div className="flex flex-wrap gap-2">
-                            <button onClick={() => setForm(f => ({...f, is_super_admin: !f.is_super_admin}))} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${form.is_super_admin ? 'bg-amber-500 border-amber-500 text-white' : 'bg-card border-border/60 text-muted-foreground'}`}>
-                              <Crown className="h-3 w-3 inline mr-1.5" /> Super User
+                      <div className="space-y-6">
+                         <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/60 ml-1">Privilege Allocation Protocol</p>
+                         <div className="flex flex-wrap gap-3">
+                            <button onClick={() => setForm(f => ({...f, is_super_admin: !f.is_super_admin}))} className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all duration-500 flex items-center gap-3 ${form.is_super_admin ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-muted/10 border-border/40 text-muted-foreground/60 hover:bg-muted/20'}`}>
+                              <Crown className="h-4 w-4" /> SUPER_USER
                             </button>
                             {PERMISSION_KEYS.map(p => (
-                              <button key={p.key} onClick={() => setForm(f => ({...f, [p.key]: !f[p.key as any]}))} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${form[p.key as any] ? 'bg-brand-blue-500 border-brand-blue-500 text-white' : 'bg-card border-border/60 text-muted-foreground'}`}>
-                                {p.label}
+                              <button key={p.key} onClick={() => setForm(f => ({...f, [p.key]: !f[p.key as any]}))} className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all duration-500 ${form[p.key as any] ? 'bg-brandblue-600 border-brandblue-600 text-white shadow-lg shadow-brandblue-500/20' : 'bg-muted/10 border-border/40 text-muted-foreground/60 hover:bg-muted/20'}`}>
+                                {p.label.toUpperCase()}
                               </button>
                             ))}
                          </div>
                       </div>
-                      <Button onClick={handleAdd} disabled={saving} className="w-full h-14 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black rounded-2xl uppercase tracking-widest shadow-lg shadow-brand-blue-500/20 active:scale-95 transition-all">
-                        {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Authorize Infrastructure Access'}
+                      <Button onClick={handleAdd} disabled={saving} className="w-full h-20 bg-brandblue-600 hover:bg-brandblue-700 text-white font-black rounded-[2rem] uppercase tracking-[0.4em] shadow-2xl shadow-brandblue-500/30 active:scale-95 transition-all text-sm group">
+                        {saving ? <Loader2 className="h-7 w-7 animate-spin mr-3" /> : <><ShieldCheck className="h-7 w-7 mr-4 group-hover:scale-110 transition-transform" /> AUTHORIZE_NODE_LEVEL_ACCESS</>}
                       </Button>
                    </CardContent>
                 </Card>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {Array.isArray(admins) && admins.map(admin => (
-                  <Card key={admin.id} className={`border-border/60 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden ${!admin.is_active && 'opacity-60 grayscale'}`}>
-                    {admin.is_super_admin && <div className="absolute top-0 right-0 p-1 bg-amber-400 text-amber-950 font-black text-[8px] px-3 uppercase tracking-tighter rounded-bl-xl shadow-sm z-10">Root</div>}
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center border-2 ${admin.is_super_admin ? 'bg-amber-50 border-amber-400/30 text-amber-600' : 'bg-brand-blue-50 border-brand-blue-400/30 text-brand-blue-600'}`}>
-                           {admin.is_super_admin ? <Crown className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
+                  <Card key={admin.id} className={`fintech-card border-0 shadow-2xl overflow-hidden bg-card transition-all duration-700 relative group ${!admin.is_active && 'opacity-50 grayscale scale-[0.98]'}`}>
+                    {admin.is_super_admin && <div className="absolute top-0 right-0 px-6 py-1.5 bg-amber-400 text-amber-950 font-black text-[9px] uppercase tracking-[0.3em] rounded-bl-[1.5rem] shadow-xl z-20">SYSTEM_ROOT</div>}
+                    <CardContent className="p-10">
+                      <div className="flex items-center gap-6 mb-10">
+                        <div className={`h-20 w-20 rounded-[1.5rem] flex items-center justify-center border-2 shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:rotate-3 ${admin.is_super_admin ? 'bg-amber-500/10 border-amber-400/30 text-amber-500' : 'bg-brandblue-500/10 border-brandblue-500/20 text-brandblue-600'}`}>
+                           {admin.is_super_admin ? <Crown className="h-10 w-10 animate-float" /> : <ShieldCheck className="h-10 w-10" />}
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-black text-foreground uppercase tracking-tight truncate">{admin.name || 'Anonymous Kernel'}</p>
-                          <p className="text-[11px] font-bold text-muted-foreground tracking-tighter uppercase">@{admin.telegram_username || admin.telegram_id}</p>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <p className="text-lg font-black text-foreground uppercase tracking-tight truncate group-hover:text-brandblue-600 transition-colors">{admin.name || 'ANONYMOUS_KERNEL'}</p>
+                          <p className="text-[11px] font-black text-muted-foreground/40 tracking-[0.2em] uppercase">ID: {admin.telegram_id}</p>
+                          <div className="flex items-center gap-2 pt-1">
+                             <div className="h-1 w-1 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                             <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">@{admin.telegram_username || 'NO_ALIAS'}</p>
+                          </div>
                         </div>
-                        <div className="ml-auto flex items-center gap-1">
-                          <button onClick={() => handleToggleActive(admin)} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${admin.is_active ? 'bg-rose-50 text-rose-500 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-500 hover:bg-emerald-100'}`}>
-                            {admin.is_active ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                        <div className="flex flex-col gap-3">
+                          <button onClick={() => handleToggleActive(admin)} className={`h-12 w-12 rounded-2xl flex items-center justify-center border-2 transition-all active:scale-90 shadow-lg ${admin.is_active ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white'}`}>
+                            {admin.is_active ? <PowerOff className="h-5 w-5" /> : <Power className="h-5 w-5" />}
                           </button>
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                         <div className="flex flex-wrap gap-1.5">
+                      <div className="space-y-6 pt-10 border-t border-border/10">
+                         <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] ml-1">Assigned Permissions</p>
+                         <div className="flex flex-wrap gap-2">
                             {Array.isArray(PERMISSION_KEYS) && PERMISSION_KEYS.map(p => {
                               const has = admin[p.key as keyof AdminUser] as boolean;
                               return (
@@ -279,7 +291,7 @@ export default function AdminManagement() {
                                   key={p.key}
                                   onClick={() => handleTogglePermission(admin, p.key)}
                                   disabled={!isSuperAdmin || admin.telegram_id === user?.id}
-                                  className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${has ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-muted text-muted-foreground/40 border-border/40'}`}
+                                  className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all duration-300 ${has ? 'bg-brandblue-500/10 text-brandblue-600 border-brandblue-500/20 shadow-sm' : 'bg-muted/30 text-muted-foreground/30 border-transparent hover:border-border/40'}`}
                                 >
                                   {p.label}
                                 </button>
@@ -293,15 +305,21 @@ export default function AdminManagement() {
               </div>
            </TabsContent>
 
-           <TabsContent value="users" className="mt-0">
-              <Card className="border-border/60 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg font-black uppercase tracking-tight">Active Registrations</CardTitle>
-                  <CardDescription className="text-xs font-medium">Merchant accounts with cloud dashboard access</CardDescription>
+           <TabsContent value="users" className="mt-0 animate-in fade-in slide-in-from-top-4 duration-500">
+              <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/60">
+                <CardHeader className="p-10 border-b border-border/10 bg-[#0A0F1E]">
+                  <CardTitle className="text-xl font-black uppercase tracking-tight text-white/80">Cloud Infrastructure Registrations</CardTitle>
+                  <CardDescription className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">Merchant accounts with verified dashboard access</CardDescription>
                 </CardHeader>
-                <CardContent className="p-0 border-t border-border/40">
-                   <div className="flex flex-col items-center justify-center py-32 text-muted-foreground italic text-sm">
-                      No web user records found.
+                <CardContent className="p-0 bg-card">
+                   <div className="flex flex-col items-center justify-center py-48 text-center space-y-8 px-10">
+                      <div className="h-24 w-24 rounded-[2.5rem] bg-muted/20 flex items-center justify-center shadow-inner border border-border/10 opacity-20">
+                         <Users className="h-12 w-12" />
+                      </div>
+                      <div className="space-y-2">
+                         <h3 className="text-2xl font-black text-foreground/40 uppercase tracking-tighter">Zero Record set</h3>
+                         <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.4em]">No external merchant identity detected on this node</p>
+                      </div>
                    </div>
                 </CardContent>
               </Card>

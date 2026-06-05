@@ -178,185 +178,198 @@ export default function Transactions() {
 
   return (
     <Layout connected={connected}>
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+      <div className="max-w-7xl mx-auto pb-16 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-black tracking-tighter uppercase">Transaction Ledger</h1>
-            <p className="text-muted-foreground font-medium flex items-center gap-2">
-               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-               Live monitoring of global payment volume
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="space-y-3">
+            <h1 className="text-4xl font-black tracking-tighter uppercase text-foreground">Transaction Ledger</h1>
+            <p className="text-muted-foreground font-medium flex items-center gap-3">
+               <span className="flex h-2 w-2 rounded-full bg-brand-blue-500 shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
+               <span className="uppercase tracking-[0.2em] text-[10px] font-black">Regional Node: Southeast Asia (Mainnet)</span>
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport}
-              className="h-11 px-6 rounded-2xl border-border/50 font-black text-[10px] uppercase tracking-widest hover:bg-muted transition-all"
+              className="h-14 px-8 rounded-2xl border-border/60 font-black text-[11px] uppercase tracking-widest hover:bg-muted transition-all shadow-sm"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
+              <Download className="h-5 w-5 mr-3" />
+              EXPORT_CSV
             </Button>
             <Link to="/payments">
-              <Button size="sm" className="h-11 px-6 rounded-2xl bg-brand-blue-500 hover:bg-brand-blue-600 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand-blue-500/20 transition-all active:scale-95">
-                <Plus className="h-4 w-4 mr-2" />
-                Initialize Order
+              <Button size="sm" className="h-14 px-8 rounded-2xl bg-brandblue-600 hover:bg-brandblue-700 font-black text-[11px] uppercase tracking-widest shadow-2xl shadow-brandblue-500/20 transition-all active:scale-95">
+                <Plus className="h-5 w-5 mr-3" />
+                NEW_REQUISITION
               </Button>
             </Link>
           </div>
         </div>
 
         {/* Filter Toolbar */}
-        <Card className="glass-card overflow-hidden">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="lg:col-span-2 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search reference, customer or description..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-11 h-12 bg-muted/20 border-border/50 rounded-xl font-medium focus:ring-primary/20"
-                />
+        <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
+              <div className="lg:col-span-2 space-y-3 relative group">
+                <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60 ml-1">Universal Search</Label>
+                <div className="relative">
+                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40 group-focus-within:text-brandblue-500 transition-colors" />
+                   <Input
+                     placeholder="Reference, Entity, Metadata..."
+                     value={searchTerm}
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     className="pl-14 h-16 bg-muted/20 border-border/40 rounded-2xl font-black uppercase text-sm focus:ring-brandblue-500/10 border-2 transition-all shadow-sm"
+                   />
+                </div>
               </div>
 
-              <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setPage(0); }}>
-                <SelectTrigger className="h-12 bg-muted/20 border-border/50 rounded-xl font-bold uppercase text-[10px] tracking-widest">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-                    <SelectValue placeholder="All Channels" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-border/50 shadow-xl">
-                  <SelectItem value="all">ALL CHANNELS</SelectItem>
-                  <SelectItem value="invoice">INVOICE</SelectItem>
-                  <SelectItem value="qr_code">QR CODE</SelectItem>
-                  <SelectItem value="payment_link">UNIVERSAL LINK</SelectItem>
-                  <SelectItem value="ewallet">E-WALLET</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-3">
+                 <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60 ml-1">Channel</Label>
+                 <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setPage(0); }}>
+                   <SelectTrigger className="h-16 bg-muted/20 border-border/40 rounded-2xl font-black uppercase text-[10px] tracking-widest px-6 border-2">
+                     <div className="flex items-center gap-3">
+                       <Filter className="h-4 w-4 text-muted-foreground/60" />
+                       <SelectValue placeholder="All Channels" />
+                     </div>
+                   </SelectTrigger>
+                   <SelectContent className="rounded-2xl border-border/40 shadow-2xl p-2">
+                     <SelectItem value="all" className="py-3 font-black rounded-xl mb-1">ALL_CHANNELS</SelectItem>
+                     <SelectItem value="invoice" className="py-3 font-black rounded-xl mb-1">INVOICE</SelectItem>
+                     <SelectItem value="qr_code" className="py-3 font-black rounded-xl mb-1">QR_CODE</SelectItem>
+                     <SelectItem value="payment_link" className="py-3 font-black rounded-xl mb-1">UNIVERSAL_LINK</SelectItem>
+                     <SelectItem value="ewallet" className="py-3 font-black rounded-xl mb-1">E_WALLET</SelectItem>
+                   </SelectContent>
+                 </Select>
+              </div>
 
-              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
-                <SelectTrigger className="h-12 bg-muted/20 border-border/50 rounded-xl font-bold uppercase text-[10px] tracking-widest">
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-3.5 w-3.5 text-muted-foreground" />
-                    <SelectValue placeholder="All Status" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-border/50 shadow-xl">
-                  <SelectItem value="all">ALL STATUS</SelectItem>
-                  <SelectItem value="paid" className="text-emerald-500 font-bold">PAID</SelectItem>
-                  <SelectItem value="pending" className="text-amber-500 font-bold">PENDING</SelectItem>
-                  <SelectItem value="expired" className="text-rose-500 font-bold">EXPIRED</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-3">
+                 <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60 ml-1">Node State</Label>
+                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
+                   <SelectTrigger className="h-16 bg-muted/20 border-border/40 rounded-2xl font-black uppercase text-[10px] tracking-widest px-6 border-2">
+                     <div className="flex items-center gap-3">
+                       <Zap className="h-4 w-4 text-muted-foreground/60" />
+                       <SelectValue placeholder="All Status" />
+                     </div>
+                   </SelectTrigger>
+                   <SelectContent className="rounded-2xl border-border/40 shadow-2xl p-2">
+                     <SelectItem value="all" className="py-3 font-black rounded-xl mb-1">ALL_STATUS</SelectItem>
+                     <SelectItem value="paid" className="py-3 font-black rounded-xl mb-1 text-emerald-500">PAID_SETTLED</SelectItem>
+                     <SelectItem value="pending" className="py-3 font-black rounded-xl mb-1 text-amber-500">PENDING_CLEARANCE</SelectItem>
+                     <SelectItem value="expired" className="py-3 font-black rounded-xl mb-1 text-rose-500">EXPIRED_LOST</SelectItem>
+                   </SelectContent>
+                 </Select>
+              </div>
 
               <Button
                 variant="ghost"
                 onClick={() => { setSearchTerm(''); setTypeFilter('all'); setStatusFilter('all'); }}
-                className="h-12 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-muted"
+                className="h-16 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-muted/40 text-muted-foreground/60 hover:text-foreground border border-transparent hover:border-border/20 transition-all mb-[0.1rem]"
               >
-                Clear Filters
+                Reset Filters
               </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Transactions Table */}
-        <Card className="glass-card overflow-hidden">
-          <CardContent className="p-0">
+        <Card className="fintech-card border-0 shadow-2xl overflow-hidden">
+          <CardContent className="p-0 bg-card">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-32 space-y-4">
-                <Loader2 className="h-10 w-10 animate-spin text-brand-blue-500" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Syncing blockchain ledger...</p>
+              <div className="flex flex-col items-center justify-center py-48 space-y-6">
+                <Loader2 className="h-12 w-12 animate-spin text-brandblue-500 opacity-20" />
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 animate-pulse">Synchronizing Ledger Protocol...</p>
               </div>
             ) : transactions.length === 0 ? (
-              <div className="text-center py-32 px-6">
-                <div className="h-20 w-20 rounded-3xl bg-muted flex items-center justify-center mx-auto mb-6">
-                  <Receipt className="h-10 w-10 text-muted-foreground/30" />
+              <div className="text-center py-48 px-10">
+                <div className="h-28 w-28 rounded-[2.5rem] bg-muted/20 flex items-center justify-center mx-auto mb-10 shadow-inner border border-border/10">
+                  <Receipt className="h-14 w-14 text-muted-foreground/10" />
                 </div>
-                <p className="text-foreground font-black text-lg">Zero records found</p>
-                <p className="text-muted-foreground text-sm mt-1 font-medium">Try adjusting your filters or search criteria</p>
+                <h3 className="text-2xl font-black text-foreground/40 uppercase tracking-tighter">Zero Record Set</h3>
+                <p className="text-[10px] text-muted-foreground/40 mt-4 font-black uppercase tracking-[0.3em]">Adjust transmission parameters or filters</p>
               </div>
             ) : (
               <div className="overflow-x-auto custom-scrollbar">
                 <table className="modern-table">
                   <thead>
-                    <tr>
-                      <th className="px-6">Transaction / Channel</th>
-                      <th>Reference</th>
-                      <th>Customer</th>
-                      <th className="text-right">Amount</th>
-                      <th className="text-center">Status</th>
-                      <th className="text-right px-6">Actions</th>
+                    <tr className="bg-[#0A0F1E]">
+                      <th className="px-10 py-8 text-white/30 border-white/5">Protocol / Node</th>
+                      <th className="text-white/30 border-white/5">Ledger Reference</th>
+                      <th className="text-white/30 border-white/5">Transmission Identity</th>
+                      <th className="text-right text-white/30 border-white/5">Asset Value</th>
+                      <th className="text-center text-white/30 border-white/5">Network State</th>
+                      <th className="text-right px-10 text-white/30 border-white/5">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-border/10">
                     {Array.isArray(transactions) && transactions.map((txn) => {
                       const sc = statusConfig[txn.status] || statusConfig.pending;
-                      const tc = typeIcons[txn.transaction_type] || { icon: <FileText className="h-4 w-4" />, bg: 'bg-muted' };
+                      const tc = typeIcons[txn.transaction_type] || { icon: <FileText className="h-5 w-5" />, bg: 'bg-muted' };
                       const isUpdated = updatedTxnIds.has(txn.id);
 
                       return (
                         <tr
                           key={txn.id}
-                          className={`transition-all duration-500 ${isUpdated ? 'bg-primary/5 ring-1 ring-primary/20 scale-[0.99] z-10' : ''}`}
+                          className={`transition-all duration-700 group hover:bg-muted/10 ${isUpdated ? 'bg-brandblue-500/5 ring-1 ring-brandblue-500/20' : ''}`}
                         >
-                          <td className="px-6">
-                            <div className="flex items-center gap-4">
-                              <div className={`h-11 w-11 rounded-2xl ${tc.bg} flex items-center justify-center shrink-0 border border-border/20 shadow-sm`}>
+                          <td className="px-10 py-10">
+                            <div className="flex items-center gap-6">
+                              <div className={`h-16 w-16 rounded-[1.5rem] ${tc.bg} flex items-center justify-center shrink-0 border border-black/5 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
                                 {tc.icon}
                               </div>
-                              <div className="min-w-0">
-                                <p className="font-black text-foreground uppercase tracking-tight text-xs truncate max-w-[200px]">
+                              <div className="min-w-0 space-y-2">
+                                <p className="font-black text-foreground uppercase tracking-tight text-sm truncate max-w-[240px]">
                                   {txn.description || txn.transaction_type.replace(/_/g, ' ')}
                                 </p>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter mt-1">
+                                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
+                                  <Clock className="h-3 w-3" />
                                   {new Date(txn.created_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td>
-                            <code className="text-[10px] font-black text-brand-blue-500/80 bg-brand-blue-500/5 px-2 py-1 rounded-lg border border-brand-blue-500/10 uppercase tracking-tighter">
-                              {txn.external_id || `#${txn.id}`}
-                            </code>
+                          <td className="py-10">
+                            <div className="flex items-center gap-3">
+                               <code className="text-[10px] font-black text-brandblue-600 bg-brandblue-500/5 px-3 py-1.5 rounded-lg border border-brandblue-500/10 uppercase tracking-tighter shadow-sm">
+                                 {txn.external_id || `#${txn.id}`}
+                               </code>
+                               <button onClick={() => copyToClipboard(txn.external_id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/40 hover:text-brandblue-500"><Copy className="h-3.5 w-3.5" /></button>
+                            </div>
                           </td>
-                          <td>
+                          <td className="py-10">
                             {txn.customer_name ? (
-                              <div className="min-w-0">
-                                <p className="text-[11px] font-black text-foreground truncate">{txn.customer_name}</p>
-                                <p className="text-[9px] font-bold text-muted-foreground truncate uppercase tracking-tighter">{txn.customer_email || 'No email'}</p>
+                              <div className="min-w-0 space-y-1">
+                                <p className="text-[11px] font-black text-foreground/80 truncate uppercase tracking-tight">{txn.customer_name}</p>
+                                <p className="text-[9px] font-bold text-muted-foreground/40 truncate uppercase tracking-widest">{txn.customer_email || 'NODESTINATION'}</p>
                               </div>
-                            ) : <span className="text-muted-foreground/60 font-black uppercase text-[9px] tracking-widest">Guest</span>}
+                            ) : <div className="fintech-badge bg-muted/20 text-muted-foreground/40 border-0 inline-block px-3">GUEST_USER</div>}
                           </td>
-                          <td className="text-right">
-                            <span className="font-black text-foreground tracking-tighter tabular-nums">
+                          <td className="text-right py-10">
+                            <span className="text-xl font-black text-foreground tracking-tighter tabular-nums group-hover:text-brandblue-600 transition-colors">
                               ₱{fmt(txn.amount)}
                             </span>
                           </td>
-                          <td>
+                          <td className="py-10">
                             <div className="flex justify-center">
-                              <Badge className={`${sc.bg} ${sc.color} border-0 text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm`}>
-                                <span className={`h-1.5 w-1.5 rounded-full ${sc.dot} mr-2 shadow-sm`} />
-                                {txn.status}
-                              </Badge>
+                               <div className={`${sc.bg} ${sc.color} inline-flex items-center gap-2 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm group-hover:scale-105 transition-transform duration-500`}>
+                                 <span className={`h-1.5 w-1.5 rounded-full ${sc.dot} animate-pulse`} />
+                                 {txn.status}
+                               </div>
                             </div>
                           </td>
-                          <td className="text-right px-6">
-                            <div className="flex items-center justify-end gap-1">
+                          <td className="text-right px-10 py-10">
+                            <div className="flex items-center justify-end gap-2">
                               {txn.payment_url && (
-                                <a href={txn.payment_url} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-90">
-                                  <ExternalLink className="h-4 w-4" />
+                                <a href={txn.payment_url} target="_blank" rel="noopener noreferrer" className="h-12 w-12 rounded-2xl bg-white/5 border border-border/40 flex items-center justify-center text-muted-foreground/60 hover:text-brandblue-600 hover:bg-brandblue-50 hover:border-brandblue-500/20 transition-all active:scale-90 shadow-sm">
+                                  <ExternalLink className="h-5 w-5" />
                                 </a>
                               )}
                               <button
                                 onClick={() => cloneTransaction(txn)}
-                                className="p-2.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-90"
-                                title="Repeat Transaction"
+                                className="h-12 w-12 rounded-2xl bg-white/5 border border-border/40 flex items-center justify-center text-muted-foreground/60 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-500/20 transition-all active:scale-90 shadow-sm"
+                                title="Repeat Node Transmission"
                               >
-                                <CopyPlus className="h-4 w-4" />
+                                <CopyPlus className="h-5 w-5" />
                               </button>
                             </div>
                           </td>
@@ -370,22 +383,22 @@ export default function Transactions() {
 
             {/* Pagination */}
             {!loading && totalPages > 1 && (
-              <div className="px-8 py-6 border-t border-border/40 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-6">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Showing <span className="text-foreground">{page * limit + 1}–{Math.min((page + 1) * limit, total)}</span> of <span className="text-foreground">{total}</span> records
+              <div className="px-10 py-10 border-t border-border/10 bg-muted/5 flex flex-col sm:flex-row items-center justify-between gap-8">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40">
+                  Transmitting sequence <span className="text-foreground/60">{page * limit + 1}–{Math.min((page + 1) * limit, total)}</span> / <span className="text-foreground/60">{total}</span> assets
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={page === 0}
                     onClick={() => { setPage(page - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    className="h-11 w-11 p-0 rounded-[1.25rem] border-border/50 transition-all"
+                    className="h-14 w-14 p-0 rounded-[1.5rem] border-border/40 transition-all hover:bg-brandblue-50 hover:text-brandblue-600 shadow-sm"
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-5 w-5" />
                   </Button>
-                  <div className="px-5 h-11 flex items-center justify-center bg-brand-blue-500 rounded-[1.25rem] shadow-lg shadow-brand-blue-500/30">
-                    <span className="text-xs font-black text-white">
+                  <div className="px-8 h-14 flex items-center justify-center bg-brandblue-600 rounded-[1.5rem] shadow-2xl shadow-brandblue-500/30">
+                    <span className="text-sm font-black text-white tabular-nums tracking-widest">
                       {page + 1}
                     </span>
                   </div>
@@ -394,9 +407,9 @@ export default function Transactions() {
                     size="sm"
                     disabled={page === totalPages - 1}
                     onClick={() => { setPage(page + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    className="h-11 w-11 p-0 rounded-[1.25rem] border-border/50 transition-all"
+                    className="h-14 w-14 p-0 rounded-[1.5rem] border-border/40 transition-all hover:bg-brandblue-50 hover:text-brandblue-600 shadow-sm"
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-5 w-5" />
                   </Button>
                 </div>
               </div>

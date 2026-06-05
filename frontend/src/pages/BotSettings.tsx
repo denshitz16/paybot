@@ -276,172 +276,178 @@ export default function BotSettings() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
-              <Bot className="h-8 w-8 text-brandblue-500" />
+      <div className="max-w-7xl mx-auto pb-16 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+          <div className="space-y-3">
+            <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-brandblue-500/10 flex items-center justify-center border border-brandblue-500/20 shadow-inner">
+                <Bot className="h-8 w-8 text-brandblue-600" />
+              </div>
               Bot Intelligence
             </h1>
-            <p className="text-muted-foreground text-sm font-medium mt-1">Configure your Telegram merchant bot and automated messages</p>
+            <p className="text-muted-foreground font-medium flex items-center gap-3">
+               <span className="flex h-2 w-2 rounded-full bg-brand-blue-500 shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
+               <span className="uppercase tracking-[0.2em] text-[10px] font-black">Telegram Integration Control Node</span>
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {localConfig.bot_status === 'active' && (
-              <Badge className="bg-emerald-500 text-white border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                <CheckCircle className="h-3 w-3 mr-1.5 inline" /> Live
-              </Badge>
+              <div className="fintech-badge bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-6 py-2.5 backdrop-blur-md shadow-sm">
+                <CheckCircle className="h-4 w-4 mr-2 inline animate-pulse" /> LIVE_PRODUCTION
+              </div>
             )}
-            <Button variant="outline" size="sm" onClick={() => setShowTutorial(true)} className="border-border/60 font-bold text-[10px] uppercase tracking-widest h-9 rounded-xl">
-              <Info className="h-3.5 w-3.5 mr-2" /> Help Guide
+            <Button variant="outline" size="sm" onClick={() => setShowTutorial(true)} className="h-12 px-6 border-border/60 font-black text-[11px] uppercase tracking-widest rounded-xl hover:bg-muted/40 transition-all">
+              <Info className="h-4 w-4 mr-2.5" /> HELP_MANUAL
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-muted/50 border border-border/60 p-1 h-auto flex-wrap sm:inline-flex gap-1 rounded-xl">
-            <TabsTrigger value="overview" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[11px] uppercase tracking-widest">
-              <Settings className="h-3.5 w-3.5 mr-2" /> Overview
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[11px] uppercase tracking-widest">
-              <MessageSquare className="h-3.5 w-3.5 mr-2" /> Messages
-            </TabsTrigger>
-            <TabsTrigger value="commands" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[11px] uppercase tracking-widest">
-              <Terminal className="h-3.5 w-3.5 mr-2" /> Commands
-            </TabsTrigger>
-            <TabsTrigger value="testing" className="rounded-lg py-2 px-5 data-[state=active]:bg-card data-[state=active]:shadow-sm font-black text-[11px] uppercase tracking-widest">
-              <FlaskConical className="h-3.5 w-3.5 mr-2" /> Testing
-            </TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-10">
+          <TabsList className="bg-[#0A0F1E] border border-white/5 p-1.5 h-auto flex-wrap sm:inline-flex gap-2 rounded-[1.5rem] shadow-2xl">
+            {[
+              { id: 'overview', icon: Settings, label: 'Control' },
+              { id: 'messages', icon: MessageSquare, label: 'Response' },
+              { id: 'commands', icon: Terminal, label: 'Protocol' },
+              { id: 'testing', icon: FlaskConical, label: 'Diagnostics' },
+            ].map(t => (
+              <TabsTrigger key={t.id} value={t.id} className="rounded-xl py-3.5 px-8 data-[state=active]:bg-white/10 data-[state=active]:text-white font-black text-[11px] uppercase tracking-[0.3em] transition-all text-white/30 border border-transparent data-[state=active]:border-white/10">
+                <t.icon className="h-4 w-4 mr-3" /> {t.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* OVERVIEW */}
-          <TabsContent value="overview" className="mt-0 space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <Card className="border-border/60 shadow-sm overflow-hidden">
-                  <div className="h-1.5 bg-brandblue-500 w-full" />
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-black uppercase tracking-tight">Merchant Bot Token</CardTitle>
-                    <CardDescription className="font-medium text-xs">Register your custom bot from @BotFather to handle payments</CardDescription>
+          <TabsContent value="overview" className="mt-0 space-y-10 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              <div className="lg:col-span-2 space-y-10">
+                <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/60 backdrop-blur-sm">
+                  <div className="h-2.5 bg-brandblue-500 w-full shadow-[0_0_15px_rgba(0,122,255,0.4)]" />
+                  <CardHeader className="p-10 border-b border-border/10">
+                    <CardTitle className="text-xl font-black uppercase tracking-tight text-foreground">Authentication Token</CardTitle>
+                    <CardDescription className="font-black text-[10px] uppercase tracking-widest text-muted-foreground/40 mt-2">Deploy local bot instance via @BotFather credentials</CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-4 space-y-6">
+                  <CardContent className="p-10 space-y-10">
                     {cloneInfo?.configured && (
-                      <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-emerald-100 text-emerald-500">
-                            <Bot className="h-6 w-6" />
+                      <div className="bg-[#0A0F1E] border border-white/5 rounded-3xl p-8 flex items-center justify-between shadow-inner group">
+                        <div className="flex items-center gap-6">
+                          <div className="h-16 w-16 rounded-[1.25rem] bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform duration-500 shadow-sm">
+                            <Bot className="h-8 w-8 text-emerald-400" />
                           </div>
-                          <div>
-                            <p className="text-sm font-black text-emerald-900 uppercase tracking-tight">{cloneInfo.bot_name}</p>
-                            <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">@{cloneInfo.bot_username}</p>
+                          <div className="space-y-1">
+                            <p className="text-base font-black text-white uppercase tracking-tight">{cloneInfo.bot_name}</p>
+                            <p className="text-[11px] font-bold text-emerald-400/60 uppercase tracking-[0.2em]">@{cloneInfo.bot_username}</p>
                           </div>
                         </div>
-                        <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px] uppercase tracking-widest px-3">Connected</Badge>
+                        <div className="fintech-badge bg-emerald-500 text-white border-0 px-5">STATE:CONNECTED</div>
                       </div>
                     )}
 
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">BotFather API Token</Label>
-                      <div className="flex gap-2">
+                    <div className="space-y-4">
+                      <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">BotFather Secure Token</Label>
+                      <div className="flex gap-4">
                         <div className="relative flex-1 group">
                           <Input
                             type={showToken ? 'text' : 'password'}
                             placeholder="1234567890:AAF..."
                             value={cloneToken}
                             onChange={(e) => { setCloneToken(e.target.value); setCloneValidated(null); }}
-                            className="bg-muted/20 border-border/60 h-12 font-mono text-xs pr-10 rounded-xl"
+                            className="bg-muted/20 border-border/40 h-16 font-mono text-sm pr-14 rounded-2xl border-2 shadow-inner uppercase tracking-widest"
                           />
-                          <button onClick={() => setShowToken(!showToken)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-brand-blue-500 transition-colors">
-                            {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          <button onClick={() => setShowToken(!showToken)} className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center text-muted-foreground/40 hover:text-brand-blue-500 transition-colors">
+                            {showToken ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                           </button>
                         </div>
-                        <Button onClick={handleCloneValidate} disabled={cloneValidating || !cloneToken.trim()} variant="outline" className="h-12 border-border/60 font-black text-xs px-6 rounded-xl uppercase tracking-widest">
-                          {cloneValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
+                        <Button onClick={handleCloneValidate} disabled={cloneValidating || !cloneToken.trim()} variant="outline" className="h-16 border-2 border-border/40 font-black text-[11px] px-10 rounded-2xl uppercase tracking-[0.3em] hover:bg-muted/40 transition-all shadow-sm">
+                          {cloneValidating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'VERIFY_NODE'}
                         </Button>
                       </div>
                     </div>
 
                     {cloneValidated && (
-                      <div className="bg-brandblue-50 border border-brandblue-100 rounded-2xl p-5 animate-in zoom-in-95">
-                         <div className="flex items-center gap-4 mb-5">
-                            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shadow-sm text-brandblue-500">
-                              <Sparkles className="h-6 w-6" />
+                      <div className="bg-brandblue-500/5 border-2 border-brandblue-500/20 rounded-[2rem] p-10 animate-in zoom-in-95 duration-500 shadow-xl">
+                         <div className="flex items-center gap-8 mb-10">
+                            <div className="h-20 w-20 rounded-[1.5rem] bg-white flex items-center justify-center shadow-2xl text-brandblue-600 border-2 border-brandblue-500/20">
+                              <Sparkles className="h-10 w-10 animate-float" />
                             </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-black text-brandblue-900 uppercase">{cloneValidated.first_name}</p>
-                              <p className="text-xs font-bold text-brandblue-600">@{cloneValidated.username}</p>
+                            <div className="flex-1 space-y-1">
+                              <p className="text-xl font-black text-brandblue-900 uppercase tracking-tight">{cloneValidated.first_name}</p>
+                              <p className="text-[11px] font-bold text-brandblue-600 uppercase tracking-[0.2em]">@{cloneValidated.username}</p>
                             </div>
                          </div>
-                         <Button onClick={handleCloneSave} disabled={cloneSaving} className="w-full h-12 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-xl uppercase tracking-widest shadow-lg shadow-brandblue-500/20 transition-all">
-                           {cloneSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Webhook className="h-4 w-4 mr-2" />}
-                           Complete Installation
+                         <Button onClick={handleCloneSave} disabled={cloneSaving} className="w-full h-20 bg-brandblue-600 hover:bg-brandblue-700 text-white font-black rounded-[1.5rem] uppercase tracking-[0.4em] shadow-2xl shadow-brandblue-500/30 transition-all active:scale-95 text-sm">
+                           {cloneSaving ? <Loader2 className="h-7 w-7 animate-spin mr-3" /> : <Webhook className="h-7 w-7 mr-3" />}
+                           DEPLOY INSTANCE
                          </Button>
                       </div>
                     )}
                   </CardContent>
                 </Card>
 
-                <Card className="border-border/60 shadow-sm overflow-hidden">
-                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-black uppercase tracking-tight">Cloud Webhook</CardTitle>
-                    <CardDescription className="font-medium text-xs">Bridge your bot to our cloud payment processors</CardDescription>
+                <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-[#0A0F1E] border-white/5">
+                   <CardHeader className="p-10 border-b border-white/5">
+                    <CardTitle className="text-xl font-black uppercase tracking-tight text-white/80">Cloud Interface</CardTitle>
+                    <CardDescription className="font-black text-[10px] uppercase tracking-widest text-white/20 mt-2">Real-time transmission bridge</CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-4 space-y-4">
-                    <div className="bg-muted/20 border border-border/60 rounded-2xl p-5">
-                       <div className="flex items-center justify-between mb-4">
-                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Deployment Status</p>
-                         {webhookInfo?.is_registered ? (
-                           <Badge className="bg-emerald-500 text-white border-0 font-black text-[8px] uppercase px-2">Healthy</Badge>
-                         ) : <Badge className="bg-rose-500 text-white border-0 font-black text-[8px] uppercase px-2">Disconnected</Badge>}
+                  <CardContent className="p-10 space-y-8">
+                    <div className="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-inner">
+                       <div className="flex items-center justify-between mb-6">
+                         <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em]">Protocol Endpoint</p>
+                         <div className={`px-4 py-1 rounded-full font-black text-[9px] uppercase tracking-widest border border-white/5 ${webhookInfo?.is_registered ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                           {webhookInfo?.is_registered ? 'STATE:ACTIVE' : 'STATE:ERROR'}
+                         </div>
                        </div>
-                       <code className="block p-4 bg-black/5 dark:bg-white/5 rounded-xl text-[11px] font-bold text-foreground break-all border border-black/5">
-                         {webhookInfo?.webhook_url || 'https://---'}
+                       <code className="block p-6 bg-black/40 rounded-2xl text-[11px] font-black text-brandblue-400 break-all border border-white/5 tracking-widest leading-relaxed shadow-sm">
+                         {webhookInfo?.webhook_url || 'ASSEMBLING_ENDPOINT...'}
                        </code>
                     </div>
-                    <Button onClick={handleAutoSetup} disabled={autoSetupLoading} className="w-full h-12 bg-muted/60 hover:bg-muted border border-border/60 text-foreground font-black rounded-xl uppercase tracking-[0.15em] transition-all">
-                       {autoSetupLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2 text-amber-500" />}
-                       Auto-Repair Connection
+                    <Button onClick={handleAutoSetup} disabled={autoSetupLoading} className="w-full h-18 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black rounded-[1.5rem] uppercase tracking-[0.3em] transition-all active:scale-95 group py-4">
+                       {autoSetupLoading ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : <Zap className="h-6 w-6 mr-3 text-amber-400 group-hover:scale-125 transition-transform" />}
+                       REPAIR_NETWORK_BRIDGE
                     </Button>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="space-y-6">
-                <Card className="border-border/60 shadow-sm">
-                  <CardHeader><CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">Bot Engine Control</CardTitle></CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
+              <div className="space-y-10">
+                <Card className="fintech-card border-0 shadow-2xl bg-card">
+                  <CardHeader className="p-8 border-b border-border/10"><CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">Node Logic Control</CardTitle></CardHeader>
+                  <CardContent className="p-8 space-y-5">
+                    <div className="space-y-4">
                       {(['active', 'inactive', 'maintenance'] as const).map(s => (
                         <button
                           key={s}
                           onClick={() => setLocalConfig(prev => ({ ...prev, bot_status: s }))}
-                          className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
+                          className={`w-full p-6 rounded-[1.5rem] border-2 flex items-center justify-between transition-all duration-500 relative overflow-hidden group ${
                             localConfig.bot_status === s
-                              ? 'bg-brandblue-50 border-brandblue-500 shadow-sm'
-                              : 'bg-card border-border/40 hover:border-brandblue-200'
+                              ? 'bg-brandblue-500/5 border-brandblue-500 shadow-lg'
+                              : 'bg-muted/10 border-border/40 hover:border-brandblue-500/20 hover:bg-muted/20'
                           }`}
                         >
-                          <div className="text-left">
-                            <p className={`text-xs font-black uppercase tracking-widest ${localConfig.bot_status === s ? 'text-brand-blue-600' : 'text-muted-foreground'}`}>{s}</p>
-                            <p className="text-[10px] text-muted-foreground font-medium">{s === 'active' ? 'Full response mode' : s === 'maintenance' ? 'Hold pattern' : 'Offline'}</p>
+                          <div className="text-left relative z-10">
+                            <p className={`text-[11px] font-black uppercase tracking-[0.3em] ${localConfig.bot_status === s ? 'text-brandblue-600' : 'text-muted-foreground/60'}`}>{s.toUpperCase()}</p>
+                            <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest mt-1">{s === 'active' ? 'Full response protocol' : s === 'maintenance' ? 'Service hold pattern' : 'Transmission halt'}</p>
                           </div>
-                          {localConfig.bot_status === s && <CheckCircle className="h-4 w-4 text-brandblue-500" />}
+                          {localConfig.bot_status === s && <div className="h-2 w-2 rounded-full bg-brandblue-500 shadow-[0_0_8px_rgba(0,122,255,0.8)] relative z-10" />}
                         </button>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-border/60 shadow-sm bg-muted/20">
-                  <CardHeader><CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">CRM Integration</CardTitle></CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">WhatsApp Business</Label>
-                      <Input
-                        placeholder="639171234567"
-                        value={localConfig.whatsapp_number}
-                        onChange={e => setLocalConfig(prev => ({ ...prev, whatsapp_number: e.target.value }))}
-                        className="bg-card border-border/60 h-11 text-sm font-bold rounded-xl"
-                      />
+                <Card className="fintech-card border-0 shadow-2xl bg-[#0A0F1E] border-white/5">
+                  <CardHeader className="p-8 border-b border-white/5"><CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20">Linked Services</CardTitle></CardHeader>
+                  <CardContent className="p-8 space-y-6">
+                    <div className="space-y-4">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-1">WhatsApp Hub</Label>
+                      <div className="relative group">
+                         <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-brandblue-400 transition-colors" />
+                         <Input
+                           placeholder="639171234567"
+                           value={localConfig.whatsapp_number}
+                           onChange={e => setLocalConfig(prev => ({ ...prev, whatsapp_number: e.target.value }))}
+                           className="bg-white/5 border-white/10 h-16 text-sm font-black rounded-2xl pl-14 text-white tracking-[0.2em] shadow-inner focus:ring-brandblue-500/10 border-2"
+                         />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -449,43 +455,49 @@ export default function BotSettings() {
             </div>
 
             {configChanged && (
-              <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8">
-                <Card className="bg-brandblue-600 border-0 shadow-2xl p-4 flex items-center gap-6 rounded-2xl min-w-[320px]">
-                  <p className="text-white text-xs font-black uppercase tracking-widest flex-1">Configuration has unsaved changes</p>
-                  <div className="flex items-center gap-2">
-                    <Button onClick={() => setLocalConfig(botConfig!)} variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 font-bold text-xs uppercase tracking-tighter h-9 px-4">Discard</Button>
-                    <Button onClick={handleSaveConfig} disabled={configSaving} className="bg-white text-brandblue-600 hover:bg-white/90 font-black text-xs uppercase tracking-widest h-9 px-6 rounded-xl shadow-sm">
-                      {configSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
+              <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-bottom-12 duration-700">
+                <div className="bg-[#0A0F1E] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)] p-6 flex items-center gap-10 rounded-[2rem] min-w-[480px] backdrop-blur-3xl">
+                  <div className="flex items-center gap-4">
+                     <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                        <Wrench className="h-5 w-5 text-amber-500 animate-float" />
+                     </div>
+                     <p className="text-white text-[11px] font-black uppercase tracking-[0.3em]">Protocol Overrides Pending</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Button onClick={() => setLocalConfig(botConfig!)} variant="ghost" className="text-white/40 hover:text-white hover:bg-white/5 font-black text-[10px] uppercase tracking-widest h-12 px-6 rounded-xl transition-all">DISCARD_BIT</Button>
+                    <Button onClick={handleSaveConfig} disabled={configSaving} className="bg-brandblue-600 hover:bg-brandblue-700 text-white font-black text-[10px] uppercase tracking-[0.4em] h-14 px-10 rounded-2xl shadow-2xl shadow-brandblue-500/40 transition-all active:scale-95">
+                      {configSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : 'EMIT_CHANGES'}
                     </Button>
                   </div>
-                </Card>
+                </div>
               </div>
             )}
           </TabsContent>
 
           {/* MESSAGES */}
-          <TabsContent value="messages" className="mt-0 space-y-6">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TabsContent value="messages" className="mt-0 space-y-10 animate-in fade-in slide-in-from-top-4 duration-500">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {[
-                  { field: 'welcome_message_en' as const, label: 'EN | Welcome', icon: '🇺🇸' },
-                  { field: 'welcome_message_zh' as const, label: 'ZH | 欢迎', icon: '🇨🇳' },
-                  { field: 'payment_success_message' as const, label: 'Success Notification', icon: '✅' },
-                  { field: 'payment_pending_message' as const, label: 'Pending Notification', icon: '⏳' },
-                  { field: 'payment_failed_message' as const, label: 'Failure / Expiry', icon: '❌' },
-                  { field: 'maintenance_message' as const, label: 'Maintenance Notice', icon: '🛠️' },
+                  { field: 'welcome_message_en' as const, label: 'EN | Universal greeting', icon: <Globe className="h-4 w-4" /> },
+                  { field: 'welcome_message_zh' as const, label: 'ZH | 节点欢迎词', icon: <Globe className="h-4 w-4" /> },
+                  { field: 'payment_success_message' as const, label: 'SETTLEMENT_OK_EMISSION', icon: <CheckCircle className="h-4 w-4" /> },
+                  { field: 'payment_pending_message' as const, label: 'CLEARANCE_AWAIT_SIGNAL', icon: <Clock className="h-4 w-4" /> },
+                  { field: 'payment_failed_message' as const, label: 'TRANSMISSION_ERROR_ALERT', icon: <XCircle className="h-4 w-4" /> },
+                  { field: 'maintenance_message' as const, label: 'GRID_MAINTENANCE_STATUS', icon: <Wrench className="h-4 w-4" /> },
                 ].map(m => (
-                  <Card key={m.field} className="border-border/60 shadow-sm overflow-hidden">
-                    <div className="bg-muted/30 border-b border-border/40 px-5 py-3 flex items-center justify-between">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <span>{m.icon}</span> {m.label}
-                      </p>
-                      <button onClick={() => setLocalConfig(prev => ({...prev, [m.field]: DEFAULT_TEMPLATES[m.field]}))} className="text-[9px] font-black text-brand-blue-500 uppercase tracking-tighter hover:underline">Reset to Default</button>
+                  <Card key={m.field} className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/40">
+                    <div className="bg-muted/30 border-b border-border/10 px-8 py-5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                         <div className="text-brandblue-500">{m.icon}</div>
+                         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">{m.label}</p>
+                      </div>
+                      <button onClick={() => setLocalConfig(prev => ({...prev, [m.field]: DEFAULT_TEMPLATES[m.field]}))} className="text-[9px] font-black text-brand-blue-500 uppercase tracking-widest hover:underline bg-brandblue-500/5 px-3 py-1 rounded-lg">RESTORE_DEFAULT</button>
                     </div>
-                    <CardContent className="p-4">
+                    <CardContent className="p-8">
                       <Textarea
                         value={localConfig[m.field]}
                         onChange={e => setLocalConfig(prev => ({...prev, [m.field]: e.target.value}))}
-                        className="min-h-[160px] bg-muted/10 border-border/40 text-xs font-bold leading-relaxed resize-none rounded-xl"
+                        className="min-h-[220px] bg-muted/20 border-border/40 text-xs font-black leading-relaxed resize-none rounded-2xl p-6 border-2 shadow-inner uppercase tracking-tight focus:ring-brandblue-500/10"
                       />
                     </CardContent>
                   </Card>
@@ -494,24 +506,31 @@ export default function BotSettings() {
           </TabsContent>
 
           {/* COMMANDS */}
-          <TabsContent value="commands" className="mt-0">
-             <Card className="border-border/60 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg font-black uppercase tracking-tight">Active Commands</CardTitle>
-                  <CardDescription className="text-xs font-medium">Built-in operations supported by the PayBot Kernel</CardDescription>
+          <TabsContent value="commands" className="mt-0 animate-in fade-in slide-in-from-top-4 duration-500">
+             <Card className="fintech-card border-0 shadow-2xl overflow-hidden">
+                <CardHeader className="p-10 bg-muted/20 border-b border-border/10">
+                  <div className="flex items-center gap-5">
+                     <div className="h-12 w-12 rounded-2xl bg-brandblue-500/10 flex items-center justify-center border border-brandblue-500/20 shadow-inner">
+                        <Terminal className="h-6 w-6 text-brandblue-600" />
+                     </div>
+                     <div>
+                        <CardTitle className="text-xl font-black uppercase tracking-tight">Active Operation Protocols</CardTitle>
+                        <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">Native kernel instructions for decentralized merchant management</CardDescription>
+                     </div>
+                  </div>
                 </CardHeader>
-                <CardContent className="p-0 border-t border-border/40">
-                  <div className="divide-y divide-border/30">
+                <CardContent className="p-0 border-t border-border/10 bg-card">
+                  <div className="divide-y divide-border/10">
                     {BOT_COMMANDS.map(c => (
-                      <div key={c.cmd} className="flex items-center gap-4 px-6 py-4 hover:bg-muted/30 transition-colors">
-                        <div className="h-10 w-10 rounded-2xl bg-brandblue-50 flex items-center justify-center shrink-0 border border-brandblue-100 text-xl shadow-sm">
+                      <div key={c.cmd} className="flex items-center gap-10 px-10 py-8 hover:bg-muted/10 transition-all group/cmd">
+                        <div className="h-16 w-16 rounded-[1.5rem] bg-brandblue-50 flex items-center justify-center shrink-0 border-2 border-brandblue-100 text-3xl shadow-sm group-hover/cmd:scale-110 group-hover/cmd:rotate-6 transition-all duration-500">
                           {c.emoji}
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <code className="text-sm font-black text-brandblue-600 bg-brandblue-50/50 px-2 py-0.5 rounded-lg tracking-tight">{c.cmd}</code>
-                          <p className="text-[11px] text-muted-foreground font-bold mt-1 uppercase tracking-tight">{c.desc}</p>
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <code className="text-base font-black text-brandblue-600 bg-brandblue-500/5 px-4 py-1.5 rounded-xl tracking-tight border border-brandblue-500/10 shadow-sm">{c.cmd}</code>
+                          <p className="text-[11px] text-muted-foreground/60 font-black mt-3 uppercase tracking-[0.2em]">{c.desc}</p>
                         </div>
-                        <Badge className="bg-muted text-muted-foreground border-0 font-black text-[8px] uppercase tracking-widest">{c.category}</Badge>
+                        <div className="fintech-badge bg-muted/20 text-muted-foreground/40 border-0 px-5 group-hover/cmd:bg-brandblue-500/10 group-hover/cmd:text-brandblue-500 transition-colors">{c.category.toUpperCase()}</div>
                       </div>
                     ))}
                   </div>
@@ -520,27 +539,42 @@ export default function BotSettings() {
           </TabsContent>
 
           {/* TESTING */}
-          <TabsContent value="testing" className="mt-0">
-             <Card className="border-border/60 shadow-sm overflow-hidden">
-                <div className="h-1.5 bg-emerald-500 w-full" />
-                <CardHeader>
-                  <CardTitle className="text-lg font-black uppercase tracking-tight">Kernel diagnostics</CardTitle>
+          <TabsContent value="testing" className="mt-0 animate-in fade-in slide-in-from-top-4 duration-500">
+             <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-[#0A0F1E] border-white/5">
+                <div className="h-2.5 bg-emerald-500 w-full shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
+                <CardHeader className="p-10 border-b border-white/5">
+                  <div className="flex items-center gap-5">
+                    <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                       <FlaskConical className="h-7 w-7 text-emerald-400 animate-pulse" />
+                    </div>
+                    <div>
+                       <CardTitle className="text-xl font-black uppercase tracking-tight text-white/80">Kernel Diagnostics</CardTitle>
+                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mt-1">Initialize global network integrity check</p>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent className="p-6 space-y-6">
-                  <Button onClick={handleTestBot} disabled={testLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
-                    {testLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <FlaskConical className="h-5 w-5 mr-2" />}
-                    Initialize Full System Test
+                <CardContent className="p-10 space-y-12">
+                  <Button onClick={handleTestBot} disabled={testLoading} className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-[1.5rem] uppercase tracking-[0.4em] shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all text-sm group">
+                    {testLoading ? <Loader2 className="h-7 w-7 animate-spin mr-3 opacity-50" /> : <FlaskConical className="h-7 w-7 mr-4 group-hover:rotate-12 transition-transform" />}
+                    EXECUTE_FULL_SYSTEM_AUDIT
                   </Button>
 
                   {testRan && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in zoom-in-95 duration-700">
                       {Array.isArray(testChecks) && testChecks.map(check => (
-                        <div key={check.name} className={`p-4 rounded-2xl border-2 ${check.passed ? 'bg-emerald-50 border-emerald-500/30' : 'bg-rose-50 border-rose-500/30'}`}>
-                           <div className="flex items-center gap-2 mb-2">
-                             {check.passed ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <XCircle className="h-4 w-4 text-rose-600" />}
-                             <p className="text-[10px] font-black uppercase tracking-widest text-foreground">{check.name}</p>
+                        <div key={check.name} className={`p-8 rounded-[2rem] border-2 transition-all duration-500 hover:scale-105 ${check.passed ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'bg-rose-500/5 border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.1)]'}`}>
+                           <div className="flex items-center gap-4 mb-6">
+                             <div className={`h-10 w-10 rounded-xl flex items-center justify-center border ${check.passed ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
+                                {check.passed ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                             </div>
+                             <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/80">{check.name.replace(/_/g, ' ')}</p>
                            </div>
-                           <p className="text-[11px] font-bold text-muted-foreground leading-tight">{check.detail}</p>
+                           <div className="p-4 bg-black/40 rounded-xl border border-white/5">
+                              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest leading-relaxed">{check.detail}</p>
+                           </div>
+                           <div className="mt-6 flex justify-end">
+                              <div className={`text-[9px] font-black uppercase tracking-widest ${check.passed ? 'text-emerald-400' : 'text-rose-400'}`}>{check.passed ? 'STATE:OK' : 'STATE:FAIL'}</div>
+                           </div>
                         </div>
                       ))}
                     </div>
@@ -552,35 +586,36 @@ export default function BotSettings() {
       </div>
 
       {showTutorial && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-           <Card className="max-w-md border-0 bg-card shadow-2xl rounded-[2.5rem] overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="bg-brandblue-500 p-10 flex flex-col items-center text-center">
-                 <div className="h-20 w-20 rounded-[2rem] bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 shadow-inner border border-white/20">
-                   <Sparkles className="h-10 w-10 text-white animate-pulse" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-6 animate-in fade-in duration-500">
+           <Card className="max-w-xl border-0 bg-[#0A0F1E] shadow-[0_60px_120px_rgba(0,0,0,0.8)] rounded-[3rem] overflow-hidden animate-in zoom-in-95 duration-500 border-white/5">
+              <div className="bg-brandblue-600 p-12 flex flex-col items-center text-center relative overflow-hidden">
+                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
+                 <div className="h-28 w-28 rounded-[2.5rem] bg-white/10 backdrop-blur-3xl flex items-center justify-center mb-10 shadow-2xl border border-white/20 relative z-10 animate-float">
+                   <Sparkles className="h-14 w-14 text-white animate-pulse" />
                  </div>
-                 <h2 className="text-2xl font-black text-white uppercase tracking-tight">Command Your Bot</h2>
-                 <p className="text-brandblue-50 text-sm font-bold mt-2 uppercase tracking-widest opacity-80">PayBot Intelligence Engine</p>
+                 <h2 className="text-4xl font-black text-white uppercase tracking-tighter relative z-10 mb-4">Command the Grid</h2>
+                 <p className="text-brandblue-100/60 text-xs font-black uppercase tracking-[0.4em] relative z-10">Neural Control Interface v4.0</p>
               </div>
-              <CardContent className="p-10 space-y-6">
-                 <div className="space-y-4">
+              <CardContent className="p-12 space-y-12">
+                 <div className="space-y-10">
                     {[
-                      { icon: Key, title: 'Bot Token', desc: 'Secure your API token from @BotFather' },
-                      { icon: Webhook, title: 'Cloud Bridge', desc: 'Auto-setup takes only 2 seconds' },
-                      { icon: MessageSquare, title: 'Personalize', desc: 'Edit welcome messages in EN/ZH' },
+                      { icon: Key, title: 'Network Credentials', desc: 'Secure your institutional API token from @BotFather to initialize node', color: 'text-brandblue-500' },
+                      { icon: Webhook, title: 'Cloud Relay v4', desc: 'Activate automated bridging to cloud payment nodes with one-click setup', color: 'text-emerald-500' },
+                      { icon: MessageSquare, title: 'Emission Logic', desc: 'Configure multi-lingual automated response sequences for EN/ZH sectors', color: 'text-amber-500' },
                     ].map((step, i) => (
-                      <div key={i} className="flex gap-4 items-start">
-                         <div className="h-10 w-10 rounded-2xl bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">
-                           <step.icon className="h-5 w-5 text-brandblue-500" />
+                      <div key={i} className="flex gap-8 items-start group">
+                         <div className="h-16 w-16 rounded-[1.5rem] bg-white/5 flex items-center justify-center shrink-0 border border-white/10 transition-all group-hover:scale-110 group-hover:rotate-6 duration-500">
+                           <step.icon className={`h-8 w-8 ${step.color}`} />
                          </div>
-                         <div>
-                           <p className="text-xs font-black uppercase tracking-widest text-foreground">{step.title}</p>
-                           <p className="text-xs font-medium text-muted-foreground mt-0.5">{step.desc}</p>
+                         <div className="space-y-1.5">
+                           <p className="text-sm font-black uppercase tracking-[0.3em] text-white/90">{step.title}</p>
+                           <p className="text-[11px] font-bold text-white/30 uppercase leading-relaxed tracking-tight">{step.desc}</p>
                          </div>
                       </div>
                     ))}
                  </div>
-                 <Button onClick={dismissTutorial} className="w-full h-14 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-2xl shadow-xl shadow-brandblue-500/20 uppercase tracking-widest transition-all active:scale-95 mt-4">
-                    Get Started
+                 <Button onClick={dismissTutorial} className="w-full h-20 bg-brandblue-600 hover:bg-brandblue-700 text-white font-black rounded-[2rem] shadow-2xl shadow-brandblue-500/40 uppercase tracking-[0.5em] transition-all active:scale-95 mt-4 text-xs">
+                    INITIALIZE_SYSTEM_CORE
                  </Button>
               </CardContent>
            </Card>

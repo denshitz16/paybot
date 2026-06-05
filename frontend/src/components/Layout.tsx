@@ -295,33 +295,33 @@ export default function Layout({ children, connected }: LayoutProps) {
     <div className="h-screen overflow-hidden bg-background text-foreground flex">
 
       {/* ─── Desktop Sidebar ─── */}
-      <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 z-40 bg-card/60 backdrop-blur-xl border-r border-border/50 shadow-2xl">
+      <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 z-40 bg-card/60 backdrop-blur-2xl border-r border-border/40 shadow-2xl">
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-4 px-6 h-20 border-b border-border/40 shrink-0 group">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-brand-blue-500/30 group-hover:scale-105 transition-all duration-300">
-            <img src="/logo.svg" alt={APP_NAME} className="h-6 w-6 shrink-0" />
+        <Link to="/" className="flex items-center gap-4 px-8 h-24 border-b border-border/40 shrink-0 group transition-all hover:bg-muted/10">
+          <div className="h-11 w-11 rounded-2xl bg-[#0A0F1E] flex items-center justify-center shrink-0 shadow-2xl shadow-brand-blue-500/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 border border-white/5">
+            <img src="/logo.svg" alt={APP_NAME} className="h-7 w-7 shrink-0 animate-logo-bounce" />
           </div>
           <div>
-            <p className="text-base font-black tracking-tight text-foreground">{APP_NAME}</p>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{APP_SUBTITLE}</p>
+            <p className="text-lg font-black tracking-tighter text-foreground uppercase">{APP_NAME}</p>
+            <p className="text-[9px] text-muted-foreground/60 font-black uppercase tracking-[0.3em]">{APP_SUBTITLE}</p>
           </div>
         </Link>
 
         <NavLinks />
 
         {/* User */}
-        <div className="shrink-0 border-t border-border/40 p-4">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-accent/30 border border-accent/20 backdrop-blur-sm shadow-inner">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 border border-primary/20 flex items-center justify-center shrink-0 shadow-sm">
-              {isSuperAdmin ? <Crown className="h-5 w-5 text-amber-500" /> : <User className="h-5 w-5 text-primary" />}
+        <div className="shrink-0 border-t border-border/40 p-6 bg-[#0A0F1E]/5">
+          <div className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-[#0A0F1E] border border-white/5 shadow-2xl group cursor-pointer hover:bg-brandblue-600 transition-all duration-500">
+            <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 shadow-sm group-hover:bg-white group-hover:text-brandblue-600 transition-all duration-500">
+              {isSuperAdmin ? <Crown className="h-5 w-5 text-amber-400 group-hover:text-brandblue-600" /> : <User className="h-5 w-5 text-white/40 group-hover:text-brandblue-600" />}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-black truncate tracking-tight">{userName}</p>
-              <p className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-widest leading-none mt-0.5">{isSuperAdmin ? t('super_admin') : t('admin')}</p>
+              <p className="text-[11px] font-black truncate tracking-widest text-white uppercase">{userName}</p>
+              <p className="text-[9px] font-black uppercase text-white/20 tracking-[0.2em] leading-none mt-1 group-hover:text-white/60">{isSuperAdmin ? 'ROOT_USER' : 'ADMIN_NODE'}</p>
             </div>
             <button
               onClick={() => logout()}
-              className="p-2 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-90"
+              className="p-2 rounded-lg text-white/20 hover:text-white hover:bg-white/10 transition-all active:scale-90"
               title="Sign out"
             >
               <LogOut className="h-4 w-4" />
@@ -333,27 +333,29 @@ export default function Layout({ children, connected }: LayoutProps) {
       {/* ─── Mobile Drawer ─── */}
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSidebarOpen(false)} />
-          <aside className="relative z-10 w-72 h-full bg-card/95 backdrop-blur-2xl border-r border-border/50 flex flex-col shadow-2xl animate-in slide-in-from-left duration-400">
-            <div className="flex items-center justify-between px-6 h-20 border-b border-border/40 shrink-0">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-500" onClick={() => setSidebarOpen(false)} />
+          <aside className="relative z-10 w-80 h-full bg-[#0A0F1E] border-r border-white/5 flex flex-col shadow-2xl animate-in slide-in-from-left-8 duration-500">
+            <div className="flex items-center justify-between px-8 h-24 border-b border-white/5 shrink-0">
               <Link to="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-4 group">
-                <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-                  <img src="/logo.svg" alt={APP_NAME} className="h-6 w-6" />
+                <div className="h-11 w-11 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-2xl shadow-brandblue-500/40">
+                  <img src="/logo.svg" alt={APP_NAME} className="h-7 w-7" />
                 </div>
-                <p className="text-base font-black tracking-tight text-foreground">{APP_NAME}</p>
+                <p className="text-xl font-black tracking-tighter text-white uppercase">{APP_NAME}</p>
               </Link>
-              <button onClick={() => setSidebarOpen(false)} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-90">
+              <button onClick={() => setSidebarOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 text-white/40 hover:text-white transition-all active:scale-90">
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks onNav={() => setSidebarOpen(false)} />
-            <div className="shrink-0 border-t border-border/40 p-4">
+            <div className="flex-1 overflow-y-auto px-4 py-6">
+               <NavLinks onNav={() => setSidebarOpen(false)} />
+            </div>
+            <div className="shrink-0 border-t border-white/5 p-8">
               <button
                 onClick={() => logout()}
-                className="w-full h-12 flex items-center justify-center gap-3 rounded-2xl text-sm font-black uppercase tracking-widest text-red-500 bg-red-500/5 hover:bg-red-500/10 transition-all active:scale-95"
+                className="w-full h-16 flex items-center justify-center gap-4 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.3em] text-white bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 transition-all active:scale-95 shadow-xl"
               >
-                <LogOut className="h-4 w-4" />
-                {t('sign_out')}
+                <LogOut className="h-5 w-5" />
+                TERMINATE_SESSION
               </button>
             </div>
           </aside>
@@ -364,38 +366,38 @@ export default function Layout({ children, connected }: LayoutProps) {
       <div className="flex-1 flex flex-col min-h-0 md:ml-64 transition-all duration-300">
 
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 h-16 flex items-center px-6 gap-4 bg-background/60 backdrop-blur-xl border-b border-border/40 shrink-0">
+        <header className="sticky top-0 z-30 h-20 flex items-center px-10 gap-6 bg-background/40 backdrop-blur-2xl border-b border-border/30 shrink-0">
           <button
-            className="md:hidden p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-90"
+            className="md:hidden h-12 w-12 flex items-center justify-center rounded-2xl bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all active:scale-90"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-6 w-6" />
           </button>
 
           {/* Mobile brand */}
-          <div className="md:hidden flex items-center gap-3">
-            <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center shadow-lg shadow-primary/20">
-              <img src="/logo.svg" alt={APP_NAME} className="h-5 w-5" />
+          <div className="md:hidden flex items-center gap-4">
+            <div className="h-10 w-10 rounded-2xl bg-[#0A0F1E] flex items-center justify-center shadow-xl border border-white/5">
+              <img src="/logo.svg" alt={APP_NAME} className="h-6 w-6" />
             </div>
-            <span className="text-sm font-black tracking-tight text-foreground">{APP_NAME}</span>
+            <span className="text-base font-black tracking-tighter text-foreground uppercase">{APP_NAME}</span>
           </div>
 
           <div className="flex-1" />
 
-          <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-2xl border border-border/50">
+          <div className="flex items-center gap-2 bg-muted/20 p-1.5 rounded-[1.5rem] border border-border/40 shadow-inner">
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-card hover:shadow-sm transition-all active:scale-90"
+              className="h-10 w-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-card hover:shadow-xl transition-all active:scale-90 border border-transparent hover:border-border/10"
               title={theme === 'dark' ? t('switch_light') : t('switch_dark')}
             >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {theme === 'dark' ? <Sun className="h-4.5 w-4.5" /> : <Moon className="h-4.5 w-4.5" />}
             </button>
 
             {/* Language toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
-              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-card hover:shadow-sm transition-all text-[10px] font-black w-8 h-8 flex items-center justify-center uppercase tracking-tighter"
+              className="h-10 w-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-card hover:shadow-xl transition-all text-[10px] font-black uppercase tracking-tighter border border-transparent hover:border-border/10"
               title={language === 'en' ? t('switch_chinese') : t('switch_english')}
             >
               {language === 'en' ? '中' : 'EN'}
@@ -404,20 +406,19 @@ export default function Layout({ children, connected }: LayoutProps) {
 
           {/* Live indicator */}
           {connected !== undefined && (
-            connected ? (
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20 shadow-sm shadow-emerald-500/5 animate-in fade-in zoom-in duration-500">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="hidden sm:inline">{t('live')}</span>
+            <div className={`flex items-center gap-3 px-6 py-2.5 rounded-full border shadow-sm transition-all duration-1000 ${
+              connected
+              ? 'bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 shadow-emerald-500/10'
+              : 'bg-rose-500/5 text-rose-600 border-rose-500/20 shadow-rose-500/10'
+            }`}>
+              <div className="relative flex h-2.5 w-2.5">
+                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${connected ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`} />
               </div>
-            ) : (
-              <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-black uppercase tracking-widest bg-muted/50 px-4 py-1.5 rounded-full border border-border/50">
-                <WifiOff className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('offline')}</span>
-              </div>
-            )
+              <span className="hidden sm:inline text-[10px] font-black uppercase tracking-[0.3em]">
+                 {connected ? 'LIVE_GRID_UP' : 'OFFLINE_MODE'}
+              </span>
+            </div>
           )}
 
           {/* User menu */}
@@ -425,30 +426,30 @@ export default function Layout({ children, connected }: LayoutProps) {
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className="hidden md:flex items-center gap-3 pl-4 border-l border-border/40 text-muted-foreground hover:text-foreground transition-all group"
+                className="hidden md:flex items-center gap-4 pl-6 border-l border-border/40 text-muted-foreground hover:text-foreground transition-all group"
               >
-                <div className="h-9 w-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                  {isSuperAdmin ? <Crown className="h-4 w-4 text-amber-500" /> : <User className="h-4 w-4 text-primary" />}
+                <div className="h-10 w-10 rounded-xl bg-[#0A0F1E] flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform border border-white/5">
+                  {isSuperAdmin ? <Crown className="h-5 w-5 text-amber-400" /> : <User className="h-5 w-5 text-white/40" />}
                 </div>
-                <div className="text-left">
-                  <p className="text-[11px] font-black text-foreground truncate max-w-[100px] leading-none tracking-tight">{userName}</p>
-                  <p className="text-[9px] font-bold text-muted-foreground/70 uppercase tracking-tighter mt-1">{isSuperAdmin ? 'Root' : 'Admin'}</p>
+                <div className="text-left space-y-0.5">
+                  <p className="text-xs font-black text-foreground truncate max-w-[120px] uppercase tracking-tight leading-none">{userName}</p>
+                  <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.3em]">{isSuperAdmin ? 'ROOT' : 'ADMIN'}</p>
                 </div>
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-500 ${userMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               {userMenuOpen && (
-                <div className="absolute right-0 mt-3 w-56 glass border border-border/50 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                  <div className="px-5 py-3 border-b border-border/40">
-                    <p className="text-sm font-black truncate text-foreground">{userName}</p>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{isSuperAdmin ? t('super_administrator') : t('administrator')}</p>
+                <div className="absolute right-0 mt-5 w-64 bg-[#0A0F1E] border border-white/10 rounded-[2rem] shadow-[0_40px_80px_rgba(0,0,0,0.5)] py-3 z-50 animate-in fade-in zoom-in-95 duration-300 origin-top-right backdrop-blur-3xl">
+                  <div className="px-8 py-6 border-b border-white/5 space-y-1">
+                    <p className="text-sm font-black text-white uppercase tracking-tight">{userName}</p>
+                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em]">{isSuperAdmin ? 'CLUSTER_ROOT' : 'OPERATOR_NODE'}</p>
                   </div>
-                  <div className="p-1">
+                  <div className="p-2">
                     <button
                       onClick={() => { setUserMenuOpen(false); logout(); }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-500/5 dark:hover:bg-red-500/10 rounded-xl transition-all active:scale-95"
+                      className="w-full flex items-center gap-4 px-6 py-4 text-xs font-black text-rose-400 hover:bg-rose-500 hover:text-white rounded-[1.25rem] transition-all duration-300 group"
                     >
-                      <LogOut className="h-4 w-4" />
-                      {t('sign_out')}
+                      <LogOut className="h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
+                      TERMINATE_PROTOCOL
                     </button>
                   </div>
                 </div>
@@ -458,14 +459,17 @@ export default function Layout({ children, connected }: LayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 sm:p-10 overflow-y-auto overflow-x-hidden min-h-0 bg-background/50 relative">
-          {/* Subtle background glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary/5 blur-[120px] pointer-events-none -z-10" />
+        <main className="flex-1 p-8 sm:p-12 overflow-y-auto overflow-x-hidden min-h-0 bg-background relative custom-scrollbar">
+          {/* High-end Fintech Glow Backgrounds */}
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brandblue-500/5 blur-[150px] pointer-events-none -z-10 rounded-full animate-float" />
+          <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 blur-[150px] pointer-events-none -z-10 rounded-full animate-float-delayed" />
 
-          <div className="max-w-7xl w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="max-w-7xl w-full mx-auto">
             {children}
           </div>
-          <AppFooter variant="admin" />
+          <div className="mt-20">
+             <AppFooter variant="admin" />
+          </div>
         </main>
       </div>
     </div>

@@ -103,37 +103,32 @@ export default function CreatePayment() {
 
     return (
         <Layout>
-            <div className="max-w-7xl mx-auto pb-10 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <div className="max-w-7xl mx-auto pb-16 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                 <div className="flex items-center justify-between">
-                    <button onClick={() => navigate(-1)} className="flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-all group">
-                        <ArrowLeft className="h-4 w-4 mr-2.5 group-hover:-translate-x-1 transition-transform" />
-                        Cancel Operation
+                    <button onClick={() => navigate(-1)} className="flex items-center text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/60 hover:text-foreground transition-all group bg-muted/20 px-6 py-2.5 rounded-xl border border-border/20 shadow-sm">
+                        <ArrowLeft className="h-4 w-4 mr-3 group-hover:-translate-x-1.5 transition-transform" />
+                        ABORT_SEQUENCE
                     </button>
+                    <div className="flex items-center gap-3">
+                       <div className="fintech-badge bg-brandblue-500/10 text-brandblue-500 border-brandblue-500/20 px-5">PROTOCOL_READY</div>
+                    </div>
                 </div>
 
-                <div className="space-y-2">
-                    <h1 className="text-3xl font-black tracking-tighter uppercase">Initialize Terminal Order</h1>
-                    <p className="text-muted-foreground font-medium flex items-center gap-2">
-                       <div className="h-1.5 w-1.5 rounded-full bg-brandblue-500 animate-pulse" />
-                       Deploy secure payment request to the global node
+                <div className="space-y-3">
+                    <h1 className="text-4xl font-black tracking-tighter uppercase text-foreground">Deploy Terminal Order</h1>
+                    <p className="text-muted-foreground font-medium flex items-center gap-3">
+                       <span className="flex h-2 w-2 rounded-full bg-brand-blue-500 shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
+                       <span className="uppercase tracking-[0.2em] text-[10px] font-black">Encrypted Payment Node Generation</span>
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                     {/* Main Form Area */}
-                    <div className="lg:col-span-7 space-y-8">
-                        <Card className="glass-card overflow-hidden border-0 shadow-2xl">
-                            <div className="h-1.5 bg-gradient-to-r from-brandblue-500 to-brandblue-300 w-full" />
-                            <CardHeader className="pb-8 pt-10 px-10">
-                                <CardTitle className="text-sm font-black uppercase tracking-[0.3em] flex items-center gap-3">
-                                   <div className="h-10 w-10 rounded-xl bg-brandblue-500/10 flex items-center justify-center border border-brandblue-500/20 shadow-inner">
-                                      <Smartphone className="h-5 w-5 text-brandblue-500" />
-                                   </div>
-                                   Order Configuration
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="px-10 pb-12">
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+                    <div className="lg:col-span-7 space-y-10">
+                        <Card className="fintech-card border-0 shadow-2xl overflow-hidden bg-card/60 backdrop-blur-sm">
+                            <div className="bg-[#0A0F1E] border-b border-white/5 p-8">
+                                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 mb-8 ml-1">Order Configuration</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     {typeOptions.map((option) => {
                                         const Icon = option.icon;
                                         const isActive = paymentType === option.id;
@@ -143,24 +138,29 @@ export default function CreatePayment() {
                                                 key={option.id}
                                                 type="button"
                                                 onClick={() => setPaymentType(option.id)}
-                                                className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden group ${isActive
-                                                    ? 'bg-brandblue-500/5 border-brandblue-500 shadow-xl shadow-brandblue-500/10 scale-[1.02]'
-                                                    : 'bg-muted/20 border-border/40 hover:bg-muted/40 text-muted-foreground/60'
+                                                className={`flex flex-col items-center justify-center p-8 rounded-[2rem] border-2 transition-all duration-500 relative overflow-hidden group ${isActive
+                                                    ? 'bg-brandblue-500 border-brandblue-500 text-white shadow-2xl shadow-brandblue-500/40 scale-105'
+                                                    : 'bg-white/5 border-white/5 text-white/40 hover:border-white/10 hover:bg-white/[0.08] hover:text-white/60'
                                                     }`}
                                             >
-                                                <Icon className={`h-8 w-8 mb-4 transition-all duration-500 ${isActive ? 'text-brandblue-500 scale-110 rotate-[10deg]' : 'group-hover:text-foreground'}`} />
-                                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-brandblue-600' : ''}`}>{option.label}</span>
-                                                {isActive && <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-brandblue-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]" />}
+                                                <Icon className={`h-8 w-8 mb-5 transition-all duration-500 ${isActive ? 'text-white scale-110' : 'opacity-20 group-hover:opacity-40 group-hover:scale-110'}`} />
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-white' : ''}`}>{option.label}</span>
+                                                {isActive && <div className="absolute top-3 right-3 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,1)]" />}
                                             </button>
                                         );
                                     })}
                                 </div>
+                            </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-8">
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 text-muted-foreground/70">Transaction Volume (PHP)</Label>
+                            <CardContent className="p-10">
+                                <form onSubmit={handleSubmit} className="space-y-10">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between ml-1">
+                                           <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">Transmission Volume (PHP)</Label>
+                                           <span className="text-[9px] font-black text-brandblue-500 uppercase tracking-widest bg-brandblue-500/5 px-2 py-0.5 rounded">T+0 Clearance</span>
+                                        </div>
                                         <div className="relative group">
-                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-brandblue-500 group-focus-within:scale-110 transition-transform">₱</div>
+                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-brand-blue-500 group-focus-within:scale-110 transition-transform">₱</div>
                                             <Input
                                                 type="number"
                                                 step="0.01"
@@ -168,61 +168,61 @@ export default function CreatePayment() {
                                                 placeholder="0.00"
                                                 value={amount}
                                                 onChange={(e) => setAmount(e.target.value)}
-                                                className="pl-12 h-20 text-3xl font-black bg-muted/20 border-border/50 rounded-[1.5rem] tabular-nums focus:ring-primary/10 transition-all shadow-inner"
+                                                className="pl-12 h-24 text-4xl font-black bg-muted/20 border-border/40 rounded-3xl tabular-nums focus:ring-brandblue-500/10 transition-all border-2 shadow-inner"
                                                 required
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 text-muted-foreground/70">Operational Note</Label>
+                                    <div className="space-y-4">
+                                        <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Operational Specification</Label>
                                         <Textarea
-                                            placeholder="Specify order intent / reference metadata..."
+                                            placeholder="Specify transmission intent, node metadata, or customer references..."
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
-                                            className="bg-muted/20 border-border/50 rounded-2xl min-h-[120px] resize-none focus:ring-primary/10 transition-all font-semibold p-5"
+                                            className="bg-muted/20 border-border/40 rounded-[2rem] min-h-[160px] resize-none focus:ring-brandblue-500/10 text-base font-black uppercase tracking-tight p-8 border-2 shadow-inner"
                                         />
                                     </div>
 
                                     {paymentType !== 'qr_code' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                                            <div className="space-y-3">
-                                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 text-muted-foreground/70">Legal Entity Name</Label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                                            <div className="space-y-4">
+                                                <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Target Identity (Name)</Label>
                                                 <Input
-                                                    placeholder="FULL_NAME_STRING"
+                                                    placeholder="ENTITY_STRING"
                                                     value={customerName}
                                                     onChange={(e) => setCustomerName(e.target.value)}
-                                                    className="bg-muted/20 border-border/50 focus:ring-primary/10 h-14 rounded-2xl px-6 font-black uppercase tracking-tight"
+                                                    className="bg-muted/20 border-border/40 focus:ring-brandblue-500/10 h-16 rounded-2xl px-6 font-black uppercase tracking-widest border-2 shadow-sm"
                                                 />
                                             </div>
-                                            <div className="space-y-3">
-                                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 text-muted-foreground/70">Target Endpoint (Email)</Label>
+                                            <div className="space-y-4">
+                                                <Label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Protocol Destination (Email)</Label>
                                                 <Input
                                                     type="email"
-                                                    placeholder="VERIFIED_EMAIL_ADDRESS"
+                                                    placeholder="VERIFIED_ENDPOINT"
                                                     value={customerEmail}
                                                     onChange={(e) => setCustomerEmail(e.target.value)}
-                                                    className="bg-muted/20 border-border/50 focus:ring-primary/10 h-14 rounded-2xl px-6 font-bold"
+                                                    className="bg-muted/20 border-border/40 focus:ring-brandblue-500/10 h-16 rounded-2xl px-6 font-bold border-2 shadow-sm"
                                                 />
                                             </div>
                                         </div>
                                     )}
 
-                                    <div className="pt-6">
+                                    <div className="pt-8">
                                         <Button
                                             type="submit"
                                             disabled={loading}
-                                            className="w-full h-16 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black text-xs rounded-[1.5rem] shadow-[0_15px_40px_rgba(14,165,233,0.3)] transition-all active:scale-[0.96] uppercase tracking-[0.3em] group"
+                                            className="w-full h-20 bg-brandblue-600 hover:bg-brandblue-700 text-white font-black text-sm rounded-[2rem] shadow-2xl shadow-brandblue-500/30 transition-all active:scale-95 uppercase tracking-[0.4em] group"
                                         >
                                             {loading ? (
-                                                <div className="flex items-center gap-3">
-                                                    <Loader2 className="h-6 w-6 animate-spin opacity-50" />
-                                                    SYCHRONIZING NODES...
+                                                <div className="flex items-center gap-4">
+                                                    <Loader2 className="h-7 w-7 animate-spin opacity-50" />
+                                                    SYNCHRONIZING_NODES...
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-3">
-                                                    <Zap className="h-5 w-5 fill-current" />
-                                                    DEPLOY {currentType.label} REQUEST
+                                                <div className="flex items-center gap-4">
+                                                    <Zap className="h-7 w-7 fill-current group-hover:scale-125 transition-transform" />
+                                                    INITIATE {currentType.label.toUpperCase()} PROTOCOL
                                                 </div>
                                             )}
                                         </Button>
@@ -232,58 +232,56 @@ export default function CreatePayment() {
                         </Card>
 
                         {/* Integration Protocol */}
-                        <Card className="bg-muted/20 border-dashed border-border/60 rounded-3xl group cursor-default overflow-hidden relative">
-                           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform"><ShieldCheck className="h-20 w-20" /></div>
-                            <CardContent className="p-8 flex items-start gap-6 relative z-10">
-                                <div className="h-12 w-12 rounded-2xl bg-brandblue-500/10 flex items-center justify-center shrink-0 border border-brandblue-500/20">
-                                    <Info className="h-6 w-6 text-brandblue-500" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-foreground mb-2 uppercase tracking-[0.3em]">Validation Protocol</p>
-                                    <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold uppercase tracking-tighter italic">
-                                        Current node status: 100% HEALTHY. Automated clearing via Maya Business gateways.
-                                        Cross-chain verification protocols active for Visa, Mastercard, and e-wallets.
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div className="bg-[#0A0F1E] rounded-[2.5rem] p-10 border border-white/5 flex items-start gap-8 shadow-xl group">
+                            <div className="h-16 w-16 rounded-2xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 group-hover:bg-brandblue-500 transition-colors duration-500">
+                                <ShieldCheck className="h-8 w-8 text-brandblue-400 group-hover:text-white transition-colors" />
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Institutional Verification</p>
+                                <p className="text-xs text-white/40 leading-relaxed font-medium uppercase tracking-tight">
+                                    Current node state: <span className="text-emerald-400">100%_OPERATIONAL</span>. High-priority clearing active across Maya & GCash networks.
+                                    Cryptographic hashing enabled for all transmission payloads.
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Result / Preview Sidebar */}
-                    <div className="lg:col-span-5 space-y-8 sticky top-28">
+                    <div className="lg:col-span-5 space-y-10 sticky top-10">
                         {!result ? (
-                            <Card className="border-border/40 bg-card/40 border-dashed min-h-[500px] flex flex-col items-center justify-center text-center p-12 rounded-[3rem] group">
-                                <div className="h-28 w-24 rounded-[2.5rem] bg-muted/40 flex items-center justify-center mb-10 shadow-inner group-hover:rotate-[5deg] transition-transform duration-500">
-                                    <Radio className="h-12 w-12 text-muted-foreground/20 animate-pulse" />
+                            <div className="fintech-card border-dashed border-2 border-border/60 min-h-[600px] flex flex-col items-center justify-center text-center p-12 bg-muted/5 relative overflow-hidden group rounded-[3rem]">
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                <div className="h-28 w-28 rounded-[2.5rem] bg-muted/20 flex items-center justify-center mb-10 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                                    <Radio className="h-14 w-14 text-muted-foreground/20 group-hover:text-brandblue-500/20 transition-colors animate-pulse" />
                                 </div>
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Signal Offline</h3>
-                                <p className="text-xs text-muted-foreground mt-4 max-w-[220px] font-black uppercase tracking-[0.2em] leading-loose opacity-60">
-                                    Awaiting input sequence for terminal order generation
+                                <h3 className="text-2xl font-black text-foreground/40 uppercase tracking-tighter mb-4">Awaiting Signal</h3>
+                                <p className="text-[11px] text-muted-foreground/60 max-w-[280px] font-black uppercase tracking-[0.3em] leading-relaxed">
+                                    Execute terminal configuration to emit network payment assets
                                 </p>
-                                <div className="mt-12 flex items-center gap-3 opacity-20 group-hover:opacity-40 transition-opacity">
-                                    <ShieldCheck className="h-4 w-4" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.5em]">NODE_SECURED</span>
+                                <div className="mt-16 pt-10 border-t border-border/10 w-full flex flex-col items-center gap-4 opacity-20 group-hover:opacity-40 transition-opacity">
+                                    <ShieldCheck className="h-5 w-5 text-brandblue-500" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.5em]">NODE_LOCKED</span>
                                 </div>
-                            </Card>
+                            </div>
                         ) : (
-                            <Card className="border-emerald-500/30 bg-emerald-500/5 shadow-2xl shadow-emerald-500/10 overflow-hidden animate-in zoom-in-95 duration-700 rounded-[3rem]">
-                                <div className="bg-emerald-500 h-2 w-full shadow-lg" />
-                                <CardHeader className="pb-10 pt-12 px-10">
+                            <Card className="fintech-card border-0 bg-[#0A0F1E] shadow-[0_40px_80px_rgba(0,0,0,0.4)] overflow-hidden animate-in zoom-in-95 duration-700 rounded-[3rem]">
+                                <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2.5 w-full shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
+                                <CardHeader className="p-10 border-b border-white/5">
                                     <div className="flex items-center justify-between">
-                                        <CardTitle className="text-sm font-black flex items-center text-emerald-500 uppercase tracking-[0.3em]">
+                                        <CardTitle className="text-xl font-black flex items-center text-emerald-400 uppercase tracking-tight">
                                             <CheckCircle className="h-6 w-6 mr-3 shadow-sm" />
-                                            Active Link
+                                            Active_Link_Ready
                                         </CardTitle>
-                                        <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-0 font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full">BROADCASTED</Badge>
+                                        <div className="bg-emerald-500 text-white px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest">BROADCASTED</div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="px-6 pb-12 space-y-8">
-                                    <div className="glass border border-emerald-500/20 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
-                                       <div className="absolute top-0 right-0 p-4 opacity-5"><Zap className="h-32 w-32" /></div>
-                                        <div className="text-center mb-10 pb-8 border-b border-border/20">
-                                            <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.4em] mb-3">Payload Value</p>
-                                            <h2 className="text-5xl font-black text-foreground tracking-tighter tabular-nums">{fmtCurrencyPhp(parseFloat(amount))}</h2>
-                                            {description && <p className="text-xs text-muted-foreground mt-4 font-black uppercase tracking-[0.1em] opacity-80 leading-relaxed italic">"{description}"</p>}
+                                <CardContent className="p-10 space-y-10">
+                                    <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-10 text-center relative overflow-hidden group/res">
+                                       <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Zap className="h-32 w-32 text-white" /></div>
+                                        <div className="text-center mb-10 pb-8 border-b border-white/5">
+                                            <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] mb-4">Payload Value</p>
+                                            <h2 className="text-5xl font-black text-white tracking-tighter tabular-nums">{fmtCurrencyPhp(parseFloat(amount))}</h2>
+                                            {description && <p className="text-xs text-white/40 mt-6 font-black uppercase tracking-[0.1em] opacity-80 leading-relaxed italic">"{description}"</p>}
                                         </div>
 
                                         <div className="space-y-8">
@@ -293,29 +291,28 @@ export default function CreatePayment() {
 
                                                 return (
                                                     <div key={key} className="space-y-3">
-                                                        <Label className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-[0.4em] flex items-center justify-between px-1">
+                                                        <Label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] flex items-center justify-between px-1">
                                                             {key.replace(/_/g, ' ')}
                                                             <button
                                                                 onClick={() => copyToClipboard(String(value))}
-                                                                className="hover:text-brandblue-500 transition-all flex items-center gap-1.5 group"
+                                                                className="text-[10px] font-black text-brandblue-400 hover:text-white transition-colors uppercase tracking-[0.2em] flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg border border-white/5"
                                                             >
-                                                                <Copy className="h-3 w-3 group-active:scale-90" />
-                                                                <span className="group-hover:translate-x-1 transition-transform">FETCH STRING</span>
+                                                                <Copy className="h-3 w-3" /> COPY
                                                             </button>
                                                         </Label>
 
-                                                        <div className="flex items-center gap-4 p-5 bg-muted/40 rounded-2xl border border-border/40 overflow-hidden shadow-inner group">
+                                                        <div className="flex items-center gap-4 p-6 bg-black/40 rounded-2xl border border-white/5 overflow-hidden group/field">
                                                             {isUrl ? (
                                                                 <a
                                                                     href={value as string}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="text-[11px] text-brand-blue-500 font-black truncate uppercase tracking-widest flex-1 hover:underline"
+                                                                    className="text-xs text-brandblue-400 font-bold truncate underline flex-1 hover:text-white transition-colors"
                                                                 >
                                                                     {value as string}
                                                                 </a>
                                                             ) : (
-                                                                <code className="text-xs text-foreground font-black tracking-widest truncate flex-1 leading-none uppercase">
+                                                                <code className="text-sm text-white/90 font-black truncate flex-1 leading-none tabular-nums tracking-widest">
                                                                     {String(value)}
                                                                 </code>
                                                             )}
@@ -325,9 +322,9 @@ export default function CreatePayment() {
                                                                     href={value as string}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="h-10 w-10 rounded-xl bg-brandblue-500/10 flex items-center justify-center text-brandblue-500 hover:bg-brandblue-500/20 transition-all shrink-0 border border-brandblue-500/10 active:scale-90"
+                                                                    className="h-10 w-10 rounded-xl bg-brandblue-500 flex items-center justify-center text-white hover:bg-brandblue-400 hover:scale-110 transition-all shrink-0 shadow-lg shadow-brandblue-500/30"
                                                                 >
-                                                                    <ExternalLink className="h-4 w-4" />
+                                                                    <ExternalLink className="h-5 w-5" />
                                                                 </a>
                                                             )}
                                                         </div>
@@ -337,24 +334,24 @@ export default function CreatePayment() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-4 pt-4 px-4">
+                                    <div className="flex flex-col gap-5">
                                         <Button
-                                            className="h-16 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/30 transition-all active:scale-95 text-xs uppercase tracking-widest group"
+                                            className="h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-[1.5rem] shadow-2xl shadow-emerald-500/20 transition-all active:scale-95 text-sm uppercase tracking-[0.3em] group"
                                             onClick={() => result.invoice_url && window.open(result.invoice_url as string, '_blank')}
                                         >
-                                            Initialize Checkout Flow
-                                            <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                            Inaugurate Checkout Flow
+                                            <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-1.5 transition-transform" />
                                         </Button>
                                         <Button
                                             variant="ghost"
-                                            className="h-14 font-black uppercase text-[10px] tracking-widest text-muted-foreground hover:text-foreground rounded-2xl"
+                                            className="text-white/40 hover:text-white hover:bg-white/5 font-black h-16 rounded-[1.5rem] text-[11px] uppercase tracking-[0.4em] transition-all border border-white/5"
                                             onClick={() => {
                                                 setResult(null);
                                                 setAmount('');
                                                 setDescription('');
                                             }}
                                         >
-                                            Reset Sequence
+                                            Reset_System_State
                                         </Button>
                                     </div>
                                 </CardContent>

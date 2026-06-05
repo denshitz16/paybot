@@ -177,113 +177,127 @@ export default function Login() {
   if (user) return <Navigate to="/intro" replace />;
 
   return (
-    <div className="min-h-screen bg-white text-[#141414] overflow-x-hidden">
-      <header className="sticky top-0 z-50 bg-white border-b border-[#E8EAED] shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo.svg" alt={APP_NAME} className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-xl animate-logo-entrance" />
-            <span className="font-bold text-base sm:text-lg text-[#141414] tracking-tight">{APP_NAME}</span>
+    <div className="min-h-screen bg-white text-[#0A0F1E] overflow-x-hidden font-sans">
+      <header className="fixed top-0 left-0 right-0 z-[100] bg-white/70 backdrop-blur-xl border-b border-black/[0.03]">
+        <div className="max-w-7xl mx-auto px-10 h-24 flex items-center justify-between">
+          <div className="flex items-center gap-5 group cursor-pointer">
+             <div className="h-12 w-12 rounded-2xl bg-[#0A0F1E] flex items-center justify-center shadow-2xl shadow-brand-blue-500/20 group-hover:rotate-3 group-hover:scale-110 transition-all duration-500 border border-white/5">
+                <img src="/logo.svg" alt="Logo" className="h-7 w-7 animate-logo-bounce" />
+             </div>
+             <div className="hidden sm:block">
+               <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase leading-none">{APP_NAME}</h2>
+               <p className="text-[10px] font-black text-brandblue-500 uppercase tracking-[0.4em] mt-1.5 leading-none">Philippines</p>
+             </div>
           </div>
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-            <Link to="/features" className="text-[#595959] hover:text-[#0070FF] text-sm transition-colors">Features</Link>
-            <Link to="/pricing" className="text-[#595959] hover:text-[#0070FF] text-sm transition-colors">Pricing</Link>
-            <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="text-[#595959] hover:text-[#0070FF] text-sm transition-colors">Support</a>
-          </nav>
-          <div className="flex items-center gap-2">
-            <button onClick={scrollToLogin} className="flex items-center gap-1.5 bg-[#0070FF] hover:bg-[#005FDD] text-white text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all shadow-md">
-              Sign In <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-            <button className="md:hidden p-1.5 text-[#595959]" onClick={() => setMobileNavOpen(v => !v)}>
-              {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+
+          <div className="hidden md:flex items-center gap-12">
+            <Link to="/features" className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] hover:text-brand-blue-600 transition-colors">CAPABILITIES</Link>
+            <Link to="/pricing" className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] hover:text-brand-blue-600 transition-colors">PRICING</Link>
+            <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] hover:text-brand-blue-600 transition-colors">KERNEL_SUPPORT</a>
+            <div className="h-4 w-px bg-black/[0.08] mx-4" />
+            <button onClick={scrollToLogin} className="bg-[#0A0F1E] hover:bg-black text-white font-black text-[11px] uppercase tracking-[0.3em] px-10 h-14 rounded-2xl shadow-2xl active:scale-95 transition-all">SIGN_IN</button>
           </div>
+
+          <button className="md:hidden h-12 w-12 flex items-center justify-center rounded-2xl bg-muted/50 text-foreground" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
+            {mobileNavOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
-        {mobileNavOpen && (
-          <div className="md:hidden border-t border-[#E8EAED] bg-white px-4 py-4 space-y-1">
-            <Link to="/features" className="block py-2.5 text-[#595959] text-sm font-medium" onClick={() => setMobileNavOpen(false)}>Features</Link>
-            <Link to="/pricing" className="block py-2.5 text-[#595959] text-sm font-medium" onClick={() => setMobileNavOpen(false)}>Pricing</Link>
-            <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="block py-2.5 text-[#595959] text-sm font-medium">Support</a>
-          </div>
-        )}
       </header>
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0070FF] to-[#0047CC]">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="pt-12 pb-8 sm:pt-16 sm:pb-10 lg:py-24 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 sm:px-4 py-1.5 mb-5 sm:mb-6">
-                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-white text-xs font-semibold tracking-wide uppercase">Now live in the Philippines</span>
+      <section className="relative pt-40 lg:pt-60 pb-32 lg:pb-60 bg-[#0A0F1E] overflow-hidden">
+        <div className="absolute top-0 right-0 p-20 opacity-30 pointer-events-none animate-float">
+           <div className="h-[800px] w-[800px] rounded-full bg-brand-blue-600 blur-[180px]" />
+        </div>
+        <div className="absolute bottom-0 left-0 p-20 opacity-10 pointer-events-none animate-float-delayed">
+           <div className="h-[500px] w-[500px] rounded-full bg-purple-500 blur-[150px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-10 relative z-10">
+          <div className="grid lg:grid-cols-12 gap-20 lg:gap-32 items-center">
+            <div className="lg:col-span-7 text-center lg:text-left">
+              <div className="inline-flex items-center gap-4 bg-white/5 border border-white/10 px-6 py-3 rounded-full backdrop-blur-3xl mb-12 animate-in fade-in duration-1000 shadow-2xl">
+                <span className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
+                <span className="text-white text-[10px] font-black uppercase tracking-[0.4em]">Grid_Node_Access: Ready</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-[1.1] mb-5 sm:mb-6">
-                Accept <span className="text-yellow-300">Alipay</span>, <span className="text-green-300">WeChat</span>, <span className="text-sky-200">GCash</span>
-                <br className="hidden sm:block" /> <span className="text-white/90">& All PH Banks.</span>
+              <h1 className="text-7xl lg:text-9xl font-black text-white leading-[0.85] tracking-tighter mb-10 animate-in slide-in-from-left-12 duration-1000">
+                INITIATE <br />
+                <span className="text-gradient">SESSION.</span>
               </h1>
-              <p className="text-blue-100 text-base sm:text-lg mb-7 sm:mb-8 max-w-lg mx-auto lg:mx-0">
-                The unified Telegram payment platform for Philippine merchants. Settle in <span className="text-yellow-300 font-semibold">USDT same day</span>.
+              <p className="text-white/40 text-xl lg:text-2xl font-medium max-w-lg mb-16 leading-relaxed mx-auto lg:mx-0 uppercase tracking-tight">
+                Authorize your merchant identity to access the global PayBot network and real-time settlement vault.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-8">
-                <button onClick={scrollToLogin} className="flex items-center justify-center gap-2 bg-white text-[#0070FF] font-semibold px-7 py-3.5 rounded-full text-sm w-full sm:w-auto shadow-lg">
-                  Get Started Free <ArrowRight className="h-4 w-4" />
+              <div className="flex flex-col sm:flex-row gap-8 justify-center lg:justify-start mb-12">
+                <button onClick={scrollToLogin} className="flex items-center justify-center gap-4 bg-white text-[#0A0F1E] font-black px-12 py-6 rounded-[2.5rem] text-xs w-full sm:w-auto shadow-2xl transition-all active:scale-95 group uppercase tracking-[0.3em]">
+                  Authenticate Hub <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
                 </button>
               </div>
             </div>
-            <div className="relative hidden lg:flex items-center justify-center py-16">
-              <div className="relative w-full max-w-sm space-y-3">
-                <HeroCard icon={Logo.Alipay(40)}  name="Alipay QR"  amount="¥ 1,200.00" statusLabel="Accepted" statusCls="bg-blue-100 text-blue-700" />
-                <HeroCard icon={Logo.GCash(40)}   name="GCash"      amount="₱ 2,500.00" statusLabel="Accepted" statusCls="bg-sky-100 text-sky-700" />
+            <div className="lg:col-span-5 hidden lg:flex items-center justify-center py-20 relative">
+              <div className="relative w-full max-w-md space-y-6">
+                <div className="animate-float">
+                   <HeroCard icon={Logo.Alipay(48)}  name="ALIPAY_HK"  amount="¥ 12,400.00" statusLabel="EMITTED" statusCls="bg-brandblue-500/10 text-brandblue-400 border border-brandblue-500/20" />
+                </div>
+                <div className="animate-float-delayed ml-12">
+                   <HeroCard icon={Logo.GCash(48)}   name="GCASH_HUB"      amount="₱ 8,500.00" statusLabel="SETTLED" statusCls="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" />
+                </div>
+                <div className="animate-float ml-4 opacity-60 grayscale-[50%]">
+                   <HeroCard icon={Logo.USDT(48)}    name="USDT_VAULT"    amount="$ 1,200.00" statusLabel="LOCKED" statusCls="bg-white/5 text-white/40 border border-white/10" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section ref={loginSectionRef} className="py-16 sm:py-24 bg-[#F5F7FA] relative overflow-hidden flex items-center justify-center">
-        <div className="max-w-md w-full mx-auto px-4 sm:px-6">
-          <div className="bg-white border border-[#E8EAED] rounded-3xl p-8 shadow-2xl relative z-10">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
-                <Lock className="h-8 w-8 text-blue-600" />
+      <section ref={loginSectionRef} className="py-32 lg:py-48 bg-[#F8FAFC] relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] pointer-events-none" />
+        <div className="max-w-xl w-full mx-auto px-10 relative z-10">
+          <div className="fintech-card bg-white border-0 rounded-[3rem] p-12 lg:p-16 shadow-[0_40px_80px_rgba(0,0,0,0.1)] relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2.5 bg-brandblue-600 shadow-[0_0_15px_rgba(0,122,255,0.3)]" />
+
+            <div className="text-center mb-16">
+              <div className="w-24 h-24 bg-[#0A0F1E] rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-2xl border border-white/5 transition-transform hover:rotate-3 duration-500">
+                <Lock className="h-10 w-10 text-brandblue-400" />
               </div>
-              <h2 className="text-2xl font-bold text-[#141414]">Merchant Login</h2>
-              <p className="text-[#595959] text-sm mt-2">Access your PayBot terminal dashboard</p>
+              <h2 className="text-4xl font-black text-[#0A0F1E] uppercase tracking-tighter">OPERATOR_LOGIN</h2>
+              <p className="text-muted-foreground/60 font-black text-[10px] mt-4 uppercase tracking-[0.4em]">Institutional Dashboard Access</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label className="text-sm font-semibold text-[#141414] mb-1.5 block px-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#9CA3AF]" />
-                  <input
+            <form onSubmit={handleLogin} className="space-y-8">
+              <div className="space-y-4">
+                <Label className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.3em] ml-1">Terminal Endpoint (Email)</Label>
+                <div className="relative group">
+                  <Mail className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/30 group-focus-within:text-brandblue-600 transition-colors" />
+                  <Input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-[#141414]"
+                    placeholder="OPERATOR@DOMAIN.COM"
+                    className="w-full h-18 bg-muted/20 border-border/40 rounded-2xl py-4 pl-14 pr-6 focus:ring-brandblue-500/10 border-2 outline-none transition-all text-sm font-black uppercase tracking-widest shadow-inner"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-1.5 px-1">
-                  <label className="text-sm font-semibold text-[#141414]">Password</label>
-                  <Link to="/forgot-password" className="text-xs text-blue-600 font-medium hover:underline">Forgot password?</Link>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center ml-1">
+                  <Label className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Access Sequence (Password)</Label>
+                  <Link to="/forgot-password" size="sm" className="text-[9px] font-black text-brandblue-600 uppercase tracking-widest hover:underline">RECOVER_KEY</Link>
                 </div>
-                <div className="relative">
-                  <Key className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#9CA3AF]" />
-                  <input
+                <div className="relative group">
+                  <Key className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/30 group-focus-within:text-brandblue-600 transition-colors" />
+                  <Input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl py-3.5 pl-12 pr-12 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-[#141414]"
+                    className="w-full h-18 bg-muted/20 border-border/40 rounded-2xl py-4 pl-14 pr-14 focus:ring-brandblue-500/10 border-2 outline-none transition-all text-sm font-black tracking-widest shadow-inner"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280]"
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-brandblue-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -291,8 +305,8 @@ export default function Login() {
               </div>
 
               {(localError || authError) && (
-                <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-shake">
-                  <XCircle className="h-4 w-4 shrink-0" />
+                <div className="bg-rose-50 border-2 border-rose-100 text-rose-600 text-[10px] px-6 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest animate-shake">
+                  <XCircle className="h-5 w-5 shrink-0" />
                   <span>{localError || authError}</span>
                 </div>
               )}
@@ -300,60 +314,62 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-6 font-bold text-base shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
+                className="w-full h-20 bg-[#0A0F1E] hover:bg-black text-white rounded-[2rem] font-black text-sm shadow-2xl active:scale-95 transition-all uppercase tracking-[0.4em] group mt-10"
               >
                 {submitting ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Signing in...</span>
+                  <div className="flex items-center gap-4">
+                    <Loader2 className="h-6 w-6 animate-spin opacity-50" />
+                    <span>AUTHORIZING...</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <span>Sign In</span>
-                    <ArrowRight className="h-5 w-5" />
+                  <div className="flex items-center gap-4">
+                    <span>INIT_SESSION</span>
+                    <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
                   </div>
                 )}
               </Button>
             </form>
 
             {botUsername && (
-              <div className="mt-6 space-y-4">
+              <div className="mt-12 space-y-8 pt-10 border-t border-border/10">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-100"></span>
+                    <span className="w-full border-t border-border/20"></span>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-gray-400 font-medium">Or continue with</span>
+                  <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]">
+                    <span className="bg-white px-4 text-muted-foreground/40">NEURAL_ID_LOGIN</span>
                   </div>
                 </div>
 
-                <TelegramLoginWidget
-                  botName={botUsername}
-                  onAuth={(user) => {
-                    setSubmitting(true);
-                    loginWithTelegram(user).finally(() => setSubmitting(false));
-                  }}
-                />
-                <p className="text-[10px] text-center text-gray-400 px-4">
-                  Logging in with Telegram automatically creates an accurate merchant record for your account.
+                <div className="scale-110 flex justify-center">
+                   <TelegramLoginWidget
+                     botName={botUsername}
+                     onAuth={(user) => {
+                       setSubmitting(true);
+                       loginWithTelegram(user).finally(() => setSubmitting(false));
+                     }}
+                   />
+                </div>
+                <p className="text-[9px] text-center text-muted-foreground/40 font-black uppercase tracking-[0.2em] px-8 leading-relaxed">
+                  Fast-track authentication via Telegram creates a verified node identity automatically.
                 </p>
               </div>
             )}
 
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-              <p className="text-gray-500 text-sm">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-blue-600 font-bold hover:underline">Register your business</Link>
+            <div className="mt-16 pt-10 border-t border-border/10 text-center">
+              <p className="text-muted-foreground/60 text-[11px] font-black uppercase tracking-[0.3em]">
+                NEW_TERMINAL_OPERATOR?{' '}
+                <Link to="/register" className="text-brand-blue-600 hover:underline ml-2">REGISTER_NODE</Link>
               </p>
             </div>
           </div>
 
-          <div className="mt-8 text-center space-y-4">
-             <p className="text-gray-400 text-xs">Need technical assistance?</p>
-             <div className="flex justify-center gap-4">
+          <div className="mt-12 text-center space-y-8 opacity-40 hover:opacity-100 transition-opacity duration-700">
+             <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.4em]">Network_Support_Channels</p>
+             <div className="flex justify-center gap-8">
                 {SUPPORT_LINKS.map(link => (
-                  <a key={link.handle} href={link.href} className="text-gray-500 hover:text-blue-600 transition-colors">
-                    <span className="text-xs font-medium">{link.handle}</span>
+                  <a key={link.handle} href={link.href} className="text-xs font-black text-foreground hover:text-brandblue-600 transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-brandblue-500/20 pb-1">
+                    {link.handle}
                   </a>
                 ))}
              </div>
@@ -364,5 +380,6 @@ export default function Login() {
       <AppFooter />
     </div>
   );
+}
 }
 
