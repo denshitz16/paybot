@@ -576,3 +576,91 @@ async def delete_disbursements(
     except Exception as e:
         logger.error(f"Error deleting disbursements {id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ==================== Settlement Management (Super Admin) ====================
+
+class SettlementBatchRequest(BaseModel):
+    """Request to create a settlement batch"""
+    user_ids: List[str]
+    bank_code: str
+    priority: str = "normal"  # normal, high, urgent
+
+
+class SettlementStatsResponse(BaseModel):
+    """Settlement statistics response"""
+    today: dict
+    week: dict
+    pending: dict
+    failed: dict
+
+
+@router.post("/admin/settlement/batch", tags=["admin-disbursements"])
+async def create_settlement_batch(
+    request: SettlementBatchRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a settlement batch for multiple disbursements going to the same bank.
+    Super admin only."""
+    perms = current_user.permissions
+    if not perms or not perms.is_super_admin:
+        raise HTTPException(status_code=403, detail="Super admin access required.")
+
+    service = DisbursementsService(db)
+    try:
+        result = await service.create_settlement_batch(
+            request.user_ids, request.bank_code, request.priority
+        )
+        if result.get("success"):
+            logger.info(
+                f"Settlement batch created by {current_user.id}: "
+                f"batch_id={result['batch_id']}, count={result['count']}"
+            )
+        return result
+    except Exception as e:
+        logger.error(f"Error creating settlement batch: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/admin/settlement/{batch_id}/complete", tags=["admin-disbursements"])
+async def mark_batch_completed(
+    batch_id: str,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark all disbursements in a settlement batch as completed.
+    Super admin only."""
+    perms = current_user.permissions
+    if not perms or not perms.is_super_admin:
+        raise HTTPException(status_code=403, detail="Super admin access required.")
+
+    service = DisbursementsService(db)
+    try:
+        result = await service.mark_settlement_completed(batch_id)
+        if result.get("success"):
+            logger.info(f"Settlement batch {batch_id} marked completed by {current_user.id}")
+        return result
+    except Exception as e:
+        logger.error(f"Error completing settlement batch: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/admin/settlement/stats", response_model=SettlementStatsResponse, tags=["admin-disbursements"])
+async def get_settlement_stats(
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get settlement statistics for the super admin dashboard.
+    Super admin only."""
+    perms = current_user.permissions
+    if not perms or not perms.is_super_admin:
+        raise HTTPException(status_code=403, detail="Super admin access required.")
+
+    service = DisbursementsService(db)
+    try:
+        stats = await service.get_settlement_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Error fetching settlement stats: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

@@ -1,5 +1,6 @@
 import logging
 import uuid
+import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List, Tuple
 
@@ -254,6 +255,22 @@ class WalletsService:
         await self.publish_wallet_event(sender_user_id, sender_wallet, sender_txn.transaction_type, amount, sender_txn.id, note)
         await self.publish_wallet_event(recipient_id, recipient_wallet, recipient_txn.transaction_type, amount, recipient_txn.id, note)
 
+        # 5. Send SMS notifications (async, non-blocking)
+        from services.notification_service import SMSService
+        from models.admin_users import AdminUser
+        
+        # Get mobile numbers if available (try to fetch from user profiles or fallback)
+        try:
+            sender_result = await self.db.execute(select(AdminUser).where(AdminUser.telegram_id == sender_user_id))
+            sender_admin = sender_result.scalar_one_or_none()
+            if sender_admin and sender_admin.mobile_number:
+                asyncio.create_task(SMSService.notify_user_of_successful_transfer(
+                    sender_admin.mobile_number, amount, 
+                    recipient_admin.telegram_username or recipient_id, ref_id
+                ))
+        except Exception as e:
+            logger.warning(f"Could not send SMS to sender: {str(e)}")
+
         return {
             "success": True,
             "balance": sender_wallet.balance,
@@ -322,6 +339,21 @@ class WalletsService:
 
         # 4. Notify via event bus
         await self.publish_wallet_event(user_id, wallet, "withdraw", amount, txn.id, note, skip_bot_notify=True)
+
+        # 5. Send SMS notification (async, non-blocking)
+        try:
+            from services.notification_service import SMSService
+            from models.admin_users import AdminUser
+            
+            admin_result = await self.db.execute(select(AdminUser).where(AdminUser.telegram_id == user_id))
+            admin_user = admin_result.scalar_one_or_none()
+            if admin_user and admin_user.mobile_number:
+                asyncio.create_task(SMSService.notify_user_of_disbursement(
+                    admin_user.mobile_number, amount, bank_name or "Bank", 
+                    account_name or "Account", ext_id, "pending"
+                ))
+        except Exception as e:
+            logger.warning(f"Could not send SMS notification for withdrawal: {str(e)}")
 
         return {
             "success": True,
@@ -493,3 +525,159 @@ class WalletsService:
             "change": change,
             "pending": pending
         }
+
+    async def freeze_wallet(self, user_id: str, reason: str = "") -> Dict[str, Any]:
+        """Super admin: Freeze a user's wallet to prevent transactions."""
+        wallet_php = await self.get_or_create_wallet(user_id, "PHP")
+        wallet_php.is_frozen = True
+        wallet_php.freeze_reason = reason or "Frozen by super admin"
+        wallet_php.updated_at = datetime.now(timezone.utc)
+        await self.db.commit()
+        
+        logger.info(f"Wallet for user {user_id} frozen: {reason}")
+        return {"success": True, "wallet_id": wallet_php.id, "status": "frozen"}
+
+    async def unfreeze_wallet(self, user_id: str) -> Dict[str, Any]:
+        """Super admin: Unfreeze a user's wallet."""
+        wallet_php = await self.get_or_create_wallet(user_id, "PHP")
+        wallet_php.is_frozen = False
+        wallet_php.freeze_reason = None
+        wallet_php.updated_at = datetime.now(timezone.utc)
+        await self.db.commit()
+        
+        logger.info(f"Wallet for user {user_id} unfrozen")
+        return {"success": True, "wallet_id": wallet_php.id, "status": "active"}
+
+    async def get_wallet_analytics(self, user_id: str) -> Dict[str, Any]:
+        """Get detailed analytics for a user's wallet(s)."""
+        wallets = []
+        for currency in ["PHP", "USD"]:
+            try:
+                wallet = await self.get_or_create_wallet(user_id, currency)
+                wallets.append({
+                    "id": wallet.id,
+                    "currency": wallet.currency,
+                    "balance": wallet.balance,
+                    "available_balance": wallet.available_balance,
+                    "pending_balance": wallet.pending_balance,
+                    "total_credits": wallet.total_credits or 0.0,
+                    "total_debits": wallet.total_debits or 0.0,
+                    "transaction_count": wallet.transaction_count or 0,
+                    "is_frozen": wallet.is_frozen or False,
+                    "freeze_reason": wallet.freeze_reason,
+                    "last_activity": wallet.last_activity,
+                    "created_at": wallet.created_at,
+                    "updated_at": wallet.updated_at,
+                })
+            except Exception as e:
+                logger.error(f"Error fetching {currency} wallet analytics: {str(e)}")
+
+        # Get recent transactions
+        recent_txns = await self.db.execute(
+            select(Wallet_transactions)
+            .where(Wallet_transactions.user_id == user_id)
+            .order_by(Wallet_transactions.created_at.desc())
+            .limit(10)
+        )
+        recent = recent_txns.scalars().all()
+
+        return {
+            "user_id": user_id,
+            "wallets": wallets,
+            "recent_transactions": [
+                {
+                    "id": txn.id,
+                    "type": txn.transaction_type,
+                    "amount": txn.amount,
+                    "status": txn.status,
+                    "created_at": txn.created_at,
+                }
+                for txn in recent
+            ],
+        }
+
+    async def reconcile_wallet(self, user_id: str, currency: str = "PHP") -> Dict[str, Any]:
+        """Super admin: Reconcile wallet balance from transaction history."""
+        wallet = await self.get_or_create_wallet(user_id, currency.upper())
+        
+        # Recompute balance from all completed transactions
+        result = await self.db.execute(
+            select(
+                func.coalesce(func.sum(
+                    case(
+                        (Wallet_transactions.transaction_type.in_(("receive", "admin_credit", "deposit")), 
+                         Wallet_transactions.amount),
+                        else_=0.0,
+                    )
+                ), 0.0),
+                func.coalesce(func.sum(
+                    case(
+                        (Wallet_transactions.transaction_type.in_(("send", "admin_debit", "withdraw", "payment")), 
+                         Wallet_transactions.amount),
+                        else_=0.0,
+                    )
+                ), 0.0),
+            ).where(
+                Wallet_transactions.wallet_id == wallet.id,
+                Wallet_transactions.status == "completed",
+            )
+        )
+        
+        row = result.one()
+        computed_balance = float(row[0] or 0.0) - float(row[1] or 0.0)
+        difference = round(wallet.balance - computed_balance, 2)
+
+        if abs(difference) > 0.01:
+            logger.warning(f"Wallet reconciliation mismatch for {user_id}: recorded={wallet.balance}, computed={computed_balance}, diff={difference}")
+            wallet.balance = round(computed_balance, 2)
+            wallet.available_balance = round(computed_balance, 2)
+            wallet.updated_at = datetime.now(timezone.utc)
+            await self.db.commit()
+
+        return {
+            "success": True,
+            "user_id": user_id,
+            "currency": currency.upper(),
+            "recorded_balance": wallet.balance,
+            "computed_balance": computed_balance,
+            "difference": difference,
+            "reconciled": abs(difference) > 0.01,
+        }
+
+    async def batch_credit_wallets(self, credits: List[Dict[str, Any]], admin_id: str) -> Dict[str, Any]:
+        """Super admin: Bulk credit multiple wallets."""
+        results = []
+        for credit in credits:
+            try:
+                result = await self.adjust_balance(
+                    target_user_id=credit["user_id"],
+                    amount=credit["amount"],
+                    admin_id=admin_id,
+                    note=credit.get("note", "Batch credit"),
+                    currency=credit.get("currency", "PHP"),
+                )
+                results.append({"user_id": credit["user_id"], "success": True, **result})
+            except Exception as e:
+                logger.error(f"Error crediting user {credit['user_id']}: {str(e)}")
+                results.append({"user_id": credit["user_id"], "success": False, "error": str(e)})
+
+        successful = sum(1 for r in results if r["success"])
+        return {
+            "total": len(credits),
+            "successful": successful,
+            "failed": len(credits) - successful,
+            "results": results,
+        }
+
+    async def update_wallet_analytics(self, wallet_id: int, transaction_amount: float, is_credit: bool):
+        """Update wallet analytics after a transaction."""
+        wallet = await self.db.get(Wallets, wallet_id)
+        if not wallet:
+            return
+
+        wallet.total_credits = (wallet.total_credits or 0.0) + (transaction_amount if is_credit else 0.0)
+        wallet.total_debits = (wallet.total_debits or 0.0) + (transaction_amount if not is_credit else 0.0)
+        wallet.transaction_count = (wallet.transaction_count or 0) + 1
+        wallet.last_activity = datetime.now(timezone.utc)
+        wallet.updated_at = datetime.now(timezone.utc)
+        await self.db.commit()

@@ -148,6 +148,17 @@ class Settings(BaseSettings):
     # USDT TRC20 wallet address for receiving top-up payments
     usdt_trc20_address: str = ""
 
+    # SMS Gateway Configuration (Semaphore or Twilio)
+    sms_provider: str = "semaphore"  # "semaphore" or "twilio"
+    semaphore_api_key: str = ""
+    semaphore_api_url: str = "https://api.semaphore.co/api/v4"
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_phone_number: str = ""
+    sms_max_retries: int = 3
+    sms_retry_delay_ms: int = 1000
+    sms_enable_notifications: bool = True
+
     # Simple admin authentication
     admin_user_id: str = ""
     admin_user_email: str = ""

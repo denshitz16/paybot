@@ -382,12 +382,16 @@ def _mask_card_number(card_number: str) -> str:
         return f"{digits[:4]}{'*' * (len(digits) - 4)}"
     return f"{digits[:4]}{'*' * (len(digits) - 8)}{digits[-4:]}"
 def _start_kb() -> dict:
-    """Full quick-action keyboard for /start and /help."""
+    """Full quick-action keyboard for /start and /help. Shows English / Chinese labels."""
     return {
         "keyboard": [
-            [{"text": "💳 /pay"}, {"text": "💰 /wallet"}, {"text": "📊 /stats"}],
-            [{"text": "📟 /terminal"}, {"text": "📋 /list"}, {"text": "💱 /fees"}],
-            [{"text": "📥 /topup"}, {"text": "🏦 /deposit"}, {"text": "❓ /help"}],
+            [{"text": "Recharge / 充值"}, {"text": "Wallet / 钱包"}, {"text": "Stats / 统计"}],
+            [{"text": "Terminal / 终端"}, {"text": "List / 列表"}, {"text": "Fees / 费用"}],
+            [{"text": "Top-up / 充值"}, {"text": "Deposit / 存款"}, {"text": "Help / 帮助"}],
+            [{"text": "Withdraw / 提款"}, {"text": "Transfer / 转账"}, {"text": "Collect / 收款"}],
+            [{"text": "Red Packet / 红包"}, {"text": "Flash Swap / 闪兑"}, {"text": "Anon Card / 匿名信用卡"}],
+            [{"text": "Membership / 会员"}, {"text": "Profile / 个人中心"}, {"text": "Add to Group / 加入群组"}],
+            [{"text": "OTC / 自由承兑群"}, {"text": "Games / 游戏中心"}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,

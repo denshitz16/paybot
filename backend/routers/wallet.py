@@ -15,6 +15,7 @@ from models.crypto_topup import CryptoTopupRequest
 from schemas.auth import UserResponse
 from dependencies.auth import get_current_user
 from services.wallets import WalletsService
+from services.currency_service import CurrencyService
 from services.paymongo_service import PayMongoService
 from services.telegram_service import t, TelegramService
 
@@ -121,6 +122,48 @@ class WalletTransferRequest(BaseModel):
     note: str = ""
 
 
+class ConversionQuoteRequest(BaseModel):
+    from_currency: str
+    to_currency: str
+    from_amount: float
+
+
+class ConversionQuoteResponse(BaseModel):
+    from_amount: float
+    to_amount: float
+    rate: float
+    fee_amount: float
+    fee_rate: float
+    expires_at: float
+
+
+class ConversionRequest(BaseModel):
+    from_currency: str
+    to_currency: str
+    from_amount: float
+
+
+class ConversionResponse(BaseModel):
+    success: bool
+    message: str
+    conversion_id: int
+    from_amount: float
+    to_amount: float
+    rate: float
+    fee_amount: float
+
+
+class ExchangeRatesResponse(BaseModel):
+    rates: Dict[str, float]
+    supported_currencies: List[str]
+
+
+class WalletBalancesResponse(BaseModel):
+    wallets: List[Dict[str, Any]]
+    total_net_worth: Optional[float] = None
+    primary_currency: str = "PHP"
+
+
 # ---------- Endpoints ----------
 
 @router.get("/balance", response_model=WalletBalanceResponse)
@@ -138,7 +181,191 @@ async def get_balance(
     return WalletBalanceResponse(**result)
 
 
-@router.get("/gateway-balance")
+# ---------- Multi-Currency Conversion Endpoints ----------
+
+
+@router.get("/rates", response_model=ExchangeRatesResponse)
+async def get_exchange_rates(
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get current exchange rates for all supported currency pairs."""
+    service = CurrencyService(db)
+    
+    try:
+        supported = await service.get_supported_currencies()
+        
+        # For now, return supported currencies
+        # In production, fetch all live rates
+        rates = {}
+        return ExchangeRatesResponse(
+            rates=rates,
+            supported_currencies=supported
+        )
+    except Exception as e:
+        logger.error(f"Failed to get exchange rates: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch rates")
+
+
+@router.post("/conversion-quote", response_model=ConversionQuoteResponse)
+async def get_conversion_quote(
+    request: ConversionQuoteRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get a conversion quote with locked rate (valid for 30 seconds).
+    
+    Args:
+        from_currency: Source currency (e.g., USD)
+        to_currency: Target currency (e.g., PHP)
+        from_amount: Amount to convert
+    """
+    user_id = str(current_user.id)
+    service = CurrencyService(db)
+    
+    try:
+        # Get user's wallet
+        wallet_service = WalletsService(db)
+        from_wallet = await wallet_service.get_or_create_wallet(
+            user_id, request.from_currency
+        )
+        
+        quote = await service.get_conversion_quote(
+            from_wallet.id,
+            request.from_currency.upper(),
+            request.to_currency.upper(),
+            request.from_amount,
+        )
+        return ConversionQuoteResponse(**quote)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to get conversion quote: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get quote")
+
+
+@router.post("/convert", response_model=ConversionResponse)
+async def convert_currency(
+    request: ConversionRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Convert between wallet currencies (atomic operation).
+    
+    Deducts from source wallet, credits to target wallet, records transaction.
+    """
+    user_id = str(current_user.id)
+    wallet_service = WalletsService(db)
+    currency_service = CurrencyService(db)
+    
+    try:
+        # Get both wallets with locks
+        from_wallet = await wallet_service.get_or_create_wallet(
+            user_id, request.from_currency.upper(), lock=True
+        )
+        to_wallet = await wallet_service.get_or_create_wallet(
+            user_id, request.to_currency.upper(), lock=True
+        )
+        
+        # Perform conversion
+        conversion = await currency_service.convert_currency(
+            from_wallet=from_wallet,
+            to_wallet=to_wallet,
+            from_amount=request.from_amount,
+            user_id=user_id,
+            mobile_number=None,  # Would come from user profile
+        )
+        
+        # Create wallet transaction records
+        now = datetime.now(timezone.utc)
+        txn_from = Wallet_transactions(
+            user_id=user_id,
+            wallet_id=from_wallet.id,
+            transaction_type="conversion_out",
+            amount=-request.from_amount,
+            balance_before=from_wallet.balance + request.from_amount,
+            balance_after=from_wallet.balance,
+            reference_id=f"conv-{conversion.id}",
+            status="completed",
+            created_at=now,
+        )
+        
+        txn_to = Wallet_transactions(
+            user_id=user_id,
+            wallet_id=to_wallet.id,
+            transaction_type="conversion_in",
+            amount=conversion.to_amount,
+            balance_before=to_wallet.balance - conversion.to_amount,
+            balance_after=to_wallet.balance,
+            reference_id=f"conv-{conversion.id}",
+            status="completed",
+            created_at=now,
+        )
+        
+        db.add(txn_from)
+        db.add(txn_to)
+        await db.commit()
+        
+        logger.info(
+            f"User {user_id} converted {request.from_amount} "
+            f"{request.from_currency} → {conversion.to_amount} {request.to_currency}"
+        )
+        
+        return ConversionResponse(
+            success=True,
+            message=f"Conversion successful: {request.from_amount} "
+                    f"{request.from_currency} → {conversion.to_amount} {request.to_currency}",
+            conversion_id=conversion.id,
+            from_amount=request.from_amount,
+            to_amount=conversion.to_amount,
+            rate=conversion.rate_applied,
+            fee_amount=conversion.conversion_fee_amount,
+        )
+    except ValueError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Conversion failed: {e}")
+        raise HTTPException(status_code=500, detail="Conversion failed")
+
+
+@router.get("/balances", response_model=WalletBalancesResponse)
+async def get_all_wallets(
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get all wallets for user with net worth calculation."""
+    user_id = str(current_user.id)
+    
+    try:
+        # Fetch all user wallets
+        query = select(Wallets).where(Wallets.user_id == user_id)
+        result = await db.execute(query)
+        wallets = result.scalars().all()
+        
+        wallet_list = []
+        for w in wallets:
+            wallet_list.append({
+                "id": w.id,
+                "currency": w.currency or "PHP",
+                "balance": w.balance,
+                "available_balance": w.available_balance,
+                "pending_balance": w.pending_balance,
+                "conversions": w.conversion_count,
+            })
+        
+        return WalletBalancesResponse(
+            wallets=wallet_list,
+            total_net_worth=None,  # Would calculate if rates available
+            primary_currency="PHP",
+        )
+    except Exception as e:
+        logger.error(f"Failed to get wallets: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch wallets")
+
+
+# ---------- Gateway Balance ----------
 async def get_gateway_balance(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

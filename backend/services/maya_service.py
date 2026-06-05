@@ -27,13 +27,24 @@ class MayaService:
         self.mode = (os.environ.get("MAYA_MODE") or getattr(settings, "maya_mode", "sandbox")).lower().strip()
         self.base_url = (os.environ.get("MAYA_BASE_URL") or getattr(settings, "maya_base_url", "")).strip()
 
-        if not self.base_url:
-            self.base_url = MAYA_LIVE_BASE_URL if self.mode == "live" else MAYA_SANDBOX_BASE_URL
-        
-        self.base_url = self.base_url.rstrip("/")
+        # Delegate to XenditService when XENDIT_SECRET_KEY is configured (production)
+        self._delegate = None
+        try:
+            from services.xendit_service import XenditService
+            x_key = (os.environ.get("XENDIT_SECRET_KEY") or getattr(settings, "xendit_secret_key", "")).strip()
+            if x_key:
+                self._delegate = XenditService(x_key)
+                logger.info("MayaService delegating to XenditService (XENDIT configured)")
+        except Exception:
+            self._delegate = None
 
-        if not self.secret_key:
-            logger.warning("MAYA_SECRET_KEY not configured - Maya API calls will fail")
+        if not self._delegate:
+            if not self.base_url:
+                self.base_url = MAYA_LIVE_BASE_URL if self.mode == "live" else MAYA_SANDBOX_BASE_URL
+            self.base_url = self.base_url.rstrip("/")
+
+            if not self.secret_key:
+                logger.warning("MAYA_SECRET_KEY not configured - Maya API calls will fail")
 
     def _get_auth_headers(self) -> Dict[str, str]:
         if not self.secret_key:
@@ -67,6 +78,26 @@ class MayaService:
         cancel_redirect_url: str = "",
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
+        # If delegating to Xendit, translate to Xendit invoice flow
+        if getattr(self, "_delegate", None):
+            try:
+                res = await self._delegate.create_invoice(amount=amount, external_id=external_id or "", payer_email=customer_email or "", description=description or "")
+                if not res.get("success"):
+                    return {"success": False, "error": res.get("error", "Xendit invoice failed")}
+                return {
+                    "success": True,
+                    "checkout_id": res.get("invoice_id") or res.get("external_id"),
+                    "checkout_url": res.get("payment_url", ""),
+                    "external_id": res.get("external_id", external_id),
+                    "amount": amount,
+                    "status": "CREATED",
+                    "response": res,
+                }
+            except Exception as e:
+                logger.error("Xendit delegated create_invoice failed: %s", e)
+                return {"success": False, "error": str(e)}
+
+        # Original Maya implementation (unchanged)
         if not external_id:
             external_id = f"maya-{uuid.uuid4().hex[:12]}"
 
@@ -155,6 +186,20 @@ class MayaService:
     async def get_checkout_status(self, checkout_id: str) -> Dict[str, Any]:
         if not checkout_id:
             return {"success": False, "error": "Missing checkout ID"}
+
+        # If delegating to Xendit, map to get_invoice
+        if getattr(self, "_delegate", None):
+            try:
+                res = await self._delegate.get_invoice(checkout_id)
+                if not res.get("success"):
+                    return {"success": False, "error": res.get("error", "Xendit fetch failed")}
+                # Map fields to Maya-style response
+                status = "PAID" if res.get("data", {}).get("status", "").upper() in ("PAID", "SETTLED", "COMPLETED") else res.get("data", {}).get("status", "")
+                return {"success": True, "checkout_id": checkout_id, "external_id": res.get("data", {}).get("external_id", ""), "status": status, "response": res.get("data", {})}
+            except Exception as e:
+                logger.error("Xendit delegated get_invoice failed: %s", e)
+                return {"success": False, "error": str(e)}
+
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
@@ -589,6 +634,17 @@ class MayaService:
         failure_redirect_url: str = "",
         cancel_redirect_url: str = "",
     ) -> Dict[str, Any]:
+        # If delegating to Xendit, use its QR endpoint
+        if getattr(self, "_delegate", None):
+            try:
+                res = await self._delegate.create_qr_code(amount=amount, external_id=external_id or "", description=description or "")
+                if not res.get("success"):
+                    return {"success": False, "error": res.get("error", "Xendit QR failed")}
+                return {"success": True, "qr_id": res.get("qr_id", ""), "qr_content": res.get("qr_image_url", ""), "redirect_url": res.get("payment_url", ""), "external_id": res.get("external_id", external_id), "amount": amount, "status": "CREATED", "response": res}
+            except Exception as e:
+                logger.error("Xendit delegated create_qr_code failed: %s", e)
+                return {"success": False, "error": str(e)}
+
         """Create a Dynamic QR code for payment (PWM).
         
         This is ideal for real terminals where the customer scans a QR on the screen.
