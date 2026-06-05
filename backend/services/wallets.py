@@ -25,7 +25,7 @@ class WalletsService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_or_create_wallet(self, user_id: str, currency: str = "PHP") -> Wallets:
+    async def get_or_create_wallet(self, user_id: str, currency: str = "PHP", lock: bool = False) -> Wallets:
         """Get user's wallet for a given currency, or create one with 0 balance.
 
         PHP wallets are normalized to plain Telegram user IDs so bot and web
@@ -39,23 +39,27 @@ class WalletsService:
         if currency_upper == "PHP" and normalized_user_id.startswith("tg-"):
             normalized_user_id = normalized_user_id[3:]
 
-        result = await self.db.execute(
-            select(Wallets).where(
-                Wallets.user_id == normalized_user_id,
-                Wallets.currency == currency_upper
-            )
+        query = select(Wallets).where(
+            Wallets.user_id == normalized_user_id,
+            Wallets.currency == currency_upper
         )
+        if lock:
+            query = query.with_for_update()
+
+        result = await self.db.execute(query)
         wallet = result.scalar_one_or_none()
 
         # Check for legacy "tg-" prefixed row if not found for PHP
         if not wallet and currency_upper == "PHP":
             legacy_user_id = f"tg-{normalized_user_id}"
-            result = await self.db.execute(
-                select(Wallets).where(
-                    Wallets.user_id == legacy_user_id,
-                    Wallets.currency == "PHP"
-                )
+            query_legacy = select(Wallets).where(
+                Wallets.user_id == legacy_user_id,
+                Wallets.currency == "PHP"
             )
+            if lock:
+                query_legacy = query_legacy.with_for_update()
+
+            result = await self.db.execute(query_legacy)
             wallet = result.scalar_one_or_none()
             if wallet:
                 # Migrate the wallet row to normalized ID
@@ -71,9 +75,8 @@ class WalletsService:
                     .values(user_id=normalized_user_id)
                 )
                 await self.db.commit()
-                await self.db.refresh(wallet)
-                logger.info(f"Migrated PHP wallet {wallet.id} from {legacy_user_id} to {normalized_user_id}")
-                return wallet
+                # Re-fetch with lock if requested
+                return await self.get_or_create_wallet(normalized_user_id, currency_upper, lock=lock)
 
         if not wallet:
             now = datetime.now(timezone.utc)
@@ -85,8 +88,10 @@ class WalletsService:
                 updated_at=now,
             )
             self.db.add(wallet)
-            await self.db.commit()
-            await self.db.refresh(wallet)
+            await self.db.flush() # Flush to get ID without committing
+            if lock:
+                # Re-fetch with lock
+                return await self.get_or_create_wallet(normalized_user_id, currency_upper, lock=True)
             logger.info(f"Created new {currency_upper} wallet for user {normalized_user_id}")
 
         return wallet
@@ -158,7 +163,7 @@ class WalletsService:
         }
 
     async def transfer(self, sender_user_id: str, recipient_identifier: str, amount: float, note: str = "", currency: str = "PHP") -> Dict[str, Any]:
-        """Perform an internal transfer between users."""
+        """Perform an internal transfer between users using available liquidity."""
         if amount <= 0:
             raise ValueError("Amount must be positive")
 
@@ -179,12 +184,18 @@ class WalletsService:
         if sender_user_id == recipient_id:
             raise ValueError("Cannot send money to yourself")
 
-        # 2. Get wallets
-        sender_wallet = await self.get_or_create_wallet(sender_user_id, currency)
-        recipient_wallet = await self.get_or_create_wallet(recipient_id, currency)
+        # 2. Get wallets with row-level locks to prevent race conditions
+        sender_wallet = await self.get_or_create_wallet(sender_user_id, currency, lock=True)
+        recipient_wallet = await self.get_or_create_wallet(recipient_id, currency, lock=True)
 
-        if sender_wallet.balance < amount:
-            raise ValueError(f"Insufficient balance ({currency} {sender_wallet.balance:,.2f})")
+        # Maximize internal control: Check against available liquidity, not just total balance
+        if sender_wallet.available_balance < amount:
+            # Fallback for legacy rows with 0 available but non-zero total balance
+            if sender_wallet.available_balance == 0 and sender_wallet.balance >= amount:
+                 logger.warning(f"Migrating balance to available for user {sender_user_id}")
+                 sender_wallet.available_balance = sender_wallet.balance
+            else:
+                 raise ValueError(f"Insufficient available liquidity ({currency} {sender_wallet.available_balance:,.2f})")
 
         # 3. Perform internal transfer
         now = datetime.now(timezone.utc)
@@ -192,6 +203,7 @@ class WalletsService:
 
         # Debit sender
         sender_bal_before = sender_wallet.balance
+        sender_wallet.available_balance = round(sender_wallet.available_balance - amount, 2)
         sender_wallet.balance = round(sender_wallet.balance - amount, 2)
         sender_wallet.updated_at = now
 
@@ -209,8 +221,9 @@ class WalletsService:
             created_at=now,
         )
 
-        # Credit recipient
+        # Credit recipient (Direct to available for internal transfers)
         recipient_bal_before = recipient_wallet.balance
+        recipient_wallet.available_balance = round(recipient_wallet.available_balance + amount, 2)
         recipient_wallet.balance = round(recipient_wallet.balance + amount, 2)
         recipient_wallet.updated_at = now
 
@@ -245,13 +258,19 @@ class WalletsService:
         }
 
     async def withdraw_request(self, user_id: str, amount: float, bank_name: str, account_number: str, account_name: str, note: str = "") -> Dict[str, Any]:
-        """Submit a withdrawal request."""
+        """Submit a withdrawal request against available liquidity."""
         if amount <= 0:
             raise ValueError("Amount must be positive")
 
-        wallet = await self.get_or_create_wallet(user_id, "PHP")
-        if wallet.balance < amount:
-            raise ValueError(f"Insufficient balance (₱{wallet.balance:,.2f})")
+        # Lock wallet for withdrawal processing
+        wallet = await self.get_or_create_wallet(user_id, "PHP", lock=True)
+
+        # Ensure liquidity check against available_balance
+        if wallet.available_balance < amount:
+             if wallet.available_balance == 0 and wallet.balance >= amount:
+                 wallet.available_balance = wallet.balance
+             else:
+                 raise ValueError(f"Insufficient available liquidity (Available: ₱{wallet.available_balance:,.2f})")
 
         now = datetime.now(timezone.utc)
         balance_before = wallet.balance
@@ -274,7 +293,8 @@ class WalletsService:
         )
         self.db.add(disb)
 
-        # 2. Deduct from wallet immediately (hold)
+        # 2. Deduct from wallet immediately (hold funds from available)
+        wallet.available_balance = round(wallet.available_balance - amount, 2)
         wallet.balance = round(wallet.balance - amount, 2)
         wallet.updated_at = now
 
@@ -307,12 +327,13 @@ class WalletsService:
         }
 
     async def adjust_balance(self, target_user_id: str, amount: float, admin_id: str, note: str = "", currency: str = "PHP") -> Dict[str, Any]:
-        """Admin credit/debit adjustment for a user's wallet."""
+        """Admin credit/debit adjustment (Maximizing Manual control)."""
         if amount == 0:
             raise ValueError("Amount must be non-zero")
 
         currency_upper = currency.upper()
-        wallet = await self.get_or_create_wallet(target_user_id, currency_upper)
+        # Lock wallet for adjustment
+        wallet = await self.get_or_create_wallet(target_user_id, currency_upper, lock=True)
 
         balance_before = wallet.balance
         if currency_upper == "USD":
@@ -322,11 +343,19 @@ class WalletsService:
         txn_type = "admin_credit" if amount > 0 else "admin_debit"
         adj_amount = abs(amount)
 
-        if amount < 0 and balance_before < adj_amount:
-            raise ValueError(f"Insufficient balance ({currency_upper} {balance_before:,.2f})")
+        if amount < 0 and wallet.available_balance < adj_amount:
+            # Fallback for adjustment
+            if wallet.available_balance == 0 and wallet.balance >= adj_amount:
+                wallet.available_balance = wallet.balance
+            else:
+                raise ValueError(f"Insufficient available balance ({currency_upper} {wallet.available_balance:,.2f})")
 
         now = datetime.now(timezone.utc)
-        balance_after = round(max(0.0, balance_before + amount), 2)
+
+        # Update both balances for manual adjustments
+        wallet.available_balance = round(max(0.0, wallet.available_balance + amount), 2)
+        wallet.balance = round(max(0.0, balance_before + amount), 2)
+        wallet.updated_at = now
 
         txn = Wallet_transactions(
             user_id=target_user_id,

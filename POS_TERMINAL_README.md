@@ -1,51 +1,51 @@
-# Virtual POS Terminal System (Production)
+# Industrial POS Terminal & Settlement Infrastructure
 
-PayBot's production-ready POS terminal engine enabling merchants to accept real-money payments via Cards, QRPH, and E-Wallets.
+PayBot's high-performance terminal engine provides bank-grade settlement capabilities, enabling institutional merchants to accept industrial-scale payments via Cards, QRPH, and international e-wallets.
 
-## 🌟 Production Features
+## 🏛️ Enterprise Capabilities
 
-### For Merchants
-- **Terminal Provisioning**: One-click request for a virtual or physical POS device.
-- **Immediate Settlement (T0)**: Funds are available in your wallet as soon as the customer pays.
-- **Card Processing**: Native integration with Maya Business for Visa, MC, JCB, and AMEX.
-- **Dashboard Visibility**: Track live sales and customer activity in real-time.
+### Merchant Node Operations
+- **Node Provisioning**: Automated deployment of virtual and physical POS terminals for verified merchants.
+- **Ultra T+0 Liquidity**: Proprietary priority routing ensures immediate fund availability in the merchant vault upon transaction completion.
+- **Institutional Card Processing**: Direct API-level integration with the Maya Business Mainnet for Visa, Mastercard, JCB, and AMEX.
+- **Grid Monitoring**: High-fidelity dashboard for real-time sales dynamics and node health telemetry.
 
-### For Administrators
-- **Device Management**: Remote assignment and authorization of terminal hardware.
-- **Transaction Audit**: Full ledger of every terminal sale with gateway reference IDs.
-- **Remote Lock/Deactivate**: Instantly disable compromised or inactive terminals.
+### Administrative Governance
+- **Hardware Authorization**: Strict hardware-level device binding and remote authorization protocols.
+- **Immutable Ledger**: Full cryptographic audit trail for every transaction, including gateway cross-references.
+- **Protocol Management**: Remote deactivation and kill-switch capabilities for node security.
 
-## 🛠 Integration Architecture
+## 🏗️ Technical Architecture
 
-### 1. Payment Flow
-- **Creation**: Mobile app sends request to `/api/v1/pos-terminals/{id}/transactions`.
-- **Gateway**: Backend selects best path (Maya Card API, Maya QR, or PayMongo).
-- **Checkout**: Customer scans QR or uses secure Webview for card entry.
-- **Completion**: Gateway webhook notifies backend; Event Bus syncs to dashboard.
+### 1. High-Availability Payment Flow
+- **Initiation**: Merchant node (Mobile) initiates a cryptographically signed request to `/api/v1/pos-terminals/{id}/transactions`.
+- **Intelligent Routing**: The backend engine selects the optimal clearing channel (Maya Direct, Security Bank Collect, or PayMongo).
+- **Execution**: Secure hardware-level capture (NFC/Tap-to-Phone) or dynamic QRPH generation.
+- **Reconciliation**: Real-time webhook processing with atomic ledger updates across the mainnet.
 
-### 2. Security Model
-- **Device ID Binding**: Sessions are tied to the `X-Device-ID` header.
-- **Admin Elevation**: `admin@paybot.local` has Super Admin rights to manage all hardware.
-- **PIN Lock**: Operator-level protection for terminal access.
+### 2. Security & Compliance Layer
+- **Hardware Binding**: Sessions are strictly mapped to unique hardware signatures (`X-Device-ID`).
+- **MFA Protocols**: Support for biometric seeds and encrypted 4-digit operator PINs.
+- **PCI-DSS Compliance**: No sensitive card data is stored locally; all processing is handled via tokenized bank-grade vaults.
 
-## 🚀 Live Configuration
+## 🚀 Mainnet Configuration
 
-Ensure the following variables are set for production:
+Production environments must utilize the following institutional parameters:
 
 ```env
 MAYA_BUSINESS_MODE=live
-MAYA_BUSINESS_API_KEY=pk-y7C...
-MAYA_BUSINESS_SECRET_KEY=sk-iuh...
-MAYA_BUSINESS_BASE_URL=https://api.paymaya.com
+MAYA_BUSINESS_API_KEY=[Vault-Encrypted]
+MAYA_BUSINESS_SECRET_KEY=[Vault-Encrypted]
+MAYA_BUSINESS_BASE_URL=https://pg.maya.ph
 ```
 
-## 📱 Mobile App (Android)
-The mobile app is located in `mobile/android/`. It communicates with the backend using the production URL configured in `src/Config.ts`.
+## 📱 Node Deployment (Android)
+The industrial mobile client is available in `mobile/android/`. It is engineered to operate on verified hardware clusters.
 
-### Quick Install
-1. Download `paybot-pos-terminal-live.apk`.
-2. Login with your merchant credentials.
-3. If not yet assigned, contact your Super Admin with the Device ID shown on screen.
+### Provisioning Steps
+1. Deploy the `PB-2024-05` stable build APK to the device.
+2. Authenticate using authorized merchant credentials.
+3. Upon initialization, provide the **Node Hardware ID** to the compliance officer for terminal activation.
 
 ---
-*Developed by DRL Solutions for the Philippine Market*
+*© 2024 DRL Solutions Infrastructure Group*

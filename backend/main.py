@@ -203,6 +203,10 @@ async def lifespan(app: FastAPI):
         logger.warning("Skipping mock data initialization because database is not ready.")
     # MODULE_STARTUP_END
 
+    # Initialize Automated Operations Worker
+    from services.background_tasks import background_worker
+    _worker_task = asyncio.create_task(background_worker.start_worker())
+
     # Auto-register Telegram webhook and bot commands if backend URL is configured.
     # Run this as a background task so it does not delay the health-check response;
     # the webhook URL only needs to be registered once and is retained by Telegram
@@ -382,6 +386,39 @@ async def general_exception_handler(request: Request, exc: Exception):
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/api/v1/diagnostics/grid-telemetry")
+async def grid_telemetry(db: AsyncSession = Depends(get_db)):
+    """Advanced Grid Telemetry (Internal Operations Maximization)."""
+    from sqlalchemy import text
+    try:
+        # Check node health
+        res = await db.execute(text("SELECT count(*) FROM wallets"))
+        wallets_count = res.scalar()
+
+        res = await db.execute(text("SELECT count(*) FROM transactions WHERE status = 'pending'"))
+        pending_txns = res.scalar()
+
+        # Aggregate liquidity
+        res = await db.execute(text("SELECT sum(available_balance), sum(pending_balance) FROM wallets WHERE currency = 'PHP'"))
+        row = res.one()
+        total_available = float(row[0] or 0.0)
+        total_pending = float(row[1] or 0.0)
+
+        return {
+            "node": "railway-prod-7350-mainnet",
+            "uptime": int(asyncio.get_event_loop().time()),
+            "grid_status": "OPERATIONAL",
+            "telemetry": {
+                "active_wallets": wallets_count,
+                "pending_clearance": pending_txns,
+                "total_available_liquidity": total_available,
+                "total_pending_liquidity": total_pending,
+            }
+        }
+    except Exception as e:
+        return {"grid_status": "DEGRADED", "error": str(e)}
 
 
 @app.get("/api/v1/diagnostics/db-schema")

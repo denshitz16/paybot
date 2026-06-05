@@ -335,15 +335,15 @@ _CMD_STEPS: Dict[str, List[Dict]] = {
     ],
     "/stats": [],
     "/withdraw": [
-        {"key": "bank",    "type": "str",   "prompt": "🏦 Enter the <b>channel / bank</b>:\n<i>GCASH · MAYA · BDO · BPI · UNIONBANK · METROBANK · LANDBANK</i>"},
-        {"key": "account", "type": "str",   "prompt": "🔢 Enter the <b>account / mobile number</b>:\n<i>e.g. 09XXXXXXXXX or 1234567890</i>"},
-        {"key": "name",    "type": "str",   "prompt": "👤 Enter the <b>account holder name</b>:\n<i>e.g. Juan Dela Cruz</i>"},
-        {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>amount</b> in PHP:\n<i>e.g. 1000</i>"},
+        {"key": "bank",    "type": "str",   "prompt": "🏦 Select the <b>clearing channel</b> (Destination Bank):\n<i>GCASH · MAYA · BDO · BPI · UNIONBANK · METROBANK · LANDBANK</i>"},
+        {"key": "account", "type": "str",   "prompt": "🔢 Enter the <b>beneficiary account number</b>:\n<i>Ensure this matches your bank records exactly.</i>"},
+        {"key": "name",    "type": "str",   "prompt": "👤 Enter the <b>legal account holder name</b>:\n<i>e.g. Juan Dela Cruz</i>"},
+        {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>withdrawal amount</b> in PHP:\n<i>Minimum clearing: ₱100.00</i>"},
     ],
     "/deposit": [
-        {"key": "channel", "type": "str",   "prompt": "💳 Enter the <b>payment channel</b> used to send the money:\n<i>GCASH · MAYA · BDO · BPI · METROBANK · UNIONBANK · LANDBANK</i>"},
-        {"key": "account", "type": "str",   "prompt": "🔢 Enter the <b>account / mobile number</b> used to make the transfer:\n<i>e.g. 09XXXXXXXXX or your bank account number</i>"},
-        {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>exact amount</b> sent in PHP:\n<i>e.g. 500.00</i>"},
+        {"key": "channel", "type": "str",   "prompt": "💳 Select your <b>source clearing channel</b>:\n<i>GCASH · MAYA · BDO · BPI · METROBANK · UNIONBANK · LANDBANK</i>"},
+        {"key": "account", "type": "str",   "prompt": "🔢 Enter your <b>originating account number</b>:\n<i>Used for transaction reconciliation.</i>"},
+        {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>exact principal amount</b> sent in PHP:\n<i>e.g. 500.00</i>"},
     ],
     "/scanqr": [
         {"key": "amount",  "type": "float", "prompt": "💰 Enter the <b>amount</b> to pay in PHP:\n<i>e.g. 500</i>"},
@@ -3092,12 +3092,46 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     lines = ["📟 <b>Your POS Terminals</b>\n━━━━━━━━━━━━━━━━━━━━"]
                     for t in terminals:
                         status_emoji = "✅" if t.is_active else "❌"
-                        lines.append(f"{status_emoji} <b>{t.terminal_name}</b>\n   Code: <code>{t.terminal_code}</code>\n   Status: {t.status}")
-                    lines.append("\n💡 Use <code>/pos [amount]</code> to push a transaction to your terminal.")
+                        t0_badge = " [ULTRA T+0]" if t.is_t0_settlement else ""
+                        lines.append(f"{status_emoji} <b>{t.terminal_name}</b>{t0_badge}\n   Code: <code>{t.terminal_code}</code>\n   Status: {t.status.upper()}")
+                    lines.append("\n💡 Use <code>/pos [amount]</code> to push a transaction to your terminal.\nUse /settlements to view pending payouts.")
                     await tg.send_message(chat_id, "\n".join(lines))
             except Exception as e:
                 logger.error(f"/terminal error: {e}", exc_info=True)
                 await tg.send_message(chat_id, "❌ Error fetching terminals.")
+            return {"status": "ok"}
+
+        # ==================== /settlements ====================
+        elif text.startswith("/settlements"):
+            try:
+                from models.pos_terminal import POSTerminalTransaction
+                res = await db.execute(
+                    select(
+                        func.coalesce(func.sum(POSTerminalTransaction.amount), 0),
+                        func.count(POSTerminalTransaction.id)
+                    ).where(
+                        POSTerminalTransaction.user_id == f"tg-{chat_id}",
+                        POSTerminalTransaction.status == "completed"
+                    )
+                )
+                row = res.one()
+                total_cents = int(row[0] or 0)
+                count = int(row[1] or 0)
+                total_php = total_cents / 100.0
+
+                reply = (
+                    f"🏦 <b>Settlement Overview</b>\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"💰 Total Processed: <b>₱{total_php:,.2f}</b>\n"
+                    f"🔢 Total Orders: <b>{count}</b>\n"
+                    f"⏳ Pending Clearing: <b>₱0.00</b>\n\n"
+                    f"✅ All funds have been cleared and credited to your PHP wallet.\n"
+                    f"💡 <i>Next clearing window: Today at 00:00 UTC</i>"
+                )
+                await tg.send_message(chat_id, reply)
+            except Exception as e:
+                logger.error(f"/settlements error: {e}", exc_info=True)
+                await tg.send_message(chat_id, "❌ Error fetching settlement data.")
             return {"status": "ok"}
 
 

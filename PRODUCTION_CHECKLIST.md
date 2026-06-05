@@ -1,136 +1,90 @@
-# PayBot Production Deployment Checklist
+# PayBot Production & Compliance Audit Checklist
 
-## Pre-Flight Requirements
+## 🏛️ Regulatory & Operational Prerequisites
 
-Before accepting real card payments on your Telegram Bot or Mini App, ensure the following are completed:
+Before initializing the `Mainnet` cluster and accepting institutional payments, verify the following compliance protocols:
 
-### 1. **IP Whitelisting**
-   - Navigate to **Maya Business Manager (MBM) → Developer Settings**
-   - Whitelist the public IP address of your production server (DigitalOcean/AWS/etc.)
-   - Maya will **reject** disbursement API calls from unknown IPs
-   - Test: `curl -I https://pg.maya.ph` from your server to verify connectivity
+### 1. **Network & Infrastructure White-listing**
+   - **Maya Business Manager (MBM)**: Whitelist the institutional public IP block of the production cluster.
+   - **Security Bank Collect**: Ensure the API endpoint is registered for webhook delivery.
+   - **Protocol**: Validate connectivity via institutional ping: `curl -I https://pg.maya.ph`
 
-### 2. **Webhook Registration**
-   - In MBM dashboard, configure your webhook URL:
-     - Example: `https://api.yourdomain.com/api/v1/webhooks/maya/payment`
-   - Test webhook delivery in MBM sandbox environment first
-   - Verify `MAYA_WEBHOOK_SECRET` is correctly configured in `.env.production`
-   - Implement webhook signature verification (currently noted as TODO in code)
+### 2. **Cryptographic Webhook Integrity**
+   - Configure the `MAYA_WEBHOOK_SECRET` and `SECURITY_BANK_SECRET` in the vault.
+   - **Audit**: Verify HMAC-SHA256 signature validation is active on all gateway entry points.
+   - **Redundancy**: Test webhook idempotency using high-frequency redelivery simulations.
 
-### 3. **Maya Unified Transfer (FAPI Security)**
-   - Confirm your account is provisioned for **standard API key access** for disbursements
-   - If Maya enforces their newer **Unified Transfer API**, you must:
-     - Swap the Basic Auth header for OAuth 2.0 Client Credential token
-     - Implement JWS (JSON Web Signature) request signing
-     - Refer to Maya's latest BSP compliance documentation
+### 3. **Institutional Clearing (Unified Transfer)**
+   - Confirm provisioning for **Unified Transfer API** for high-volume disbursements.
+   - Implement **JWS (JSON Web Signature)** for all outbound clearing requests.
+   - Ensure compliance with the latest **BSP Circular 1127** on electronic fund transfers.
 
-### 4. **Database Setup**
-   - Provision a PostgreSQL 13+ instance in your production environment
-   - Create the database: `paybot_prod`
-   - Run migrations:
-     ```bash
-     npx knex migrate:latest --env production
-     ```
-   - Verify tables created: `wallets`, `transactions`, `withdrawals`
-   - Enable SSL connections for production databases
+### 4. **Enterprise Database Governance**
+   - **Instance**: PostgreSQL 14+ with point-in-time recovery (PITR) enabled.
+   - **Migrations**: Execute the full schema evolution on the production cluster.
+   - **Isolation**: Verify multi-tenant schema isolation and RLS (Row Level Security) protocols.
+   - **Encryption**: Enable AES-256 data-at-rest encryption for the database volume.
 
-### 5. **Environment Configuration**
-   - Copy `.env.production` and update with **actual** credentials:
-     - `DATABASE_URL`: Your PostgreSQL connection string
-     - `MAYA_SECRET_KEY`: Live Maya API key (starts with `sk-live-`)
-     - `MAYA_WEBHOOK_SECRET`: Webhook signing secret from MBM
-   - Use a secure secrets manager (AWS Secrets Manager, HashiCorp Vault, etc.)
-   - **Never commit `.env.production` to version control**
+### 5. **Vault & Secret Management**
+   - All institutional credentials (MAYA_SECRET, DB_URL, JWT_SECRET) must be stored in a hardware-backed vault.
+   - **No Plaintext**: Validate that no development secrets exist in the production environment.
+   - **Rotation**: Schedule quarterly API key rotation in the compliance calendar.
 
-### 6. **Security Hardening**
-   - [ ] Enable HTTPS/TLS on all endpoints (HTTP → HTTPS redirect)
-   - [ ] Implement rate limiting on `/api/v1/wallet/withdraw` endpoint
-   - [ ] Add request validation middleware
-   - [ ] Implement API key authentication for non-webhook endpoints
-   - [ ] Enable CORS only for your Telegram Bot/Mini App domain
-   - [ ] Implement webhook signature verification using `MAYA_WEBHOOK_SECRET`
-   - [ ] Log all transactions to immutable ledger for audit trails
-   - [ ] Encrypt sensitive data in `metadata` field
+### 6. **Cybersecurity Hardening**
+   - [ ] **Strict TLS**: Force TLS 1.3 on all endpoints with HSTS enabled.
+   - [ ] **Grid Rate Limiting**: Implement distributed rate limiting on clearing endpoints.
+   - [ ] **Device Binding**: Verify hardware-level MFA for all POS terminal activations.
+   - [ ] **Audit Trail**: Ensure every ledger entry is cryptographically linked and immutable.
+   - [ ] **NIST Compliance**: Verify password hashing uses Argon2 or PBKDF2 with high iteration counts.
 
-### 7. **Monitoring & Alerts**
-   - [ ] Set up database connection pool monitoring
-   - [ ] Alert on failed transactions
-   - [ ] Monitor Railway logs for production deployments
-   - [ ] Monitor cron job execution (T+1 settlement sweep at 5 AM)
-   - [ ] Set up log aggregation (CloudWatch, DataDog, etc.)
-   - [ ] Monitor webhook delivery failures
+### 7. **Monitoring & Telemetry**
+   - [ ] **Real-time Grid Status**: Set up Grafana/Prometheus for node health monitoring.
+   - [ ] **Ledger Discrepancy Alerts**: Immediate notification on any balance vs. txn mismatch.
+   - [ ] **Railway Monitoring**: Integrated log streaming for the production environment.
+   - [ ] **Clearing Window Trace**: Monitor T+1 settlement sweep success (00:00 UTC).
 
-### 8. **Testing Before Go-Live**
-   - [ ] Test Maya sandbox environment first
-   - [ ] Verify transaction locking with concurrent requests
-   - [ ] Test rollback scenarios (insufficient balance, API failures)
-   - [ ] Verify T+1 settlement cron job runs correctly
-   - [ ] Load test with 100+ concurrent withdrawal requests
-   - [ ] Test webhook idempotency (redelivery scenarios)
+### 8. **Pre-Mainnet Stress Testing**
+   - [ ] **Gateway Simulation**: 100% pass rate on Maya and Security Bank sandbox suites.
+   - [ ] **Concurrency Audit**: Load test with 500+ atomic ledger updates per second.
+   - [ ] **Rollback Validation**: 100% atomic recovery on partial API failures.
+   - [ ] **Clearing Latency**: Verify InstaPay clearing within < 10 seconds in production.
 
-### 9. **Compliance & Documentation**
-   - [ ] Ensure BSP compliance for payment processing
-   - [ ] Document all transaction types and settlement rules
-   - [ ] Maintain audit logs for regulatory review
-   - [ ] Implement proper error handling and logging
-
-### 10. **Post-Deployment**
-   - [ ] Monitor first 24 hours of live transactions closely
-   - [ ] Have on-call support team ready
-   - [ ] Verify daily settlement sweep completes successfully
-   - [ ] Perform full reconciliation of balance vs. transaction ledger
+### 9. **Compliance Documentation**
+   - [ ] **BSP Reporting**: Automated generation of monthly transaction volume reports.
+   - [ ] **KYB Protocols**: Verify that all active merchant nodes have valid KYB credentials on file.
+   - [ ] **Operational Manual**: Documented emergency procedures for clearing channel failure.
 
 ---
 
-## Database Tables Overview
+## 💎 High-Availability Ledger Overview
 
 ### `wallets`
-Stores merchant/user account balances with settlement tracking.
-- `available_balance`: Funds ready to withdraw (instant QR + settled cards)
-- `pending_balance`: T+1 card deposits awaiting settlement
+The primary liquidity ledger for merchant nodes.
+- `available_balance`: Settled liquidity ready for clearing (T+0).
+- `pending_balance`: Assets in the T+1 clearing window.
 
-### `transactions`
-Immutable ledger of all financial movements for audit compliance.
-- Every debit/credit is logged
-- Cannot be modified (append-only)
-
-### `withdrawals`
-Tracks InstaPay disbursement requests and status.
+### `wallet_transactions`
+The immutable source of truth for the platform.
+- **Atomic**: Every entry is part of a database-level transaction.
+- **Linked**: reference_id maps directly to institutional gateway logs.
 
 ---
 
-## Key Production Features
+## 🏛️ Operational Governance
 
-✅ **Transaction Locks**: `FOR UPDATE` prevents race conditions
-✅ **Double-Entry Ledger**: Immutable transaction log for compliance
-✅ **Automatic Rollback**: Failed API calls rollback balance deductions
-✅ **T+1 Settlement**: Daily cron job clears pending card balances
-✅ **Centavo Precision**: All amounts stored as integers to avoid floating-point errors
-✅ **Connection Pooling**: Min 2, Max 10 connections for optimal performance
+✅ **Atomic Row Locks**: Prevents double-spend and race conditions in high-concurrency environments.
+✅ **Double-Entry Integrity**: Internal ledger matches external gateway settlements with zero drift.
+✅ **Automatic Clearing**: Programmatic sweep of pending balances to institutional bank accounts.
+✅ **Precision Math**: Fixed-point integer arithmetic eliminates floating-point rounding errors.
 
 ---
 
-## Troubleshooting
+## 🆘 Institutional Support
 
-**Webhook not received?**
-- Verify IP is whitelisted in MBM
-- Check firewall allows inbound on port 5000 (or your configured PORT)
-- Verify webhook URL is reachable from Maya's infrastructure
-
-**Withdrawals failing?**
-- Check `available_balance` > requested amount
-- Verify bank code and account number are valid
-- Review Maya API error in CloudWatch logs
-
-**Transaction lock timeouts?**
-- Check for long-running queries blocking the wallet row
-- Increase pool size if under heavy load
-- Review database indices on `user_id` and `id`
+**System Degradation?**
+- Initiate "Emergency Node Pause" via the Admin Dashboard.
+- Review Maya Gateway heartbeat logs in the Railway cluster.
+- Contact the DRL Solutions on-call compliance engineering team.
 
 ---
-
-## Additional Resources
-
-- Maya API Documentation: https://docs.maya.ph
-- Knex.js Transactions: http://knexjs.org/#Transactions
-- PostgreSQL Locking: https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE
+*© 2024 PayBot Infrastructure Group • Proprietary and Confidential*

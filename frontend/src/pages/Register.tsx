@@ -6,6 +6,7 @@ import TelegramLoginWidget from '@/components/TelegramLoginWidget';
 import { APP_NAME, COMPANY_NAME, APP_DESCRIPTION } from '@/lib/brand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface FormData {
   full_name: string;

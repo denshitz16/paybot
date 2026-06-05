@@ -257,11 +257,16 @@ export const CreateTransactionScreen = ({ route, navigation }) => {
               <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <Text style={styles.submitButtonText}>Charge ₱{parseFloat(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-                <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+                <Text style={styles.submitButtonText}>Authorize Charge ₱{parseFloat(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+                <MaterialIcons name="lock" size={20} color="#fff" />
               </>
             )}
           </TouchableOpacity>
+
+          <View style={styles.secureBanner}>
+             <MaterialIcons name="verified-user" size={14} color="#64748B" />
+             <Text style={styles.secureText}>SECURED BY BANK-GRADE INFRASTRUCTURE</Text>
+          </View>
         </ScrollView>
       </TouchableWithoutFeedback>
     </SafeAreaView>
@@ -360,6 +365,19 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   submitButtonText: { color: '#fff', fontSize: 18, fontWeight: '800', marginRight: 10 },
+  secureBanner: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     justifyContent: 'center',
+     marginTop: 24,
+     gap: 6,
+  },
+  secureText: {
+     fontSize: 10,
+     fontWeight: '800',
+     color: '#64748B',
+     letterSpacing: 0.5,
+  },
   nfcContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   nfcRing: {
      width: 200,

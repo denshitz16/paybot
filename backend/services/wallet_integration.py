@@ -28,9 +28,11 @@ class WalletIntegrationService:
                 logger.warning(f"Skipping wallet credit for payment {order_id}: Zero amount")
                 return
 
-            # Get or create the merchant's PHP wallet
+            # Get or create the merchant's PHP wallet with a row lock to prevent race conditions
             res = await self.db.execute(
-                select(Wallets).where(Wallets.user_id == user_id, Wallets.currency == "PHP")
+                select(Wallets)
+                .where(Wallets.user_id == user_id, Wallets.currency == "PHP")
+                .with_for_update()
             )
             wallet = res.scalar_one_or_none()
             

@@ -54,6 +54,8 @@ async function getResponseError(res: Response, fallback: string): Promise<string
 interface WalletBalance {
   wallet_id: number;
   balance: number;
+  available_balance: number;
+  pending_balance: number;
   currency: string;
 }
 
@@ -253,10 +255,21 @@ export default function Wallet() {
             <Card className="bg-brand-blue-600 border-0 shadow-2xl shadow-brand-blue-500/30 overflow-hidden relative rounded-[2.5rem] group">
                <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"><PhilippinePeso className="h-40 w-40" /></div>
                <CardContent className="p-10 relative z-10">
-                  <p className="text-[10px] font-black text-brand-blue-100 uppercase tracking-[0.3em] mb-3">Available Liquidity</p>
-                  <h2 className="text-5xl font-black text-white tracking-tighter mb-10 tabular-nums">
-                    {loading ? '₱ --.--' : `₱${fmt(phpBalance?.balance)}`}
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-[10px] font-black text-brand-blue-100 uppercase tracking-[0.3em]">Institutional Liquidity</p>
+                    {phpBalance && phpBalance.pending_balance > 0 && (
+                        <Badge className="bg-amber-400 text-amber-950 border-0 font-black text-[8px] uppercase px-2 py-0.5 animate-pulse">Clearing Active</Badge>
+                    )}
+                  </div>
+                  <h2 className="text-5xl font-black text-white tracking-tighter mb-4 tabular-nums">
+                    {loading ? '₱ --.--' : `₱${fmt(phpBalance?.available_balance)}`}
                   </h2>
+                  <div className="flex items-center gap-4 mb-10 text-brand-blue-100/60 font-bold text-[10px] uppercase tracking-widest">
+                     <div className="flex items-center gap-1.5"><div className="h-1 w-1 rounded-full bg-emerald-400" /> Available</div>
+                     {phpBalance && phpBalance.pending_balance > 0 && (
+                         <div className="flex items-center gap-1.5"><div className="h-1 w-1 rounded-full bg-amber-400" /> ₱{fmt(phpBalance.pending_balance)} Pending (T+1)</div>
+                     )}
+                  </div>
                   <div className="flex gap-3">
                     <Button onClick={() => setTopupDialogOpen(true)} className="flex-1 bg-white text-brand-blue-600 hover:bg-brand-blue-50 font-black rounded-2xl h-14 uppercase text-[10px] tracking-widest shadow-xl shadow-black/10">
                       <PlusCircle className="h-4 w-4 mr-2" /> Top Up

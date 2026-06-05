@@ -34,6 +34,17 @@ const api = {
     return response.json();
   },
 
+  getBalance: async (token) => {
+    const response = await fetch(`${API_URL}/wallet/balance?currency=PHP`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch balance');
+    return response.json();
+  },
+
   getTransactions: async (token, terminalId) => {
     const response = await fetch(
       `${API_URL}/pos-terminals/${terminalId}/transactions?per_page=10`,
@@ -65,6 +76,67 @@ const StatusBadge = ({ status }) => {
       <Text style={[styles.badgeText, { color: colors.text }]}>
         {status.toUpperCase()}
       </Text>
+    </View>
+  );
+};
+
+const BalanceCard = ({ balance, currency, isLoading }) => {
+  const { colors, common, roundness, shadows } = useTheme();
+
+  return (
+    <View style={[styles.balanceCard, { backgroundColor: colors.card, borderRadius: roundness.lg, ...shadows.md }]}>
+      <View style={styles.balanceHeader}>
+        <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>Available Balance</Text>
+        <View style={styles.verifiedBadge}>
+          <MaterialIcons name="verified" size={14} color={common.success} />
+          <Text style={[styles.verifiedText, { color: common.success }]}>VERIFIED</Text>
+        </View>
+      </View>
+
+      {isLoading ? (
+        <ActivityIndicator size="small" color={common.primary} style={{ alignSelf: 'flex-start', marginTop: 8 }} />
+      ) : (
+        <Text style={[styles.balanceAmount, { color: colors.text }]}>
+          {currency === 'PHP' ? '₱' : '$'}{balance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        </Text>
+      )}
+
+      <View style={styles.balanceActions}>
+        <TouchableOpacity style={[styles.balanceActionBtn, { backgroundColor: common.primary + '10' }]}>
+          <MaterialIcons name="add" size={20} color={common.primary} />
+          <Text style={[styles.balanceActionText, { color: common.primary }]}>Top Up</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.balanceActionBtn, { backgroundColor: common.success + '10' }]}>
+          <MaterialIcons name="file-download" size={20} color={common.success} />
+          <Text style={[styles.balanceActionText, { color: common.success }]}>Withdraw</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.balanceActionBtn, { backgroundColor: common.warning + '10' }]}>
+          <MaterialIcons name="history" size={20} color={common.warning} />
+          <Text style={[styles.balanceActionText, { color: common.warning }]}>Settlements</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const TrustBanner = () => {
+  const { colors, roundness } = useTheme();
+  return (
+    <View style={[styles.trustBanner, { backgroundColor: colors.surface, borderRadius: roundness.md }]}>
+       <View style={styles.trustItem}>
+          <MaterialIcons name="security" size={16} color={colors.textSecondary} />
+          <Text style={[styles.trustText, { color: colors.textSecondary }]}>PCI-DSS</Text>
+       </View>
+       <View style={styles.trustDivider} />
+       <View style={styles.trustItem}>
+          <MaterialIcons name="verified-user" size={16} color={colors.textSecondary} />
+          <Text style={[styles.trustText, { color: colors.textSecondary }]}>BSP REGULATED</Text>
+       </View>
+       <View style={styles.trustDivider} />
+       <View style={styles.trustItem}>
+          <MaterialIcons name="lock" size={16} color={colors.textSecondary} />
+          <Text style={[styles.trustText, { color: colors.textSecondary }]}>ENCRYPTED</Text>
+       </View>
     </View>
   );
 };
@@ -191,6 +263,14 @@ export const HomeScreen = ({ navigation }) => {
     loadToken();
   }, []);
 
+  const balanceQuery = useQuery(
+    ['balance', token],
+    () => api.getBalance(token),
+    {
+      enabled: !!token,
+    }
+  );
+
   const terminalsQuery = useQuery(
     ['terminals', token],
     () => api.getTerminals(token),
@@ -215,6 +295,7 @@ export const HomeScreen = ({ navigation }) => {
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([
+      balanceQuery.refetch(),
       terminalsQuery.refetch(),
       transactionsQuery.refetch(),
     ]);
@@ -235,12 +316,17 @@ export const HomeScreen = ({ navigation }) => {
             <Text style={styles.headerTitle}>PayBot</Text>
             <View style={styles.statusRow}>
                <View style={styles.statusDot} />
-               <Text style={styles.headerSubtitle}>LIVE PRODUCTION</Text>
+               <Text style={styles.headerSubtitle}>BANK GRADE INFRASTRUCTURE</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.profileBtn}>
-             <MaterialIcons name="notifications-none" size={28} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.profileBtn}>
+               <MaterialIcons name="notifications-none" size={26} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.profileBtn, { marginLeft: 10 }]}>
+               <MaterialIcons name="account-circle" size={26} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.navButtonsRow}>
@@ -264,9 +350,21 @@ export const HomeScreen = ({ navigation }) => {
           />
         }
       >
+        <View style={styles.balanceContainer}>
+          <BalanceCard
+            balance={balanceQuery.data?.balance}
+            currency={balanceQuery.data?.currency || 'PHP'}
+            isLoading={balanceQuery.isLoading}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <TrustBanner />
+        </View>
+
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Active Terminals</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>POS Terminals</Text>
             <TouchableOpacity onPress={() => terminalsQuery.refetch()}>
               <MaterialIcons name="refresh" size={20} color={common.primary} />
             </TouchableOpacity>
@@ -402,13 +500,94 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.4)',
   },
+  headerRight: {
+    flexDirection: 'row',
+  },
   profileBtn: {
-     width: 44,
-     height: 44,
-     borderRadius: 22,
-     backgroundColor: 'rgba(255,255,255,0.2)',
+     width: 40,
+     height: 40,
+     borderRadius: 20,
+     backgroundColor: 'rgba(255,255,255,0.15)',
      alignItems: 'center',
      justifyContent: 'center',
+  },
+  balanceContainer: {
+    paddingHorizontal: 24,
+    marginTop: -30, // Pull up over the header
+  },
+  balanceCard: {
+    padding: 20,
+    elevation: 8,
+  },
+  balanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  balanceLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  balanceAmount: {
+    fontSize: 32,
+    fontWeight: '900',
+    marginTop: 4,
+    letterSpacing: -0.5,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  verifiedText: {
+    fontSize: 10,
+    fontWeight: '800',
+    marginLeft: 4,
+  },
+  balanceActions: {
+    flexDirection: 'row',
+    marginTop: 20,
+    gap: 10,
+  },
+  balanceActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  balanceActionText: {
+    fontSize: 12,
+    fontWeight: '800',
+    marginLeft: 6,
+  },
+  trustBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginHorizontal: 24,
+    alignItems: 'center',
+  },
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  trustText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  trustDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   section: {
     marginTop: 24,

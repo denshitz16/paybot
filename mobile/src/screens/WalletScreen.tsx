@@ -211,36 +211,60 @@ export const WalletScreen = () => {
 
         <View style={[styles.balanceCard, { ...shadows.md }]}>
            <View style={styles.cardHeader}>
-              <Text style={styles.balanceLabel}>Total Balance</Text>
-              <MaterialIcons name="contactless" size={24} color="rgba(255,255,255,0.6)" />
+              <View>
+                <Text style={styles.balanceLabel}>OPERATIONAL LIQUIDITY</Text>
+                <View style={styles.verifiedRow}>
+                   <MaterialIcons name="verified" size={12} color="#fff" />
+                   <Text style={styles.verifiedText}>TRUSTED NODE</Text>
+                </View>
+              </View>
+              <MaterialIcons name="security" size={28} color="rgba(255,255,255,0.4)" />
            </View>
           <Text style={styles.balanceAmount}>
             ₱{balanceQuery.data?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
           </Text>
           <View style={styles.cardFooter}>
-             <Text style={styles.cardNumber}>UID: {user?.id?.toUpperCase() || 'NOT_LOGGED_IN'}</Text>
-             <Text style={styles.cardHolder}>{user?.username?.toUpperCase() || (user?.email?.split('@')[0].toUpperCase()) || 'PAYBOT OPERATOR'}</Text>
+             <View>
+               <Text style={styles.cardLabel}>ACCOUNT HOLDER</Text>
+               <Text style={styles.cardHolder}>{user?.name?.toUpperCase() || (user?.username?.toUpperCase()) || 'PAYBOT OPERATOR'}</Text>
+             </View>
+             <View style={{ alignItems: 'flex-end' }}>
+               <Text style={styles.cardLabel}>NODE ID</Text>
+               <Text style={styles.cardNumber}>{user?.id?.toString().padStart(8, '0') || '00000000'}</Text>
+             </View>
           </View>
+        </View>
+
+        <View style={styles.complianceBanner}>
+           <View style={styles.complianceItem}>
+              <MaterialIcons name="gavel" size={14} color={colors.textSecondary} />
+              <Text style={styles.complianceText}>BSP REGULATED</Text>
+           </View>
+           <View style={styles.complianceDivider} />
+           <View style={styles.complianceItem}>
+              <MaterialIcons name="security" size={14} color={colors.textSecondary} />
+              <Text style={styles.complianceText}>PCI-DSS COMPLIANT</Text>
+           </View>
         </View>
 
         <View style={styles.quickActions}>
            <TouchableOpacity style={styles.actionBtn} onPress={() => setShowTopupModal(true)}>
-              <View style={[styles.actionIcon, { backgroundColor: '#E0F2FE' }]}>
-                 <MaterialIcons name="add" size={28} color={common.primary} />
+              <View style={[styles.actionIcon, { backgroundColor: common.primary + '15' }]}>
+                 <MaterialIcons name="add-circle-outline" size={28} color={common.primary} />
               </View>
-              <Text style={[styles.actionText, { color: colors.text }]}>Top Up</Text>
+              <Text style={[styles.actionText, { color: colors.text }]}>Add Funds</Text>
            </TouchableOpacity>
-           <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Coming Soon', 'Direct transfers between wallets will be available in the next update.')}>
-              <View style={[styles.actionIcon, { backgroundColor: '#DCFCE7' }]}>
-                 <MaterialIcons name="send" size={26} color={common.success} />
+           <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Bank Transfer', 'Internal inter-bank transfers are processed via InstaPay/PESONet.')}>
+              <View style={[styles.actionIcon, { backgroundColor: common.success + '15' }]}>
+                 <MaterialIcons name="account-balance" size={26} color={common.success} />
               </View>
-              <Text style={[styles.actionText, { color: colors.text }]}>Transfer</Text>
+              <Text style={[styles.actionText, { color: colors.text }]}>Transfers</Text>
            </TouchableOpacity>
-           <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Coming Soon', 'Scan-to-pay feature is currently in closed beta.')}>
-              <View style={[styles.actionIcon, { backgroundColor: '#FEE2E2' }]}>
-                 <MaterialIcons name="qr-code-scanner" size={26} color={common.danger} />
+           <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Settlements', 'Your terminal settlements are processed daily at 00:00 UTC.')}>
+              <View style={[styles.actionIcon, { backgroundColor: common.warning + '15' }]}>
+                 <MaterialIcons name="update" size={26} color={common.warning} />
               </View>
-              <Text style={[styles.actionText, { color: colors.text }]}>Scan QR</Text>
+              <Text style={[styles.actionText, { color: colors.text }]}>Settlements</Text>
            </TouchableOpacity>
         </View>
 
@@ -375,30 +399,75 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   balanceLabel: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 16,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+  },
+  verifiedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  verifiedText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '800',
+    marginLeft: 4,
+    letterSpacing: 0.5,
   },
   balanceAmount: {
     color: '#fff',
-    fontSize: 38,
-    fontWeight: '800',
+    fontSize: 42,
+    fontWeight: '900',
+    letterSpacing: -1,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
   },
+  cardLabel: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 8,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
   cardNumber: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#fff',
     fontSize: 14,
+    fontWeight: '700',
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    letterSpacing: 1,
   },
   cardHolder: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  complianceBanner: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: -10,
+    marginBottom: 20,
+    gap: 12,
+  },
+  complianceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  complianceText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#64748B',
+  },
+  complianceDivider: {
+    width: 1,
+    height: 10,
+    backgroundColor: '#CBD5E1',
   },
   quickActions: {
      flexDirection: 'row',

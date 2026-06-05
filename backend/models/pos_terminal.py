@@ -150,6 +150,7 @@ class POSTerminalTransaction(Base):
         Index("idx_pos_txn_terminal_id", "terminal_id"),
         Index("idx_pos_txn_user_id", "user_id"),
         Index("idx_pos_txn_status", "status"),
+        Index("idx_pos_txn_order_id", "order_id"),
         {"extend_existing": True},
     )
 

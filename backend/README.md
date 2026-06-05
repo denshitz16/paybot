@@ -1,89 +1,62 @@
-# PayBot Backend (Production)
+# Industrial Backend Infrastructure (Mainnet)
 
-The core API engine for the PayBot Philippines ecosystem, powered by FastAPI and PostgreSQL.
+The core institutional clearing and settlement engine for the PayBot Philippines ecosystem, engineered for high-availability mainnet operations using FastAPI and enterprise PostgreSQL.
 
-## 🚀 Features
+## 🏛️ Enterprise Specifications
 
-- **Multi-Gateway Integration**: Seamless support for Maya Business, PayMongo, and PhotonPay.
-- **POS Terminal Engine**: Backend services for managing virtual and physical POS devices.
-- **Event Bus System**: Real-time event synchronization using SSE and internal listeners.
-- **Wallet Infrastructure**: Multi-currency ledger system (PHP/USD/USDT) with atomic transactions.
-- **Security Hardened**: JWT authentication, device binding, and webhook signature verification.
+- **Institutional Clearing**: Native multi-channel settlement for Maya Business, Security Bank, and global clearing partners.
+- **Node Governance Engine**: Advanced backend protocols for managing industrial POS hardware and virtual merchant nodes.
+- **Synchronous Ledger Sync**: Proprietary event-bus architecture for real-time atomic balance updates across the grid.
+- **Multi-Currency Vaults**: Regulated PHP/USD/USDT (TRC-20) liquidity pools with automated clearing windows.
+- **Cybersecurity Core**: Hardened JWT-MFA authentication, strict hardware-level device binding, and cryptographically verified webhooks.
 
-## 📁 Project Structure
+## 📁 Mainnet Architecture
 
 ```
 backend/
-├── main.py                # FastAPI entry point & lifespan management
+├── main.py                # Grid entry point & cluster lifespan management
 ├── core/
-│   ├── config.py          # Pydantic settings & ENV management
-│   └── database.py        # SQLAlchemy async engine & session manager
-├── models/                # Database ORM models
-├── routers/               # API endpoints (versioned v1)
-├── services/              # Business logic (Payment Gateways, POS, Wallets)
-├── schemas/               # Pydantic request/response validation
-├── alembic/               # Database migrations
-└── dependencies/          # Shared dependencies (Auth, DB)
+│   ├── config.py          # Institutional settings & Vault management
+│   └── database.py        # High-concurrency async engine & pool manager
+├── models/                # Immutable Ledger & Governance models
+├── routers/               # Clearing endpoints (v1 Production)
+├── services/              # Institutional logic (Clearing, POS, Liquidity)
+├── schemas/               # Strict Pydantic protocol validation
+├── alembic/               # Schema evolution & migrations
+└── dependencies/          # Shared grid dependencies (Auth, DB)
 ```
 
-## 🛠 Setup & Deployment
+## 🛠 Deployment & Grid Ops
 
-### 1. Environment Configuration
-Create a `.env` file based on `.env.example`. For production, ensure all keys are provided:
+### 1. Institutional Configuration
+Initialize the `.env.production` vault with mainnet credentials. Ensure institutional API keys are encrypted at rest.
 
 ```env
 ENVIRONMENT=production
 MAYA_BUSINESS_MODE=live
-DATABASE_URL=postgresql+asyncpg://...
-TELEGRAM_BOT_TOKEN=...
+DATABASE_URL=postgresql+asyncpg://[Institutional-Vault]
+TELEGRAM_BOT_TOKEN=[Vault-Encrypted]
 ```
 
-### 2. Manual Setup
+### 2. Manual Cluster Initialization
 ```bash
-# Install dependencies
+# Provision industrial dependencies
 pip install -r requirements.txt
 
-# Run migrations
+# Execute schema evolution
 alembic upgrade head
 
-# Start server
-uvicorn main:app --host 0.0.0.0 --port 8000
+# Initialize clearing engine
+uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-### 3. Railway Deployment
-The backend is optimized for **Railway**. Simply push to the `main` branch to trigger the automatic deployment via GitHub Actions.
-
-### 4. Railway Monitoring
-Use Railway logs to inspect production backend behavior and troubleshoot issues in real time.
+### 3. Mainnet Grid Monitoring
+Monitor production cluster telemetry using Railway logs or integrated Grafana boards.
 
 ```bash
-export RAILWAY_PROJECT_ID="your_project_id"
-railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --follow
-railway logs --project "$RAILWAY_PROJECT_ID" --service paybot --environment production --http --lines 100
+# Stream institutional logs
+railway logs --service paybot --environment production --follow
 ```
-
-Or use the helper script:
-
-```bash
-bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --follow
-bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --latest --follow
-```
-
-To run a health check after log monitoring:
-
-```bash
-bash ../scripts/railway-monitor.sh --project "$RAILWAY_PROJECT_ID" --health "https://mayaproduction.up.railway.app/health"
-```
-
-## 🧪 Testing
-```bash
-pytest tests/ -v
-```
-
-## 🔌 API Documentation
-Once running, interactive docs are available at:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
 
 ---
-*Developed by DRL Solutions*
+*© 2024 PayBot Infrastructure Engineering*

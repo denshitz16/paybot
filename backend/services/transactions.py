@@ -58,24 +58,42 @@ class TransactionsService:
         await self.db.refresh(txn)
         return txn
 
-    async def get_or_create_wallet(self, user_id: str, currency: str = "PHP") -> Wallets:
-        """Helper to get or create a user wallet."""
-        result = await self.db.execute(
-            select(Wallets).where(Wallets.user_id == user_id, Wallets.currency == currency)
-        )
+    async def get_or_create_wallet(self, user_id: str, currency: str = "PHP", lock: bool = False) -> Wallets:
+        """Helper to get or create a user wallet with optional row locking."""
+        query = select(Wallets).where(Wallets.user_id == user_id, Wallets.currency == currency)
+        if lock:
+            query = query.with_for_update()
+
+        result = await self.db.execute(query)
         wallet = result.scalar_one_or_none()
         if wallet is None:
             now = datetime.now(timezone.utc)
             wallet = Wallets(user_id=user_id, currency=currency, balance=0.0, created_at=now, updated_at=now)
             self.db.add(wallet)
             await self.db.flush()
+            if lock:
+                # Re-fetch with lock
+                return await self.get_or_create_wallet(user_id, currency, lock=True)
         return wallet
 
     async def credit_wallet_from_transaction(self, txn: Transactions, gateway_label: str = "Gateway") -> Wallets:
-        """Credit the user's wallet based on a successful transaction."""
-        wallet = await self.get_or_create_wallet(txn.user_id, txn.currency or "PHP")
+        """Credit the user's wallet (Maximizing automated T+0/T+1 logic)."""
+        # Use row-level lock to prevent race conditions during balance update
+        wallet = await self.get_or_create_wallet(txn.user_id, txn.currency or "PHP", lock=True)
         amount = float(txn.amount or 0.0)
         balance_before = float(wallet.balance or 0.0)
+
+        # Logic for Automated Clearing:
+        # Instant methods (QR, E-Wallet) go to available_balance (T+0)
+        # Card payments often require T+1 clearing.
+        is_instant = txn.transaction_type in ["qr_code", "ewallet", "qrph_payment"]
+
+        if is_instant:
+            wallet.available_balance += amount
+        else:
+            # Card / Invoice payments go to pending (T+1)
+            wallet.pending_balance += amount
+
         wallet.balance = balance_before + amount
         wallet.updated_at = datetime.now(timezone.utc)
 

@@ -557,11 +557,20 @@ class POSTerminalService:
     async def update_transaction_status(
         self, order_id: str, status: str, failure_reason: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Update transaction status."""
+        """Update transaction status with idempotency check."""
         try:
-            transaction = await self.get_transaction_by_order_id(order_id)
+            # Use with_for_update to ensure atomic status transition
+            query = select(POSTerminalTransaction).where(POSTerminalTransaction.order_id == order_id).with_for_update()
+            result = await self.db.execute(query)
+            transaction = result.scalar_one_or_none()
+
             if not transaction:
                 return {"success": False, "error": "Transaction not found"}
+
+            # Idempotency check: if already completed, ignore
+            if transaction.status == "completed":
+                logger.info(f"Transaction {order_id} already marked as completed, skipping.")
+                return {"success": True, "message": "Already processed"}
 
             # Update status and timestamp
             transaction.status = status

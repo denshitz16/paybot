@@ -471,4 +471,3 @@ export default function Layout({ children, connected }: LayoutProps) {
     </div>
   );
 }
-}

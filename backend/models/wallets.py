@@ -12,7 +12,9 @@ class Wallets(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True, nullable=False)
     user_id = Column(String, nullable=False)
-    balance = Column(Float, nullable=False)
+    balance = Column(Float, nullable=False, default=0.0)
+    available_balance = Column(Float, nullable=False, default=0.0, server_default='0.0') # Funds ready to withdraw
+    pending_balance = Column(Float, nullable=False, default=0.0, server_default='0.0')   # Funds in clearing period
     currency = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=True)
     updated_at = Column(DateTime(timezone=True), nullable=True)

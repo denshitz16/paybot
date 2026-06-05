@@ -1,42 +1,21 @@
-# PayBot Admin Dashboard
+# Institutional Settlement Dashboard (Mainnet)
 
-The primary web interface for merchants and administrators to manage the PayBot ecosystem.
+The primary industrial-grade web interface for institutional merchants and cluster administrators to oversee the PayBot PH ecosystem.
 
-## 🚀 Features
+## 🏛️ Enterprise Specifications
 
-- **Real-time Analytics**: Live sales tracking and successful payment metrics.
-- **Wallet Management**: Visual oversight of PHP/USD balances and TRC20 addresses.
-- **Terminal Control**: Remote management and assignment of POS hardware.
-- **User Management**: Approval interface for new merchant registrations.
-- **Payment Tools**: Generate invoices, links, and QR codes directly from the browser.
+- **Mainnet Grid Telemetry**: High-fidelity live sales dynamics and successful clearing metrics.
+- **Liquidity Vault Oversight**: Visual governance of industrial PHP/USD/USDT liquidity pools.
+- **Node Infrastructure Control**: Remote hardware-level management of POS settlement nodes.
+- **Compliance Portal**: Industrial-scale merchant registration and KYB verification interface.
+- **Clearing Suite**: Professional tools for generating institutional invoices and dynamic QRPH nodes.
 
-## 🛠 Tech Stack
+## 🛠 Strategic Architecture
 
-- **React 18** with **Vite** for fast development.
-- **TypeScript** for type-safe data handling.
-- **Tailwind CSS** & **Shadcn UI** for a modern, responsive interface.
-- **Axios** for backend communication.
-
-## 📁 Project Structure
-
-- `src/pages`: Dashboard views (Transactions, Wallets, Settings, etc.)
-- `src/components`: Reusable UI elements and Layout wrapper.
-- `src/lib`: API client setup and utility functions.
-- `src/contexts`: Authentication and Theme state management.
-
-## ⚙️ Development & Build
-
-### Local Development
-```bash
-pnpm install
-pnpm run dev
-```
-
-### Production Build
-```bash
-pnpm run build
-```
-The output will be in the `dist/` directory, which is served by the backend in production mode.
+- **React 18** on **Vite**: High-performance rendering for real-time grid dynamics.
+- **TypeScript**: Industrial-grade type safety for financial data integrity.
+- **Tailwind CSS & Shadcn**: Professional, high-fidelity UI engineered for efficiency.
+- **SSE / WebSockets**: Real-time event synchronization across the cluster.
 
 ---
-*Developed by DRL Solutions*
+*© 2024 PayBot Infrastructure Group*
