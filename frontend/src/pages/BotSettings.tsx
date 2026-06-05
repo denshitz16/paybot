@@ -280,7 +280,7 @@ export default function BotSettings() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
-              <Bot className="h-8 w-8 text-brand-blue-500" />
+              <Bot className="h-8 w-8 text-brandblue-500" />
               Bot Intelligence
             </h1>
             <p className="text-muted-foreground text-sm font-medium mt-1">Configure your Telegram merchant bot and automated messages</p>
@@ -318,7 +318,7 @@ export default function BotSettings() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 <Card className="border-border/60 shadow-sm overflow-hidden">
-                  <div className="h-1.5 bg-brand-blue-500 w-full" />
+                  <div className="h-1.5 bg-brandblue-500 w-full" />
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-black uppercase tracking-tight">Merchant Bot Token</CardTitle>
                     <CardDescription className="font-medium text-xs">Register your custom bot from @BotFather to handle payments</CardDescription>
@@ -361,17 +361,17 @@ export default function BotSettings() {
                     </div>
 
                     {cloneValidated && (
-                      <div className="bg-brand-blue-50 border border-brand-blue-100 rounded-2xl p-5 animate-in zoom-in-95">
+                      <div className="bg-brandblue-50 border border-brandblue-100 rounded-2xl p-5 animate-in zoom-in-95">
                          <div className="flex items-center gap-4 mb-5">
-                            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shadow-sm text-brand-blue-500">
+                            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shadow-sm text-brandblue-500">
                               <Sparkles className="h-6 w-6" />
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-black text-brand-blue-900 uppercase">{cloneValidated.first_name}</p>
-                              <p className="text-xs font-bold text-brand-blue-600">@{cloneValidated.username}</p>
+                              <p className="text-sm font-black text-brandblue-900 uppercase">{cloneValidated.first_name}</p>
+                              <p className="text-xs font-bold text-brandblue-600">@{cloneValidated.username}</p>
                             </div>
                          </div>
-                         <Button onClick={handleCloneSave} disabled={cloneSaving} className="w-full h-12 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black rounded-xl uppercase tracking-widest shadow-lg shadow-brand-blue-500/20 transition-all">
+                         <Button onClick={handleCloneSave} disabled={cloneSaving} className="w-full h-12 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-xl uppercase tracking-widest shadow-lg shadow-brandblue-500/20 transition-all">
                            {cloneSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Webhook className="h-4 w-4 mr-2" />}
                            Complete Installation
                          </Button>
@@ -416,15 +416,15 @@ export default function BotSettings() {
                           onClick={() => setLocalConfig(prev => ({ ...prev, bot_status: s }))}
                           className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
                             localConfig.bot_status === s
-                              ? 'bg-brand-blue-50 border-brand-blue-500 shadow-sm'
-                              : 'bg-card border-border/40 hover:border-brand-blue-200'
+                              ? 'bg-brandblue-50 border-brandblue-500 shadow-sm'
+                              : 'bg-card border-border/40 hover:border-brandblue-200'
                           }`}
                         >
                           <div className="text-left">
                             <p className={`text-xs font-black uppercase tracking-widest ${localConfig.bot_status === s ? 'text-brand-blue-600' : 'text-muted-foreground'}`}>{s}</p>
                             <p className="text-[10px] text-muted-foreground font-medium">{s === 'active' ? 'Full response mode' : s === 'maintenance' ? 'Hold pattern' : 'Offline'}</p>
                           </div>
-                          {localConfig.bot_status === s && <CheckCircle className="h-4 w-4 text-brand-blue-500" />}
+                          {localConfig.bot_status === s && <CheckCircle className="h-4 w-4 text-brandblue-500" />}
                         </button>
                       ))}
                     </div>
@@ -450,11 +450,11 @@ export default function BotSettings() {
 
             {configChanged && (
               <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8">
-                <Card className="bg-brand-blue-600 border-0 shadow-2xl p-4 flex items-center gap-6 rounded-2xl min-w-[320px]">
+                <Card className="bg-brandblue-600 border-0 shadow-2xl p-4 flex items-center gap-6 rounded-2xl min-w-[320px]">
                   <p className="text-white text-xs font-black uppercase tracking-widest flex-1">Configuration has unsaved changes</p>
                   <div className="flex items-center gap-2">
                     <Button onClick={() => setLocalConfig(botConfig!)} variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 font-bold text-xs uppercase tracking-tighter h-9 px-4">Discard</Button>
-                    <Button onClick={handleSaveConfig} disabled={configSaving} className="bg-white text-brand-blue-600 hover:bg-white/90 font-black text-xs uppercase tracking-widest h-9 px-6 rounded-xl shadow-sm">
+                    <Button onClick={handleSaveConfig} disabled={configSaving} className="bg-white text-brandblue-600 hover:bg-white/90 font-black text-xs uppercase tracking-widest h-9 px-6 rounded-xl shadow-sm">
                       {configSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
                     </Button>
                   </div>
@@ -504,11 +504,11 @@ export default function BotSettings() {
                   <div className="divide-y divide-border/30">
                     {BOT_COMMANDS.map(c => (
                       <div key={c.cmd} className="flex items-center gap-4 px-6 py-4 hover:bg-muted/30 transition-colors">
-                        <div className="h-10 w-10 rounded-2xl bg-brand-blue-50 flex items-center justify-center shrink-0 border border-brand-blue-100 text-xl shadow-sm">
+                        <div className="h-10 w-10 rounded-2xl bg-brandblue-50 flex items-center justify-center shrink-0 border border-brandblue-100 text-xl shadow-sm">
                           {c.emoji}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <code className="text-sm font-black text-brand-blue-600 bg-brand-blue-50/50 px-2 py-0.5 rounded-lg tracking-tight">{c.cmd}</code>
+                          <code className="text-sm font-black text-brandblue-600 bg-brandblue-50/50 px-2 py-0.5 rounded-lg tracking-tight">{c.cmd}</code>
                           <p className="text-[11px] text-muted-foreground font-bold mt-1 uppercase tracking-tight">{c.desc}</p>
                         </div>
                         <Badge className="bg-muted text-muted-foreground border-0 font-black text-[8px] uppercase tracking-widest">{c.category}</Badge>
@@ -554,12 +554,12 @@ export default function BotSettings() {
       {showTutorial && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
            <Card className="max-w-md border-0 bg-card shadow-2xl rounded-[2.5rem] overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="bg-brand-blue-500 p-10 flex flex-col items-center text-center">
+              <div className="bg-brandblue-500 p-10 flex flex-col items-center text-center">
                  <div className="h-20 w-20 rounded-[2rem] bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 shadow-inner border border-white/20">
                    <Sparkles className="h-10 w-10 text-white animate-pulse" />
                  </div>
                  <h2 className="text-2xl font-black text-white uppercase tracking-tight">Command Your Bot</h2>
-                 <p className="text-brand-blue-50 text-sm font-bold mt-2 uppercase tracking-widest opacity-80">PayBot Intelligence Engine</p>
+                 <p className="text-brandblue-50 text-sm font-bold mt-2 uppercase tracking-widest opacity-80">PayBot Intelligence Engine</p>
               </div>
               <CardContent className="p-10 space-y-6">
                  <div className="space-y-4">
@@ -570,7 +570,7 @@ export default function BotSettings() {
                     ].map((step, i) => (
                       <div key={i} className="flex gap-4 items-start">
                          <div className="h-10 w-10 rounded-2xl bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">
-                           <step.icon className="h-5 w-5 text-brand-blue-500" />
+                           <step.icon className="h-5 w-5 text-brandblue-500" />
                          </div>
                          <div>
                            <p className="text-xs font-black uppercase tracking-widest text-foreground">{step.title}</p>
@@ -579,7 +579,7 @@ export default function BotSettings() {
                       </div>
                     ))}
                  </div>
-                 <Button onClick={dismissTutorial} className="w-full h-14 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black rounded-2xl shadow-xl shadow-brand-blue-500/20 uppercase tracking-widest transition-all active:scale-95 mt-4">
+                 <Button onClick={dismissTutorial} className="w-full h-14 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-2xl shadow-xl shadow-brandblue-500/20 uppercase tracking-widest transition-all active:scale-95 mt-4">
                     Get Started
                  </Button>
               </CardContent>

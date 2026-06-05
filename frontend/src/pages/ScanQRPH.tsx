@@ -193,12 +193,12 @@ export default function ScanQRPH() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
-              <QrCode className="h-8 w-8 text-brand-blue-500" />
+              <QrCode className="h-8 w-8 text-brandblue-500" />
               QRPH Scanner
             </h1>
             <p className="text-muted-foreground text-sm font-medium mt-1">Industrial-grade QRPH & InstaPay optical recognition</p>
           </div>
-          <Badge className="bg-brand-blue-500/10 text-brand-blue-600 border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+          <Badge className="bg-brandblue-500/10 text-brandblue-600 border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
             <Zap className="h-3 w-3 mr-1.5 inline" /> Operational
           </Badge>
         </div>
@@ -207,7 +207,7 @@ export default function ScanQRPH() {
            <div className="lg:col-span-7 space-y-6">
               {!qrData && !result && (
                 <Card className="border-border/60 shadow-sm overflow-hidden">
-                   <div className="h-1 bg-brand-blue-500 w-full" />
+                   <div className="h-1 bg-brandblue-500 w-full" />
                    <CardHeader>
                      <CardTitle className="text-lg font-black uppercase tracking-tight">Step 1 — Optical Capture</CardTitle>
                      <CardDescription className="text-xs font-medium uppercase tracking-widest">Acquire QRPH payload from device or file</CardDescription>
@@ -236,7 +236,7 @@ export default function ScanQRPH() {
                            <video ref={videoRef} className="w-full max-h-[400px] object-cover opacity-80" muted playsInline />
                            <canvas ref={canvasRef} className="hidden" />
                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <div className="border-4 border-brand-blue-500/50 rounded-[2rem] w-64 h-64 animate-pulse ring-[200px] ring-black/40" />
+                              <div className="border-4 border-brandblue-500/50 rounded-[2rem] w-64 h-64 animate-pulse ring-[200px] ring-black/40" />
                            </div>
                            <Button size="icon" variant="destructive" className="absolute top-4 right-4 h-10 w-10 rounded-full" onClick={() => { stopCamera(); setMode('idle'); }}>
                               <X className="h-5 w-5" />
@@ -312,7 +312,7 @@ export default function ScanQRPH() {
                           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Transaction Value</p>
                           <h2 className="text-4xl font-black text-foreground">{fmtCurrencyPhp(parseFloat(amount))}</h2>
                        </div>
-                       <Button onClick={reset} className="w-full h-14 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black rounded-xl uppercase tracking-widest">Continue To Ledger</Button>
+                       <Button onClick={reset} className="w-full h-14 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-xl uppercase tracking-widest">Continue To Ledger</Button>
                     </CardContent>
                  </Card>
               )}

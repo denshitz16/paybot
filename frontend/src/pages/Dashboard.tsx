@@ -108,7 +108,7 @@ const statusConfig: Record<string, { color: string; dot: string }> = {
 };
 
 const typeConfig: Record<string, { icon: ReactNode; bg: string }> = {
-  invoice:      { icon: <FileText className="h-4 w-4 text-brand-blue-500" />,   bg: 'bg-brand-blue-50' },
+  invoice:      { icon: <FileText className="h-4 w-4 text-brandblue-500" />,   bg: 'bg-brandblue-50' },
   qr_code:      { icon: <QrCode className="h-4 w-4 text-purple-500" />,     bg: 'bg-purple-50' },
   payment_link: { icon: <LinkIcon className="h-4 w-4 text-cyan-500" />,     bg: 'bg-cyan-50' },
   alipay_qr:    { icon: <QrCode className="h-4 w-4 text-rose-500" />,       bg: 'bg-rose-50' },
@@ -300,9 +300,9 @@ export default function Dashboard() {
     <Layout connected={connected}>
       <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000">
         {/* HERO BANNER */}
-        <div className="relative overflow-hidden rounded-[2.5rem] mb-10 bg-gradient-to-br from-brand-blue-600 via-brand-blue-500 to-brand-blue-700 shadow-2xl shadow-brand-blue-500/30 group">
+        <div className="relative overflow-hidden rounded-[2.5rem] mb-10 bg-gradient-to-br from-brandblue-600 via-brandblue-500 to-brandblue-700 shadow-2xl shadow-brandblue-500/30 group">
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
-          <div className="absolute -left-20 -bottom-20 h-60 w-60 rounded-full bg-brand-blue-300/20 blur-[80px] group-hover:scale-110 transition-transform duration-1000" />
+          <div className="absolute -left-20 -bottom-20 h-60 w-60 rounded-full bg-brandblue-300/20 blur-[80px] group-hover:scale-110 transition-transform duration-1000" />
 
           <div className="relative px-10 py-10 sm:py-12">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
@@ -315,7 +315,7 @@ export default function Dashboard() {
                     <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tighter">
                       {greeting.text}{userName ? `, ${userName}` : ''}
                     </h1>
-                    <p className="text-brand-blue-50/70 text-base font-semibold tracking-tight">
+                    <p className="text-brandblue-50/70 text-base font-semibold tracking-tight">
                       {APP_DESCRIPTION}
                     </p>
                   </div>
@@ -329,7 +329,7 @@ export default function Dashboard() {
                     {isSuperAdmin ? 'Full System Access' : 'Administrative Account'}
                   </Badge>
                   <Badge className="bg-white/10 text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-0">
-                    <Radio className="h-3 w-3 mr-2 inline text-brand-blue-300 animate-pulse" />
+                    <Radio className="h-3 w-3 mr-2 inline text-brandblue-300 animate-pulse" />
                     Maya Mainnet: Stable
                   </Badge>
                   {!loading && stats.total_count > 0 && (
@@ -347,14 +347,14 @@ export default function Dashboard() {
                         <p className="text-2xl sm:text-3xl font-black text-white tracking-tighter tabular-nums">
                           {loading ? '---' : stats.total_count}
                         </p>
-                        <p className="text-brand-blue-50/40 text-[9px] font-black uppercase tracking-widest mt-1">Total</p>
+                        <p className="text-brandblue-50/40 text-[9px] font-black uppercase tracking-widest mt-1">Total</p>
                       </div>
                       <div className="w-px h-12 bg-white/10 mx-1" />
                       <div className="text-center px-8 py-4">
                         <p className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tighter tabular-nums">
                           {loading ? '---' : stats.paid_count}
                         </p>
-                        <p className="text-brand-blue-50/40 text-[9px] font-black uppercase tracking-widest mt-1">Success</p>
+                        <p className="text-brandblue-50/40 text-[9px] font-black uppercase tracking-widest mt-1">Success</p>
                       </div>
                 </div>
                 <Button
@@ -373,7 +373,7 @@ export default function Dashboard() {
         {/* WALLET CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <Link to="/wallet" className="group block">
-            <Card className="h-full bg-brand-blue-500 border-0 shadow-2xl shadow-brand-blue-500/20 group-hover:-translate-y-2 transition-all duration-500 overflow-hidden relative rounded-[2rem]">
+            <Card className="h-full bg-brandblue-500 border-0 shadow-2xl shadow-brandblue-500/20 group-hover:-translate-y-2 transition-all duration-500 overflow-hidden relative rounded-[2rem]">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 group-hover:scale-150 transition-all duration-700"><Wallet className="h-32 w-32" /></div>
               <CardContent className="p-8 relative z-10">
                 <div className="flex items-center gap-3 mb-6">
@@ -403,7 +403,7 @@ export default function Dashboard() {
           </Link>
 
           <StatCard label="Settled Revenue" value={`₱${fmt(stats.paid_amount || 0)}`} sub={`From ${stats.paid_count} sales`}
-            icon={<TrendingUp className="h-6 w-6 text-brand-blue-500" />} color="text-foreground" loading={loading} />
+            icon={<TrendingUp className="h-6 w-6 text-brandblue-500" />} color="text-foreground" loading={loading} />
 
           <StatCard label="Success Index" value={`${successRate}%`} sub="Payment Reliability"
             icon={<CheckCircle className="h-6 w-6 text-emerald-500" />} color="text-emerald-500" loading={loading} />
@@ -417,7 +417,7 @@ export default function Dashboard() {
               <CardContent className="px-6 pb-8">
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { to: '/create-payment', icon: CreditCard, label: 'Charge', bg: 'bg-brand-blue-500/10', text: 'text-brand-blue-500' },
+                    { to: '/create-payment', icon: CreditCard, label: 'Charge', bg: 'bg-brandblue-500/10', text: 'text-brandblue-500' },
                     { to: '/disbursements', icon: Send, label: 'Payout', bg: 'bg-emerald-500/10', text: 'text-emerald-500' },
                     { to: '/transactions', icon: FileText, label: 'Ledger', bg: 'bg-cyan-500/10', text: 'text-cyan-500' },
                     { to: '/wallet', icon: Wallet, label: 'Vault', bg: 'bg-indigo-500/10', text: 'text-indigo-500' },
@@ -436,9 +436,9 @@ export default function Dashboard() {
             <Card className="glass-card overflow-hidden">
               <CardHeader className="pb-4 pt-8 px-8"><CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-3">Bot Control</CardTitle></CardHeader>
               <CardContent className="px-6 pb-8 space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-brand-blue-500/5 border border-brand-blue-500/10">
+                <div className="flex items-center justify-between p-4 rounded-2xl bg-brandblue-500/5 border border-brandblue-500/10">
                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-xl bg-brand-blue-500 flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-xl bg-brandblue-500 flex items-center justify-center">
                          <Bot className="h-4 w-4 text-white" />
                       </div>
                       <div>
@@ -446,7 +446,7 @@ export default function Dashboard() {
                          <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Active & Online</p>
                       </div>
                    </div>
-                   <Button size="sm" variant="outline" className="h-8 px-3 text-[9px] font-black uppercase tracking-widest border-brand-blue-500/20 text-brand-blue-500 hover:bg-brand-blue-500 hover:text-white transition-all">
+                   <Button size="sm" variant="outline" className="h-8 px-3 text-[9px] font-black uppercase tracking-widest border-brandblue-500/20 text-brandblue-500 hover:bg-brandblue-500 hover:text-white transition-all">
                       Restart
                    </Button>
                 </div>
@@ -454,7 +454,7 @@ export default function Dashboard() {
                 <div className="space-y-3">
                 {Array.isArray(recentLogs) && recentLogs.map(log => (
                   <div key={log.id} className="flex gap-4 items-center p-3 rounded-2xl bg-muted/20 border border-border/40 hover:bg-muted/30 transition-all duration-300">
-                    <MessageSquare className="h-4 w-4 text-brand-blue-500 shrink-0" />
+                    <MessageSquare className="h-4 w-4 text-brandblue-500 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-black text-foreground truncate">@{log.telegram_username} <span className="font-medium opacity-60">triggered</span> {log.command}</p>
                       <p className="text-[9px] font-black uppercase text-muted-foreground/50 mt-1 tracking-tighter">{formatTxnDate(log.created_at)}</p>
@@ -542,10 +542,10 @@ export default function Dashboard() {
                 ))}
               </div>
               <div className="mt-10 pt-10 border-t border-border/40 flex items-center gap-4">
-                <Clock className="h-6 w-6 text-brand-blue-500" />
+                <Clock className="h-6 w-6 text-brandblue-500" />
                 <div>
                   <p className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] mb-1">Last Sync</p>
-                  <p className="text-[11px] font-black text-brand-blue-500/80 tracking-widest tabular-nums">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p className="text-[11px] font-black text-brandblue-500/80 tracking-widest tabular-nums">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
               </div>
           </Card>
@@ -583,16 +583,16 @@ export default function Dashboard() {
         <div className="mt-10 p-8 rounded-[2.5rem] bg-muted/10 border border-border/20 flex flex-col md:flex-row items-center justify-between gap-8 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
           <div className="flex items-center gap-10 flex-wrap justify-center md:justify-start">
              <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-               <ShieldCheck className="h-4 w-4 text-brand-blue-500" /> PCI-DSS 4.0
+               <ShieldCheck className="h-4 w-4 text-brandblue-500" /> PCI-DSS 4.0
              </div>
              <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-               <ShieldCheck className="h-4 w-4 text-brand-blue-500" /> BSP REGULATED
+               <ShieldCheck className="h-4 w-4 text-brandblue-500" /> BSP REGULATED
              </div>
              <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-               <ShieldCheck className="h-4 w-4 text-brand-blue-500" /> AES-256 ENCRYPTED
+               <ShieldCheck className="h-4 w-4 text-brandblue-500" /> AES-256 ENCRYPTED
              </div>
              <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-               <ShieldCheck className="h-4 w-4 text-brand-blue-500" /> ISO 27001
+               <ShieldCheck className="h-4 w-4 text-brandblue-500" /> ISO 27001
              </div>
           </div>
           <div className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.1em] text-center md:text-right leading-relaxed">

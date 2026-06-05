@@ -310,7 +310,7 @@ export default function DisbursementsPage() {
                             </div>
                             <div className="flex justify-between">
                                <span className="text-[9px] font-black text-muted-foreground uppercase">Endpoint</span>
-                               <span className="text-[11px] font-black uppercase text-brand-blue-500">{dBank} · {dAccount}</span>
+                               <span className="text-[11px] font-black uppercase text-brandblue-500">{dBank} · {dAccount}</span>
                             </div>
                          </div>
                       </div>
@@ -364,7 +364,7 @@ export default function DisbursementsPage() {
                               <div className="min-w-0">
                                 <p className="text-sm font-black text-foreground truncate uppercase tracking-tight">{d.account_name}</p>
                                 <p className="text-[10px] font-black text-muted-foreground/70 flex items-center gap-2 mt-1 tracking-widest uppercase">
-                                  <span className="text-brand-blue-500">{d.bank_code}</span>
+                                  <span className="text-brandblue-500">{d.bank_code}</span>
                                   <span className="h-1 w-1 rounded-full bg-border" />
                                   <span>{d.account_number}</span>
                                 </p>

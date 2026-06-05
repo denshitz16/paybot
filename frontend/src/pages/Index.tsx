@@ -41,17 +41,17 @@ export default function LandingPage() {
   if (user) return <Navigate to="/" replace />;
 
   return (
-    <div className="min-h-screen bg-white text-[#141414] overflow-x-hidden font-sans selection:bg-brand-blue-500 selection:text-white">
+    <div className="min-h-screen bg-white text-[#141414] overflow-x-hidden font-sans selection:bg-brandblue-500 selection:text-white">
       {/* ── Navigation ── */}
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/70 backdrop-blur-xl border-b border-black/[0.03]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4 group cursor-pointer">
-             <div className="h-11 w-11 rounded-2xl bg-brand-blue-500 flex items-center justify-center shadow-lg shadow-brand-blue-500/20 group-hover:rotate-[10deg] transition-all duration-500">
+             <div className="h-11 w-11 rounded-2xl bg-brandblue-500 flex items-center justify-center shadow-lg shadow-brandblue-500/20 group-hover:rotate-[10deg] transition-all duration-500">
                 <img src="/logo.svg" alt="Logo" className="h-6 w-6" />
              </div>
              <div className="hidden sm:block">
                <h2 className="text-xl font-black text-foreground tracking-tighter uppercase leading-none">{APP_NAME}</h2>
-               <p className="text-[9px] font-black text-brand-blue-500 uppercase tracking-[0.2em] mt-1 leading-none">Philippines</p>
+               <p className="text-[9px] font-black text-brandblue-500 uppercase tracking-[0.2em] mt-1 leading-none">Philippines</p>
              </div>
           </div>
 
@@ -64,7 +64,7 @@ export default function LandingPage() {
                <Button variant="ghost" className="text-[10px] font-black uppercase tracking-[0.2em] px-6 hover:bg-muted/50 rounded-xl">Sign In</Button>
             </Link>
             <Link to="/register">
-               <Button className="bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black text-[10px] uppercase tracking-[0.2em] px-8 h-12 rounded-2xl shadow-xl shadow-brand-blue-500/30 active:scale-95 transition-all">Initialize Node</Button>
+               <Button className="bg-brandblue-500 hover:bg-brandblue-600 text-white font-black text-[10px] uppercase tracking-[0.2em] px-8 h-12 rounded-2xl shadow-xl shadow-brandblue-500/30 active:scale-95 transition-all">Initialize Node</Button>
             </Link>
           </div>
 
@@ -81,7 +81,7 @@ export default function LandingPage() {
                 <Link to="/pricing" className="text-xs font-black uppercase tracking-[0.2em]">Pricing</Link>
                 <Link to="/login" className="text-xs font-black uppercase tracking-[0.2em] text-brand-blue-600">Merchant Access</Link>
                 <Link to="/register">
-                   <Button className="w-full bg-brand-blue-500 text-white font-black rounded-2xl h-14 uppercase tracking-[0.2em] shadow-xl shadow-brand-blue-500/30">Activate Merchant Node</Button>
+                   <Button className="w-full bg-brandblue-500 text-white font-black rounded-2xl h-14 uppercase tracking-[0.2em] shadow-xl shadow-brandblue-500/30">Activate Merchant Node</Button>
                 </Link>
              </div>
           </div>

@@ -114,7 +114,7 @@ export default function CreatePayment() {
                 <div className="space-y-2">
                     <h1 className="text-3xl font-black tracking-tighter uppercase">Initialize Terminal Order</h1>
                     <p className="text-muted-foreground font-medium flex items-center gap-2">
-                       <div className="h-1.5 w-1.5 rounded-full bg-brand-blue-500 animate-pulse" />
+                       <div className="h-1.5 w-1.5 rounded-full bg-brandblue-500 animate-pulse" />
                        Deploy secure payment request to the global node
                     </p>
                 </div>
@@ -123,11 +123,11 @@ export default function CreatePayment() {
                     {/* Main Form Area */}
                     <div className="lg:col-span-7 space-y-8">
                         <Card className="glass-card overflow-hidden border-0 shadow-2xl">
-                            <div className="h-1.5 bg-gradient-to-r from-brand-blue-500 to-brand-blue-300 w-full" />
+                            <div className="h-1.5 bg-gradient-to-r from-brandblue-500 to-brandblue-300 w-full" />
                             <CardHeader className="pb-8 pt-10 px-10">
                                 <CardTitle className="text-sm font-black uppercase tracking-[0.3em] flex items-center gap-3">
-                                   <div className="h-10 w-10 rounded-xl bg-brand-blue-500/10 flex items-center justify-center border border-brand-blue-500/20 shadow-inner">
-                                      <Smartphone className="h-5 w-5 text-brand-blue-500" />
+                                   <div className="h-10 w-10 rounded-xl bg-brandblue-500/10 flex items-center justify-center border border-brandblue-500/20 shadow-inner">
+                                      <Smartphone className="h-5 w-5 text-brandblue-500" />
                                    </div>
                                    Order Configuration
                                 </CardTitle>
@@ -144,13 +144,13 @@ export default function CreatePayment() {
                                                 type="button"
                                                 onClick={() => setPaymentType(option.id)}
                                                 className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden group ${isActive
-                                                    ? 'bg-brand-blue-500/5 border-brand-blue-500 shadow-xl shadow-brand-blue-500/10 scale-[1.02]'
+                                                    ? 'bg-brandblue-500/5 border-brandblue-500 shadow-xl shadow-brandblue-500/10 scale-[1.02]'
                                                     : 'bg-muted/20 border-border/40 hover:bg-muted/40 text-muted-foreground/60'
                                                     }`}
                                             >
-                                                <Icon className={`h-8 w-8 mb-4 transition-all duration-500 ${isActive ? 'text-brand-blue-500 scale-110 rotate-[10deg]' : 'group-hover:text-foreground'}`} />
-                                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-brand-blue-600' : ''}`}>{option.label}</span>
-                                                {isActive && <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-brand-blue-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]" />}
+                                                <Icon className={`h-8 w-8 mb-4 transition-all duration-500 ${isActive ? 'text-brandblue-500 scale-110 rotate-[10deg]' : 'group-hover:text-foreground'}`} />
+                                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-brandblue-600' : ''}`}>{option.label}</span>
+                                                {isActive && <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-brandblue-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]" />}
                                             </button>
                                         );
                                     })}
@@ -160,7 +160,7 @@ export default function CreatePayment() {
                                     <div className="space-y-3">
                                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 text-muted-foreground/70">Transaction Volume (PHP)</Label>
                                         <div className="relative group">
-                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-brand-blue-500 group-focus-within:scale-110 transition-transform">₱</div>
+                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-brandblue-500 group-focus-within:scale-110 transition-transform">₱</div>
                                             <Input
                                                 type="number"
                                                 step="0.01"
@@ -212,7 +212,7 @@ export default function CreatePayment() {
                                         <Button
                                             type="submit"
                                             disabled={loading}
-                                            className="w-full h-16 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black text-xs rounded-[1.5rem] shadow-[0_15px_40px_rgba(14,165,233,0.3)] transition-all active:scale-[0.96] uppercase tracking-[0.3em] group"
+                                            className="w-full h-16 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black text-xs rounded-[1.5rem] shadow-[0_15px_40px_rgba(14,165,233,0.3)] transition-all active:scale-[0.96] uppercase tracking-[0.3em] group"
                                         >
                                             {loading ? (
                                                 <div className="flex items-center gap-3">
@@ -235,8 +235,8 @@ export default function CreatePayment() {
                         <Card className="bg-muted/20 border-dashed border-border/60 rounded-3xl group cursor-default overflow-hidden relative">
                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform"><ShieldCheck className="h-20 w-20" /></div>
                             <CardContent className="p-8 flex items-start gap-6 relative z-10">
-                                <div className="h-12 w-12 rounded-2xl bg-brand-blue-500/10 flex items-center justify-center shrink-0 border border-brand-blue-500/20">
-                                    <Info className="h-6 w-6 text-brand-blue-500" />
+                                <div className="h-12 w-12 rounded-2xl bg-brandblue-500/10 flex items-center justify-center shrink-0 border border-brandblue-500/20">
+                                    <Info className="h-6 w-6 text-brandblue-500" />
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-foreground mb-2 uppercase tracking-[0.3em]">Validation Protocol</p>
@@ -297,7 +297,7 @@ export default function CreatePayment() {
                                                             {key.replace(/_/g, ' ')}
                                                             <button
                                                                 onClick={() => copyToClipboard(String(value))}
-                                                                className="hover:text-brand-blue-500 transition-all flex items-center gap-1.5 group"
+                                                                className="hover:text-brandblue-500 transition-all flex items-center gap-1.5 group"
                                                             >
                                                                 <Copy className="h-3 w-3 group-active:scale-90" />
                                                                 <span className="group-hover:translate-x-1 transition-transform">FETCH STRING</span>
@@ -325,7 +325,7 @@ export default function CreatePayment() {
                                                                     href={value as string}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="h-10 w-10 rounded-xl bg-brand-blue-500/10 flex items-center justify-center text-brand-blue-500 hover:bg-brand-blue-500/20 transition-all shrink-0 border border-brand-blue-500/10 active:scale-90"
+                                                                    className="h-10 w-10 rounded-xl bg-brandblue-500/10 flex items-center justify-center text-brandblue-500 hover:bg-brandblue-500/20 transition-all shrink-0 border border-brandblue-500/10 active:scale-90"
                                                                 >
                                                                     <ExternalLink className="h-4 w-4" />
                                                                 </a>

@@ -113,7 +113,7 @@ const txnTypeConfig: Record<string, { label: string; color: string; icon: ReactN
   receive: { label: 'Received', color: 'text-emerald-500', icon: <ArrowDownToLine className="h-4 w-4" />, sign: '+', bg: 'bg-emerald-50' },
   crypto_topup: { label: 'USDT In', color: 'text-teal-500', icon: <Bitcoin className="h-4 w-4" />, sign: '+', bg: 'bg-teal-50' },
   usdt_send: { label: 'USDT Out', color: 'text-rose-500', icon: <Send className="h-4 w-4" />, sign: '-', bg: 'bg-rose-50' },
-  admin_credit: { label: 'Correction', color: 'text-brand-blue-500', icon: <Zap className="h-4 w-4" />, sign: '+', bg: 'bg-brand-blue-50' },
+  admin_credit: { label: 'Correction', color: 'text-brandblue-500', icon: <Zap className="h-4 w-4" />, sign: '+', bg: 'bg-brandblue-50' },
   admin_debit: { label: 'Correction', color: 'text-rose-500', icon: <Zap className="h-4 w-4" />, sign: '-', bg: 'bg-rose-50' },
 };
 
@@ -244,7 +244,7 @@ export default function Wallet() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-             <Badge className="bg-brand-blue-500/10 text-brand-blue-600 border-0 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+             <Badge className="bg-brandblue-500/10 text-brandblue-600 border-0 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
                <ShieldAlert className="h-3.5 w-3.5 mr-2 inline" /> Verified Node
              </Badge>
           </div>
@@ -253,11 +253,11 @@ export default function Wallet() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left Column: Balances & Actions */}
           <div className="lg:col-span-4 space-y-8">
-            <Card className="bg-brand-blue-600 border-0 shadow-2xl shadow-brand-blue-500/30 overflow-hidden relative rounded-[2.5rem] group">
+            <Card className="bg-brandblue-600 border-0 shadow-2xl shadow-brandblue-500/30 overflow-hidden relative rounded-[2.5rem] group">
                <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"><PhilippinePeso className="h-40 w-40" /></div>
                <CardContent className="p-10 relative z-10">
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-[10px] font-black text-brand-blue-100 uppercase tracking-[0.3em]">Institutional Liquidity</p>
+                    <p className="text-[10px] font-black text-brandblue-100 uppercase tracking-[0.3em]">Institutional Liquidity</p>
                     {phpBalance && phpBalance.pending_balance > 0 && (
                         <Badge className="bg-amber-400 text-amber-950 border-0 font-black text-[8px] uppercase px-2 py-0.5 animate-pulse">Clearing Active</Badge>
                     )}
@@ -265,14 +265,14 @@ export default function Wallet() {
                   <h2 className="text-5xl font-black text-white tracking-tighter mb-4 tabular-nums">
                     {loading ? '₱ --.--' : `₱${fmt(phpBalance?.available_balance)}`}
                   </h2>
-                  <div className="flex items-center gap-4 mb-10 text-brand-blue-100/60 font-bold text-[10px] uppercase tracking-widest">
+                  <div className="flex items-center gap-4 mb-10 text-brandblue-100/60 font-bold text-[10px] uppercase tracking-widest">
                      <div className="flex items-center gap-1.5"><div className="h-1 w-1 rounded-full bg-emerald-400" /> Available</div>
                      {phpBalance && phpBalance.pending_balance > 0 && (
                          <div className="flex items-center gap-1.5"><div className="h-1 w-1 rounded-full bg-amber-400" /> ₱{fmt(phpBalance.pending_balance)} Pending (T+1)</div>
                      )}
                   </div>
                   <div className="flex gap-3">
-                    <Button onClick={() => setTopupDialogOpen(true)} className="flex-1 bg-white text-brand-blue-600 hover:bg-brand-blue-50 font-black rounded-2xl h-14 uppercase text-[10px] tracking-widest shadow-xl shadow-black/10">
+                    <Button onClick={() => setTopupDialogOpen(true)} className="flex-1 bg-white text-brandblue-600 hover:bg-brandblue-50 font-black rounded-2xl h-14 uppercase text-[10px] tracking-widest shadow-xl shadow-black/10">
                       <PlusCircle className="h-4 w-4 mr-2" /> Top Up
                     </Button>
                     <Button onClick={() => setActiveTab('withdraw')} variant="outline" className="flex-1 border-white/30 text-white hover:bg-white/10 font-black rounded-2xl h-14 uppercase text-[10px] tracking-widest">
@@ -326,7 +326,7 @@ export default function Wallet() {
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <div className="flex overflow-x-auto custom-scrollbar bg-muted/30">
                     <TabsList className="bg-transparent border-b border-border/30 h-16 p-0 rounded-none justify-start px-8 gap-10 min-w-max">
-                      <TabsTrigger value="withdraw" className="h-full bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-brand-blue-500 rounded-none font-black text-[10px] uppercase tracking-[0.3em] px-0 transition-all">Withdrawal</TabsTrigger>
+                      <TabsTrigger value="withdraw" className="h-full bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-brandblue-500 rounded-none font-black text-[10px] uppercase tracking-[0.3em] px-0 transition-all">Withdrawal</TabsTrigger>
                       <TabsTrigger value="send-usd" className="h-full bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-emerald-500 rounded-none font-black text-[10px] uppercase tracking-[0.3em] px-0 transition-all">Inter-Vault</TabsTrigger>
                       <TabsTrigger value="crypto" className="h-full bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-teal-500 rounded-none font-black text-[10px] uppercase tracking-[0.3em] px-0 transition-all">Stablecoin In</TabsTrigger>
                     </TabsList>
@@ -338,7 +338,7 @@ export default function Wallet() {
                         <div className="space-y-3">
                           <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Transfer Amount (PHP)</Label>
                           <div className="relative group">
-                            <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-brand-blue-500 text-xl">₱</span>
+                            <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-brandblue-500 text-xl">₱</span>
                             <Input type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} className="pl-10 h-16 bg-muted/20 border-border/50 text-2xl font-black rounded-2xl tabular-nums focus:ring-primary/20 transition-all" placeholder="0.00" />
                           </div>
                         </div>
@@ -358,7 +358,7 @@ export default function Wallet() {
                           <Input value={withdrawNote} onChange={e => setWithdrawNote(e.target.value)} className="h-16 bg-muted/20 border-border/50 text-sm font-black rounded-2xl px-6 uppercase tracking-tight" placeholder="Private internal note" />
                         </div>
                       </div>
-                      <Button onClick={handleWithdraw} disabled={withdrawLoading} className="w-full h-16 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black rounded-[1.5rem] shadow-2xl shadow-brand-blue-500/30 uppercase tracking-widest transition-all active:scale-95 text-xs">
+                      <Button onClick={handleWithdraw} disabled={withdrawLoading} className="w-full h-16 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-[1.5rem] shadow-2xl shadow-brandblue-500/30 uppercase tracking-widest transition-all active:scale-95 text-xs">
                         {withdrawLoading ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : <ArrowUpFromLine className="h-6 w-6 mr-3" />} Authorize Payout
                       </Button>
                     </TabsContent>
@@ -413,7 +413,7 @@ export default function Wallet() {
              <Card className="glass-card overflow-hidden">
                 <CardHeader className="bg-muted/10 border-b border-border/40 flex flex-row items-center justify-between py-6 px-8">
                   <div className="flex items-center gap-3">
-                    <History className="h-4 w-4 text-brand-blue-500" />
+                    <History className="h-4 w-4 text-brandblue-500" />
                     <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em]">Ledger Stream</CardTitle>
                   </div>
                   <Badge className="bg-muted/50 text-muted-foreground font-black text-[9px] uppercase tracking-widest border-0 px-3 py-1 rounded-full">{transactions.length} records</Badge>
@@ -421,7 +421,7 @@ export default function Wallet() {
                 <CardContent className="p-0 max-h-[600px] overflow-y-auto custom-scrollbar">
                    {loading ? (
                      <div className="py-32 text-center flex flex-col items-center gap-4">
-                       <Loader2 className="h-10 w-10 animate-spin text-brand-blue-500 opacity-20" />
+                       <Loader2 className="h-10 w-10 animate-spin text-brandblue-500 opacity-20" />
                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest animate-pulse">Parsing ledger history...</p>
                      </div>
                    ) : transactions.length === 0 ? (
@@ -470,20 +470,20 @@ export default function Wallet() {
 
       <Dialog open={topupDialogOpen} onOpenChange={setTopupDialogOpen}>
          <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-0 bg-card shadow-2xl">
-            <div className="bg-brand-blue-500 p-8 text-center">
+            <div className="bg-brandblue-500 p-8 text-center">
                <div className="h-16 w-16 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center mx-auto mb-4 border border-white/20"><Building2 className="h-8 w-8 text-white" /></div>
                <h3 className="text-xl font-black text-white uppercase tracking-tight">Manual Top-Up</h3>
-               <p className="text-brand-blue-50 text-[10px] font-bold uppercase tracking-widest mt-1">Local Bank Transfer Instructions</p>
+               <p className="text-brandblue-50 text-[10px] font-bold uppercase tracking-widest mt-1">Local Bank Transfer Instructions</p>
             </div>
             <div className="p-8 space-y-6">
                <div className="space-y-4">
                   {TOPUP_BANKS.map(b => (
                     <div key={b.number} className="bg-muted/30 border border-border/40 rounded-2xl p-4 flex flex-col gap-1 hover:bg-muted/50 transition-colors">
-                       <p className="text-[9px] font-black text-brand-blue-500 uppercase tracking-widest">{b.bank}</p>
+                       <p className="text-[9px] font-black text-brandblue-500 uppercase tracking-widest">{b.bank}</p>
                        <p className="text-xs font-black text-foreground uppercase">{b.name}</p>
                        <div className="flex items-center justify-between">
                          <code className="text-sm font-black text-foreground tracking-tighter">{b.number}</code>
-                         <button onClick={() => { navigator.clipboard.writeText(b.number); toast.success('Account number copied'); }} className="text-muted-foreground hover:text-brand-blue-500"><Copy className="h-3.5 w-3.5" /></button>
+                         <button onClick={() => { navigator.clipboard.writeText(b.number); toast.success('Account number copied'); }} className="text-muted-foreground hover:text-brandblue-500"><Copy className="h-3.5 w-3.5" /></button>
                        </div>
                     </div>
                   ))}
@@ -492,7 +492,7 @@ export default function Wallet() {
                   <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                   <p className="text-[10px] font-bold text-amber-700 uppercase leading-relaxed">After transfer, please send a screenshot of the receipt to @PayBotPH_Bot on Telegram for manual verification.</p>
                </div>
-               <Button onClick={() => setTopupDialogOpen(false)} className="w-full h-12 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black rounded-xl uppercase tracking-widest">Got it</Button>
+               <Button onClick={() => setTopupDialogOpen(false)} className="w-full h-12 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-xl uppercase tracking-widest">Got it</Button>
             </div>
          </DialogContent>
       </Dialog>

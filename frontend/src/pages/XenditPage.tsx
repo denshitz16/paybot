@@ -43,7 +43,7 @@ export default function XenditPage() {
             <h1 className="text-3xl font-black text-foreground tracking-tight">Gateway Infrastructure</h1>
             <p className="text-muted-foreground text-sm font-medium mt-1">Direct management of Maya Business cloud connectivity</p>
           </div>
-          <Badge className="bg-brand-blue-500/10 text-brand-blue-600 border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+          <Badge className="bg-brandblue-500/10 text-brandblue-600 border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
             <Zap className="h-3 w-3 mr-1.5 inline" /> Operational
           </Badge>
         </div>
@@ -51,12 +51,12 @@ export default function XenditPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* Live Liquidity Card */}
-            <Card className="bg-brand-blue-600 border-0 shadow-2xl rounded-[2.5rem] overflow-hidden relative">
+            <Card className="bg-brandblue-600 border-0 shadow-2xl rounded-[2.5rem] overflow-hidden relative">
                <div className="absolute -right-10 -bottom-10 opacity-10"><Wallet className="h-48 w-48 text-white" /></div>
                <CardContent className="p-10 relative z-10">
                   <div className="flex items-center justify-between mb-8">
                     <div>
-                      <p className="text-[10px] font-black text-brand-blue-100 uppercase tracking-[0.2em] mb-2">Live Gateway Liquidity</p>
+                      <p className="text-[10px] font-black text-brandblue-100 uppercase tracking-[0.2em] mb-2">Live Gateway Liquidity</p>
                       <h2 className="text-5xl font-black text-white tracking-tighter">
                         {loading ? '₱ --.--' : fmtCurrencyPhp(balance)}
                       </h2>
@@ -66,7 +66,7 @@ export default function XenditPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    <Button onClick={fetchBalance} className="bg-white text-brand-blue-600 hover:bg-brand-blue-50 font-black rounded-xl h-12 uppercase text-[10px] tracking-widest px-8">
+                    <Button onClick={fetchBalance} className="bg-white text-brandblue-600 hover:bg-brandblue-50 font-black rounded-xl h-12 uppercase text-[10px] tracking-widest px-8">
                       <RefreshCw className="h-4 w-4 mr-2" /> Force Sync
                     </Button>
                     <div className="flex items-center gap-2 px-4 py-2 bg-black/10 rounded-xl backdrop-blur-sm border border-white/5">
@@ -98,7 +98,7 @@ export default function XenditPage() {
                        </thead>
                        <tbody className="divide-y divide-border/30">
                           {[
-                            { group: 'E-Invoices / Cards', rate: '2.8%', fixed: '₱0.00', icon: FileText, color: 'text-brand-blue-500' },
+                            { group: 'E-Invoices / Cards', rate: '2.8%', fixed: '₱0.00', icon: FileText, color: 'text-brandblue-500' },
                             { group: 'InstaPay / QRPH', rate: '0.7%', fixed: '₱0.00', icon: QrCode, color: 'text-purple-500' },
                             { group: 'E-Wallets (GCash/Maya)', rate: '2.0%', fixed: '₱0.00', icon: Smartphone, color: 'text-orange-500' },
                             { group: 'Virtual Accounts', rate: '0.0%', fixed: '₱25.00', icon: Building2, color: 'text-emerald-500' },
@@ -111,7 +111,7 @@ export default function XenditPage() {
                                    <span className="text-xs font-bold text-foreground">{row.group}</span>
                                  </div>
                                </td>
-                               <td className="px-6 py-4 text-xs font-black text-brand-blue-600">{row.rate}</td>
+                               <td className="px-6 py-4 text-xs font-black text-brandblue-600">{row.rate}</td>
                                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{row.fixed}</td>
                             </tr>
                           ))}
@@ -129,7 +129,7 @@ export default function XenditPage() {
                    {[
                      { label: 'API Endpoint', status: 'Optimal', color: 'bg-emerald-500' },
                      { label: 'Webhook Relay', status: 'Healthy', color: 'bg-emerald-500' },
-                     { label: 'Settlement Engine', status: 'Standby', color: 'bg-brand-blue-500' },
+                     { label: 'Settlement Engine', status: 'Standby', color: 'bg-brandblue-500' },
                    ].map(item => (
                      <div key={item.label} className="flex items-center justify-between">
                         <span className="text-[11px] font-bold text-foreground/80">{item.label}</span>
@@ -146,7 +146,7 @@ export default function XenditPage() {
                 <CardHeader><CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Quick Metrics</CardTitle></CardHeader>
                 <CardContent className="space-y-6">
                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-card flex items-center justify-center border border-border/60 text-brand-blue-500 shadow-sm"><BarChart3 className="h-5 w-5" /></div>
+                      <div className="h-10 w-10 rounded-xl bg-card flex items-center justify-center border border-border/60 text-brandblue-500 shadow-sm"><BarChart3 className="h-5 w-5" /></div>
                       <div>
                         <p className="text-[10px] font-black text-muted-foreground uppercase">MTD Volume</p>
                         <p className="text-sm font-black text-foreground">₱ 142,500.00</p>

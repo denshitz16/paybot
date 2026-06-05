@@ -168,23 +168,26 @@
 .modern-table {
   @apply w-full text-left border-separate border-spacing-0;
 }
-.modern-table th {
-  @apply px-4 py-3 bg-muted/30 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground border-b border-border/50 first:rounded-tl-xl last:rounded-tr-xl;
-  font-family: var(--font-display);
-}
-.modern-table td {
-  @apply px-4 py-4 border-b border-border/30 text-sm align-middle;
-}
-.modern-table tr:last-child td {
-  @apply border-b-0;
-}
-.modern-table tr {
-  @apply transition-colors hover:bg-muted/10;
-}
+@layer components {
+  .modern-table th {
+    @apply px-4 py-3 bg-muted/30 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground border-b border-border/50 first:rounded-tl-xl last:rounded-tr-xl;
+    font-family: var(--font-display);
+  }
+  .modern-table td {
+    @apply px-4 py-4 border-b border-border/30 text-sm align-middle;
+  }
+  .modern-table tr:last-child td {
+    @apply border-b-0;
+  }
+  .modern-table tr {
+    @apply transition-colors hover:bg-muted/10;
+  }
 
-/* Animated Gradient Text */
-.text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-blue-500 to-brand-blue-300 animate-gradient;
+  /* Animated Gradient Text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent animate-gradient;
+    background-image: linear-gradient(to right, hsl(var(--brand-blue-500)), hsl(var(--brand-blue-300)));
+  }
 }
 
 @keyframes gradient {

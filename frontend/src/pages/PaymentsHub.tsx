@@ -122,7 +122,7 @@ export default function PaymentsHub() {
             <p className="text-muted-foreground text-sm font-medium mt-1">Generate multi-channel payment orders for your customers</p>
           </div>
           <div className="flex items-center gap-3">
-             <Badge className="bg-brand-blue-500/10 text-brand-blue-600 border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+             <Badge className="bg-brandblue-500/10 text-brandblue-600 border-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
                <Zap className="h-3 w-3 mr-1.5 inline" /> Live Gateway
              </Badge>
           </div>
@@ -144,8 +144,8 @@ export default function PaymentsHub() {
                         onClick={() => { setTab(m.id); setResult(null); }}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all duration-200 border-2 ${
                           isActive
-                            ? 'bg-brand-blue-500 border-brand-blue-500 text-white shadow-md shadow-brand-blue-500/20 scale-[1.02]'
-                            : 'bg-card border-border/60 text-muted-foreground hover:border-brand-blue-500/40 hover:bg-brand-blue-50/50'
+                            ? 'bg-brandblue-500 border-brandblue-500 text-white shadow-md shadow-brandblue-500/20 scale-[1.02]'
+                            : 'bg-card border-border/60 text-muted-foreground hover:border-brandblue-500/40 hover:bg-brandblue-50/50'
                         }`}
                       >
                         <Icon className="h-4 w-4" />
@@ -161,7 +161,7 @@ export default function PaymentsHub() {
                   <div className="space-y-2">
                     <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Payment Amount (PHP)</Label>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-muted-foreground group-focus-within:text-brand-blue-500 transition-colors">₱</div>
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-muted-foreground group-focus-within:text-brandblue-500 transition-colors">₱</div>
                       <Input
                         type="number"
                         step="0.01"
@@ -169,7 +169,7 @@ export default function PaymentsHub() {
                         placeholder="0.00"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="pl-10 h-16 text-2xl font-black bg-muted/20 border-border/60 focus-visible:ring-brand-blue-500/20 transition-all"
+                        className="pl-10 h-16 text-2xl font-black bg-muted/20 border-border/60 focus-visible:ring-brandblue-500/20 transition-all"
                         required
                       />
                     </div>
@@ -181,7 +181,7 @@ export default function PaymentsHub() {
                       placeholder="What is the customer paying for?"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="bg-muted/20 border-border/60 min-h-[100px] resize-none focus-visible:ring-brand-blue-500/20 text-sm font-medium"
+                      className="bg-muted/20 border-border/60 min-h-[100px] resize-none focus-visible:ring-brandblue-500/20 text-sm font-medium"
                     />
                   </div>
 
@@ -236,7 +236,7 @@ export default function PaymentsHub() {
                   <Button
                     onClick={handleCreate}
                     disabled={loading}
-                    className="w-full h-16 bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-brand-blue-500/20 transition-all active:scale-[0.98]"
+                    className="w-full h-16 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-brandblue-500/20 transition-all active:scale-[0.98]"
                   >
                     {loading ? (
                       <div className="flex items-center gap-3">
@@ -255,8 +255,8 @@ export default function PaymentsHub() {
             </Card>
 
             <div className="bg-muted/20 rounded-2xl p-5 border border-dashed border-border/60 flex items-start gap-4">
-              <div className="h-10 w-10 rounded-full bg-brand-blue-50 flex items-center justify-center shrink-0 shadow-sm">
-                <Info className="h-5 w-5 text-brand-blue-500" />
+              <div className="h-10 w-10 rounded-full bg-brandblue-50 flex items-center justify-center shrink-0 shadow-sm">
+                <Info className="h-5 w-5 text-brandblue-500" />
               </div>
               <div>
                 <p className="text-[10px] font-black text-foreground uppercase tracking-widest mb-1">Payment Security</p>
@@ -318,7 +318,7 @@ export default function PaymentsHub() {
                               <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                 {key.replace(/_/g, ' ')}
                               </Label>
-                              <button onClick={() => copy(String(value))} className="text-[10px] font-black text-brand-blue-500 hover:text-brand-blue-600 transition-colors uppercase tracking-widest flex items-center gap-1">
+                              <button onClick={() => copy(String(value))} className="text-[10px] font-black text-brandblue-500 hover:text-brandblue-600 transition-colors uppercase tracking-widest flex items-center gap-1">
                                 <Copy className="h-3 w-3" /> Copy
                               </button>
                             </div>
@@ -330,7 +330,7 @@ export default function PaymentsHub() {
                                 <code className="text-xs text-foreground font-black truncate flex-1 leading-none tabular-nums">{String(value)}</code>
                               )}
                               {isUrl && (
-                                <a href={value as string} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-xl bg-brand-blue-500 flex items-center justify-center text-white hover:bg-brand-blue-600 transition-all shrink-0">
+                                <a href={value as string} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-xl bg-brandblue-500 flex items-center justify-center text-white hover:bg-brandblue-600 transition-all shrink-0">
                                   <ExternalLink className="h-4 w-4" />
                                 </a>
                               )}
@@ -343,7 +343,7 @@ export default function PaymentsHub() {
 
                   <div className="flex flex-col gap-4">
                     <Button
-                      className="bg-brand-blue-500 hover:bg-brand-blue-600 text-white font-black h-16 rounded-2xl group shadow-lg shadow-brand-blue-500/20 active:scale-95 transition-all"
+                      className="bg-brandblue-500 hover:bg-brandblue-600 text-white font-black h-16 rounded-2xl group shadow-lg shadow-brandblue-500/20 active:scale-[0.95] transition-all"
                       onClick={() => {
                         const url = result.invoice_url || result.payment_link_url || result.checkout_url || result.payment_url;
                         if (url) window.open(url as string, '_blank');
