@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.database import get_db
+from core.constants import PAYBOT_BANK_ACCOUNTS
 from dependencies.auth import get_current_user
 from models.bot_logs import Bot_logs
 from models.transactions import Transactions
@@ -30,18 +31,20 @@ from services.paymongo_service import PayMongoService
 from services.photonpay_service import PhotonPayService
 from services.bot_settings import Bot_settingsService
 from services.pos_terminal import POSTerminalService
+from services.wallets import WalletsService
+from services.app_settings import get_usdt_php_rate, get_usdt_trc20_address
 from models.topup_requests import TopupRequest
 from models.bank_deposit_requests import BankDepositRequest
 from models.usdt_send_requests import UsdtSendRequest
 from models.admin_users import AdminUser
 from models.custom_roles import CustomRole
-from services.wallets import WalletsService
-from routers.app_settings import get_usdt_php_rate, get_usdt_trc20_address
-from routers.bank_deposit import _PAYBOT_ACCOUNTS
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/telegram", tags=["telegram"])
+
+# Alias for backward compatibility
+_PAYBOT_ACCOUNTS = PAYBOT_BANK_ACCOUNTS
 
 # Transaction types that credit / debit the USD wallet (keep in sync with wallet.py)
 _USD_CREDIT_TYPES = ("crypto_topup", "usd_receive", "admin_credit")

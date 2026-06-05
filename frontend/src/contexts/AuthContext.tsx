@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { authApi, TelegramWidgetUser } from '../lib/auth';
+import { useToast } from '../components/ui/use-toast';
 
 interface UserPermissions {
   is_super_admin: boolean;
@@ -58,6 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const checkAuthStatus = useCallback(async () => {
     try {
@@ -66,12 +68,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData = await authApi.getCurrentUser();
       setUser(userData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      toast({
+        title: 'Authentication Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const login = useCallback(async (userId?: string, password?: string) => {
     try {
@@ -84,30 +92,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       await authApi.login(userId, password);
       await checkAuthStatus();
+      toast({
+        title: 'Success',
+        description: 'Login successful',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+      toast({
+        title: 'Login Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
-  }, [checkAuthStatus]);
+  }, [checkAuthStatus, toast]);
 
   const loginWithTelegram = useCallback(async (telegramUser: TelegramWidgetUser, cfTurnstileToken?: string | null) => {
     try {
       setError(null);
       await authApi.loginWithTelegram(telegramUser, cfTurnstileToken);
       await checkAuthStatus();
+      toast({
+        title: 'Success',
+        description: 'Telegram login successful',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Telegram login failed');
+      const errorMessage = err instanceof Error ? err.message : 'Telegram login failed';
+      setError(errorMessage);
+      toast({
+        title: 'Telegram Login Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
-  }, [checkAuthStatus]);
+  }, [checkAuthStatus, toast]);
 
   const logout = useCallback(async () => {
     try {
       setError(null);
       await authApi.logout();
       setUser(null);
+      toast({
+        title: 'Success',
+        description: 'Logged out successfully',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Logout failed');
+      const errorMessage = err instanceof Error ? err.message : 'Logout failed';
+      setError(errorMessage);
+      toast({
+        title: 'Logout Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     checkAuthStatus();

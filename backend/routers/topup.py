@@ -15,7 +15,7 @@ from models.wallet_transactions import Wallet_transactions
 from schemas.auth import UserResponse
 from services.event_bus import payment_event_bus
 from services.wallets import WalletsService
-from routers.app_settings import get_usdt_php_rate
+from services.app_settings import get_usdt_php_rate
 
 logger = logging.getLogger(__name__)
 

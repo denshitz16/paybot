@@ -101,13 +101,18 @@ class PhotonPayService:
                 self.proxy_url = getattr(_settings, "photonpay_proxy_url", "").strip()
                 # Fall back to general PROXY_HOST / PROXY_PORT when no service-specific URL is set.
                 if not self.proxy_url:
-                    proxy_host = getattr(_settings, "proxy_host", "").strip()
-                    proxy_port = int(getattr(_settings, "proxy_port", 0))
-                    if proxy_host:
-                        port = proxy_port if proxy_port > 0 else _DEFAULT_PROXY_PORT
-                        self.proxy_url = f"http://{proxy_host}:{port}"
-        except Exception:
-            pass
+                    try:
+                        proxy_host = getattr(_settings, "proxy_host", "").strip()
+                        proxy_port = int(getattr(_settings, "proxy_port", 0))
+                        if proxy_host:
+                            port = proxy_port if proxy_port > 0 else _DEFAULT_PROXY_PORT
+                            self.proxy_url = f"http://{proxy_host}:{port}"
+                    except (AttributeError, ValueError, TypeError) as e:
+                        logger.debug(f"Could not configure proxy from settings: {e}")
+        except ImportError as e:
+            logger.warning(f"Could not import core.config for proxy configuration: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error configuring PhotonPay proxy: {e}", exc_info=True)
         # Validate that the proxy URL has a scheme that httpx recognises.
         # httpx supports http://, https://, and socks5://.  An unschemed value
         # like "host:port" or "tcp://host:port" causes httpx to raise "Unknown
@@ -131,7 +136,11 @@ class PhotonPayService:
         # values and OS env vars are treated identically.
         try:
             from core.config import settings as _cfg
-        except Exception:
+        except ImportError as e:
+            logger.warning(f"Could not import core.config settings: {e}. Using environment variables only.")
+            _cfg = None  # type: ignore[assignment]
+        except Exception as e:
+            logger.error(f"Unexpected error importing core.config: {e}", exc_info=True)
             _cfg = None  # type: ignore[assignment]
 
         def _cfg_get(env_key: str, default: str = "") -> str:

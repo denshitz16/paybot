@@ -56,22 +56,27 @@ class EventBus:
             if loop.is_running():
                 # We are in an async context, but called sync publish.
                 # Schedule emit() task to ensure sync handlers are run.
-                loop.create_task(cls.emit(event_type, data))
+                task = loop.create_task(cls.emit(event_type, data))
+                task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
                 return
         except RuntimeError:
             # No running loop in this thread
             try:
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
-                    asyncio.run_coroutine_threadsafe(cls.emit(event_type, data), loop)
-                    return
-            except Exception:
-                pass
+                    future = asyncio.run_coroutine_threadsafe(cls.emit(event_type, data), loop)
+                    try:
+                        future.result(timeout=5)  # Wait up to 5 seconds for the coroutine to complete
+                        return
+                    except Exception as e:
+                        logger.error(f"EventBus.publish failed to execute async handler for {event_type}: {e}")
+            except Exception as e:
+                logger.error(f"EventBus.publish failed to get event loop: {e}")
 
         # Fallback: manually append to events if async routing failed
         data["timestamp"] = time.time()
         cls._events.append(data)
-        logger.warning(f"EventBus.publish fallback used for {event_type} - sync handlers skipped")
+        logger.warning(f"EventBus.publish fallback used for {event_type} - event queued for async processing")
 
     @classmethod
     async def _notify_signal(cls):

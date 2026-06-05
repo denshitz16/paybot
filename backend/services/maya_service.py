@@ -73,9 +73,6 @@ class MayaService:
         amount_value = self._amount_value(amount)
         redirect_base = settings.backend_url.rstrip("/")
 
-        # T0 Settlement Hint: In some Maya integrations, passing certain metadata
-        # or using specific items helps with settlement routing, though it's
-        # mostly account-level.
         payload: Dict[str, Any] = {
             "requestReferenceNumber": external_id,
             "totalAmount": {"value": amount_value, "currency": "PHP"},
@@ -98,7 +95,7 @@ class MayaService:
                 "channel_code": channel_code,
                 "customer_name": customer_name,
                 "customer_email": customer_email,
-                "settlement_type": "T0",  # Hint for T0 settlement if supported by the merchant configuration
+                "settlement_type": "T0",
                 "terminal_id": metadata.get("terminal_id") if metadata else "POS-1",
                 **(metadata or {}),
             },
@@ -114,15 +111,30 @@ class MayaService:
                 buyer["phoneNumber"] = mobile_number
             payload["buyer"] = buyer
 
+        # Automatic Auth Detection: Use Business API headers if keys are available
+        headers = self._get_business_api_headers()
+        if not headers:
+            headers = {**self._get_auth_headers(), "Content-Type": "application/json"}
+        
+        # If using Business API keys, ensure base_url points to the root for the /checkout/v1 path
+        api_url = f"{self.base_url}/checkouts"
+        if "MAYA_BUSINESS_API_KEY" in os.environ or settings.maya_business_api_key:
+             business_base = self._get_business_api_base_url().rstrip("/")
+             api_url = f"{business_base}/checkout/v1/checkouts"
+
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.base_url}/checkouts",
+                    api_url,
                     json=payload,
-                    headers={**self._get_auth_headers(), "Content-Type": "application/json"},
+                    headers=headers,
                     timeout=30.0,
                 )
-                response.raise_for_status()
+                
+                if response.status_code >= 400:
+                    logger.error(f"Maya API Error ({response.status_code}): {response.text}")
+                    return {"success": False, "error": response.text}
+
                 data = response.json()
                 return {
                     "success": True,

@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
+from core.constants import PAYBOT_BANK_ACCOUNTS, BANK_RECEIPTS_SUBDIR
 from dependencies.auth import get_current_user
 from models.bank_deposit_requests import BankDepositRequest
 from models.wallets import Wallets
@@ -22,15 +23,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/bank-deposits", tags=["bank-deposits"])
 
-# PayBot PH bank accounts
-_PAYBOT_ACCOUNTS: dict[str, dict[str, str]] = {
-    "GoTyme Digital Bank": {"number": "012116012891", "name": "PayBot PH"},
-    "Security Bank Corporation": {"number": "0000068888173", "name": "PayBot PH"},
-    "Asia United Bank": {"number": "934105321485", "name": "PayBot PH"},
-}
-
-# Directory for uploaded bank transfer receipts (relative to this file's package root)
-_RECEIPTS_SUBDIR = "bank-receipts"
+# Alias for backward compatibility
+_PAYBOT_ACCOUNTS = PAYBOT_BANK_ACCOUNTS
+_RECEIPTS_SUBDIR = BANK_RECEIPTS_SUBDIR
 
 
 # ---------- Schemas ----------

@@ -164,17 +164,22 @@ async def lifespan(app: FastAPI):
             "invalidated on restart. Set JWT_SECRET_KEY for production use."
         )
 
-    # Maya Manager is the primary payment gateway.
+    # Maya Manager is the primary payment gateway - enforce in production.
     if not settings.maya_secret_key:
-        logger.warning(
-            "MAYA_SECRET_KEY is not configured. Maya-based payment features will be unavailable."
-        )
+        message = "MAYA_SECRET_KEY is not configured. Maya-based payment features require this credential."
+        if environment == "dev":
+            logger.warning(message)
+        else:
+            logger.critical(message)
+            sys.exit(1)
 
     if not settings.maya_business_api_key or not settings.maya_business_secret_key:
-        logger.warning(
-            "MAYA_BUSINESS_API_KEY and/or MAYA_BUSINESS_SECRET_KEY are not configured. "
-            "Maya Business card/QR payments will fail without these credentials."
-        )
+        message = "MAYA_BUSINESS_API_KEY and/or MAYA_BUSINESS_SECRET_KEY are not configured. Maya Business payments require these credentials."
+        if environment == "dev":
+            logger.warning(message)
+        else:
+            logger.critical(message)
+            sys.exit(1)
 
     # MODULE_STARTUP_START
     db_ready = False
@@ -188,7 +193,7 @@ async def lifespan(app: FastAPI):
 
     if db_ready:
         try:
-            from routers.app_settings import ensure_maintenance_off
+            from services.app_settings import ensure_maintenance_off
             from core.database import db_manager
             async with db_manager.async_session_maker() as _db:
                 await ensure_maintenance_off(_db)
@@ -198,8 +203,9 @@ async def lifespan(app: FastAPI):
         try:
             from services.mock_data import initialize_mock_data
             await initialize_mock_data()
+            logger.info("Mock data initialized successfully")
         except Exception as e:
-            logger.warning(f"Mock data initialization skipped: {e}")
+            logger.error(f"Mock data initialization failed (non-critical): {e}", exc_info=True)
     else:
         logger.warning("Skipping mock data initialization because database is not ready.")
     # MODULE_STARTUP_END
@@ -255,15 +261,29 @@ if allowed_origins_env:
         expose_headers=["*"],
     )
 else:
-    # Development mode: allow all origins
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origin_regex=r".*",
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-        expose_headers=["*"],
-    )
+    # Production: require ALLOWED_ORIGINS to be explicitly set for security
+    environment = os.getenv("ENVIRONMENT", "dev").lower()
+    if environment == "dev":
+        # Development mode: allow all origins
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origin_regex=r".*",
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+            expose_headers=["*"],
+        )
+    else:
+        # Production: must explicitly set ALLOWED_ORIGINS environment variable
+        logger.critical("ALLOWED_ORIGINS not set in production. CORS will reject all cross-origin requests.")
+        # Add a restrictive CORS policy that rejects everything
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[],
+            allow_credentials=False,
+            allow_methods=["GET"],
+            allow_headers=[],
+        )
 # MODULE_MIDDLEWARE_END
 
 

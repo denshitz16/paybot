@@ -7,6 +7,7 @@ class Wallets(Base):
     __table_args__ = (
         # Composite index for the frequent (user_id, currency) lookup in get_or_create_wallet
         Index("idx_wallets_user_currency", "user_id", "currency"),
+        # extend_existing allows the table definition to be updated if it already exists
         {"extend_existing": True},
     )
 

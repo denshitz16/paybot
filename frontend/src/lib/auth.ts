@@ -42,7 +42,8 @@ export const authApi = {
         };
       }
       return null;
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
       return null;
     }
   },
@@ -87,11 +88,13 @@ export const authApi = {
     }
 
     const data = await response.json();
-    if (!data?.token) {
-      throw new Error('Telegram login failed: missing token');
+    // Check for both 'token' and 'access_token' to handle API inconsistencies
+    const token = data?.token || data?.access_token;
+    if (!token) {
+      throw new Error('Telegram login failed: missing token or access_token');
     }
 
-    setStoredToken(data.token);
+    setStoredToken(token);
   },
 
   async logout() {

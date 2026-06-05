@@ -120,6 +120,7 @@ class DatabaseManager:
     @staticmethod
     def _check_db_exist(raw_url: str) -> bool:
         if "sqlite" not in raw_url:
+            logger.debug("Skipping database file validation for non-SQLite database")
             return True
         filename = raw_url.split(":///", 1)[1]
         found = Path(filename).exists()
