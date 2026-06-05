@@ -138,6 +138,10 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-4px)' },
         },
+        gradient: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -148,6 +152,7 @@ export default {
         'fade-out': 'fade-out 0.3s ease-out',
         'slide-in-up': 'slide-in-up 0.4s ease-out',
         'bounce-soft': 'bounce-soft 0.5s ease-in-out',
+        'gradient': 'gradient 3s ease infinite',
       },
       spacing: {
         '0.5': '0.125rem',
