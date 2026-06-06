@@ -52,18 +52,17 @@ const PinAuthDialog: React.FC<PinAuthDialogProps> = ({
             maxLength={6}
             value={value}
             onChange={onValueChange}
-            render={({ slots }) => (
-              <InputOTPGroup className="gap-3">
-                {slots.map((slot, index) => (
-                  <InputOTPSlot
-                    key={index}
-                    {...slot}
-                    className="h-14 w-12 rounded-xl border-2 border-border/40 text-xl font-black"
-                  />
-                ))}
-              </InputOTPGroup>
-            )}
-          />
+          >
+            <InputOTPGroup className="gap-3">
+              {[0, 1, 2, 3, 4, 5].map((index) => (
+                <InputOTPSlot
+                  key={index}
+                  index={index}
+                  className="h-14 w-12 rounded-xl border-2 border-border/40 text-xl font-black"
+                />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
 
           <div className="w-full space-y-4">
             <Button
