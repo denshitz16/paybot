@@ -13,7 +13,7 @@ from models.exchange_rate_history import ExchangeRateHistory
 from models.exchange_rate_override import ExchangeRateOverride
 from models.wallet_transactions import Wallet_transactions
 from services import exchange_rate_service
-from services.notification_service import send_sms_notification
+from services.notification_service import SMSService
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +187,7 @@ class CurrencyService:
                     f"{to_amount} {to_currency} at rate {rate:.4f}. "
                     f"Fee: {fee_amount} {to_currency}."
                 )
-                await send_sms_notification(mobile_number, message)
+                await SMSService.send_sms(mobile_number, message)
             except Exception as e:
                 logger.error(f"Failed to send conversion SMS: {e}")
 
