@@ -43,7 +43,6 @@ import {
   History,
   PhilippinePeso,
   QrCode,
-  ShieldLock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';

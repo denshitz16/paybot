@@ -9,7 +9,7 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldLock } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
 
 interface PinAuthDialogProps {
   open: boolean;
@@ -37,7 +37,7 @@ const PinAuthDialog: React.FC<PinAuthDialogProps> = ({
       <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-0 bg-card shadow-2xl">
         <div className="bg-slate-900 p-8 text-center">
           <div className="h-16 w-16 rounded-3xl bg-white/10 backdrop-blur-md flex items-center justify-center mx-auto mb-4 border border-white/20">
-            <ShieldLock className="h-8 w-8 text-white" />
+            <ShieldAlert className="h-8 w-8 text-white" />
           </div>
           <h3 className="text-xl font-black text-white uppercase tracking-tight">{title}</h3>
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">{subtitle}</p>
