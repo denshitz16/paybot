@@ -115,7 +115,7 @@ export default function DisbursementsPage() {
     setDLoading(true);
     try {
       const res = await client.apiCall.invoke({
-        url: '/api/v1/gateway/disbursement', method: 'POST',
+        url: '/api/v1/xendit/disburse', method: 'POST',
         data: { ...data, pin },
       });
       if (res.data?.success) {

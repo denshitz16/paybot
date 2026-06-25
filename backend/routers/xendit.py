@@ -12,6 +12,7 @@ Supported webhook events:
 import json
 import logging
 import uuid
+import httpx
 from datetime import datetime, timezone
 from typing import Optional
 
