@@ -43,6 +43,10 @@ import XenditPage from './pages/XenditPage';
 import AlipayPage from './pages/AlipayPage';
 import WeChatPage from './pages/WeChatPage';
 import HomePage from './pages/Index';
+import DesignSystemDemo from './pages/DesignSystemDemo';
+import DashboardNew from './pages/new/DashboardNew';
+import WalletNew from './pages/new/WalletNew';
+import TransactionsNew from './pages/new/TransactionsNew';
 
 const queryClient = new QueryClient();
 
@@ -175,6 +179,10 @@ function AuthAwareShell() {
       <MaintenanceGuard>
         <PageFade>
           <Routes>
+            <Route path="/design" element={<DesignSystemDemo />} />
+            <Route path="/new/dashboard" element={<DashboardNew />} />
+            <Route path="/new/wallet" element={<WalletNew />} />
+            <Route path="/new/transactions" element={<TransactionsNew />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/intro" element={<BotIntro />} />
             <Route path="/login" element={<Login />} />

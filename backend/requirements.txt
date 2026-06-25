@@ -38,7 +38,7 @@ sse-starlette>=1.6.0
 qrcode[pil]>=7.4.2
 
 # Background job scheduler
-apscheduler&gt;=3.10.0
+apscheduler>=3.10.0
 
 # QR code decoding (requires libzbar0 system library)
 pyzbar>=0.1.9
