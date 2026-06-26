@@ -355,7 +355,7 @@ export default function Layout({ children, connected }: LayoutProps) {
                 </div>
                 <p className="text-xl font-black tracking-tighter text-white uppercase">{APP_NAME}</p>
               </Link>
-              <button onClick={() => setSidebarOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 text-white/40 hover:text-white transition-all active:scale-90">
+              <button onClick={() => setSidebarOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 text-white/40 hover:text-white transition-all active:scale-90" aria-label="Close navigation menu">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -383,6 +383,7 @@ export default function Layout({ children, connected }: LayoutProps) {
           <button
             className="md:hidden h-12 w-12 flex items-center justify-center rounded-2xl bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all active:scale-90"
             onClick={() => setSidebarOpen(true)}
+            aria-label="Open navigation menu"
           >
             <Menu className="h-6 w-6" />
           </button>

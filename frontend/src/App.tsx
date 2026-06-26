@@ -102,7 +102,7 @@ function MaintenanceGuard({ children }: { children: React.ReactNode }) {
 function PageFade({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   // Provide a main landmark and a screen-reader-only page title
-  const path = location.pathname === '/' ? 'Dashboard' : location.pathname.replace(/(^\/+|\/+$/g, '').replace(/[-_/]/g, ' ') || 'Page';
+  const path = location.pathname === '/' ? 'Dashboard' : location.pathname.replace(/^\/+|\/+$/g, '').replace(/[-_/]/g, ' ') || 'Page';
   const title = path.split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
 
   return (
