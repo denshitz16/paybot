@@ -220,7 +220,7 @@ export default function Dashboard() {
         setRecentTxns(Array.isArray(txnData) ? txnData : []);
       }
 
-      if (isSuperAdmin && results[2]?.status === 'fulfilled') {
+      if (results[2]?.status === 'fulfilled') {
         const res = results[2] as PromiseFulfilledResult<any>;
         const walletData = res.value?.data;
         if (walletData && walletData.balance != null) setWalletBalance(walletData.balance);

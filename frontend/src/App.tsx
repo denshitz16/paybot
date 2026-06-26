@@ -200,7 +200,8 @@ function AuthAwareShell() {
             <Route path="/auth/error" element={<AuthError />} />
             <Route path="/logout-callback" element={<LogoutCallbackPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
-            <Route path="/" element={<DashboardNew />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/merchants" element={<Merchants />} />
             <Route path="/users" element={<Users />} />
             <Route path="/wallet" element={<Wallet />} />
