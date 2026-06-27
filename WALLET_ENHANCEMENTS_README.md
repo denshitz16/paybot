@@ -1,8 +1,8 @@
-# PayBot Wallet & SMS Enhancements - Implementation Guide
+# xend Wallet & SMS Enhancements - Implementation Guide
 
 ## Overview
 
-This document describes the comprehensive enhancements made to PayBot's wallet system, payment processing, and SMS notifications. The changes maximize internal and external wallet operations while preserving all existing bot messages and functionality.
+This document describes the comprehensive enhancements made to xend's wallet system, payment processing, and SMS notifications. The changes maximize internal and external wallet operations while preserving all existing bot messages and functionality.
 
 ## What's New
 
@@ -386,7 +386,7 @@ See `backend/core/config.py` for all configuration options.
 
 ## Summary
 
-This comprehensive enhancement maximizes PayBot's wallet and payment processing capabilities:
+This comprehensive enhancement maximizes xend's wallet and payment processing capabilities:
 
 ✅ Real SMS notifications for users (Semaphore/Twilio)
 ✅ Super admin wallet management (freeze, reconcile, analytics)

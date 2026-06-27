@@ -99,7 +99,7 @@ jobs:
           # Use service ID selector only (service names are brittle across environments).
           SERVICE_SELECTOR="$RAILWAY_SERVICE_ID"
 
-          # Last-resort fallback to known PayBot Railway service ID.
+          # Last-resort fallback to known xend Railway service ID.
           if [ -z "$SERVICE_SELECTOR" ]; then
             SERVICE_SELECTOR="18690ed0-bfdb-45f0-81bf-cad54841b2aa"
           fi

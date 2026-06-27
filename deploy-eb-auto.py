@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Automatic AWS EB Deployment with Auto-Discovery
-Deploys PayBot to AWS Elastic Beanstalk using boto3 (no AWS CLI needed)
+Deploys xend to AWS Elastic Beanstalk using boto3 (no AWS CLI needed)
 """
 
 import os
@@ -24,7 +24,7 @@ def run_cmd(cmd, description=""):
 
 def main():
     print("\n" + "=" * 55)
-    print("  PayBot AWS Elastic Beanstalk Auto-Deploy")
+    print("  xend AWS Elastic Beanstalk Auto-Deploy")
     print("=" * 55)
 
     # Get AWS credentials from environment

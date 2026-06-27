@@ -1,6 +1,6 @@
-# Deploying PayBot to Railway
+# Deploying xend to Railway
 
-This document explains how to deploy the PayBot application to Railway using GitHub Actions.
+This document explains how to deploy the xend application to Railway using GitHub Actions.
 
 Prerequisites
 - A Railway account and an existing Railway Project (create one at https://railway.app).

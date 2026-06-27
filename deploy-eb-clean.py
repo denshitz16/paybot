@@ -20,7 +20,7 @@ def run_cmd(cmd):
 
 def main():
     print("\n" + "=" * 60)
-    print("  PayBot AWS EB Deployment - Auto Discovery")
+    print("  xend AWS EB Deployment - Auto Discovery")
     print("=" * 60)
 
     # Environment setup

@@ -1,6 +1,6 @@
 # Industrial POS Terminal & Settlement Infrastructure
 
-PayBot's high-performance terminal engine provides bank-grade settlement capabilities, enabling institutional merchants to accept industrial-scale payments via Cards, QRPH, and international e-wallets.
+xend's high-performance terminal engine provides bank-grade settlement capabilities, enabling institutional merchants to accept industrial-scale payments via Cards, QRPH, and international e-wallets.
 
 ## 🏛️ Enterprise Capabilities
 

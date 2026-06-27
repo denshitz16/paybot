@@ -22,7 +22,7 @@ if not access_key or not secret_key:
     sys.exit(1)
 
 print("\n" + "="*60)
-print("  PayBot AWS EB Deployment")
+print("  xend AWS EB Deployment")
 print("="*60)
 
 print(f"\n✓ Setup:")

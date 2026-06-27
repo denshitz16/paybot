@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/3ff135b7-ed69-4b1b-889a-dbe0111de7dc" alt="PayBot Philippines" width="120" height="120" style="border-radius:24px;" />
+  <img src="https://github.com/user-attachments/assets/3ff135b7-ed69-4b1b-889a-dbe0111de7dc" alt="xend Philippines" width="120" height="120" style="border-radius:24px;" />
 </p>
 
-<h1 align="center">PayBot Philippines</h1>
+<h1 align="center">xend Philippines</h1>
 <p align="center"><strong>Bank-Grade Financial Infrastructure & POS Settlement Platform</strong></p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 
 ## 🏛️ Enterprise Overview
 
-**PayBot Philippines** is a premier, bank-grade financial settlement platform designed for licensed merchants and high-volume commercial operations. It transforms standard communication channels into high-performance financial nodes, enabling secure card acceptance, multi-currency liquidity management, and real-time clearing with enterprise-level oversight.
+**xend Philippines** is a premier, bank-grade financial settlement platform designed for licensed merchants and high-volume commercial operations. It transforms standard communication channels into high-performance financial nodes, enabling secure card acceptance, multi-currency liquidity management, and real-time clearing with enterprise-level oversight.
 
 Our infrastructure is strictly regulated and compliant with local financial standards, integrated directly with **Maya Business**, **Security Bank**, **PayMongo**, and **PhotonPay** for robust, multi-channel clearing.
 
@@ -31,7 +31,7 @@ Our infrastructure is strictly regulated and compliant with local financial stan
 
 ## 🏗️ Operational Architecture
 
-PayBot operates on a "Trusted Node" architecture, ensuring data integrity and high availability:
+xend operates on a "Trusted Node" architecture, ensuring data integrity and high availability:
 
 - **Core Ledger**: Python FastAPI engine with synchronous ledger balancing and atomic transaction processing.
 - **Merchant Interface**: React 18 high-fidelity dashboard with real-time grid monitoring.
@@ -121,7 +121,7 @@ Maintained by **Sir Den Russell "Camus" Leonardo** and the **DRL Solutions** eng
 ---
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/3ff135b7-ed69-4b1b-889a-dbe0111de7dc" alt="PayBot" width="60" style="border-radius:12px;" />
+  <img src="https://github.com/user-attachments/assets/3ff135b7-ed69-4b1b-889a-dbe0111de7dc" alt="xend" width="60" style="border-radius:12px;" />
   <br/>
-  <strong>PayBot Infrastructure</strong> — Industrial Social Commerce Settlement.
+  <strong>xend Infrastructure</strong> — Industrial Social Commerce Settlement.
 </p>

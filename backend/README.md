@@ -1,6 +1,6 @@
 # Industrial Backend Infrastructure (Mainnet)
 
-The core institutional clearing and settlement engine for the PayBot Philippines ecosystem, engineered for high-availability mainnet operations using FastAPI and enterprise PostgreSQL.
+The core institutional clearing and settlement engine for the xend Philippines ecosystem, engineered for high-availability mainnet operations using FastAPI and enterprise PostgreSQL.
 
 ## 🏛️ Enterprise Specifications
 
@@ -59,4 +59,4 @@ railway logs --service paybot --environment production --follow
 ```
 
 ---
-*© 2024 PayBot Infrastructure Engineering*
+*© 2024 xend Infrastructure Engineering*

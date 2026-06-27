@@ -16,7 +16,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🚀 Deploying PayBot to AWS Elastic Beanstalk...${NC}"
+echo -e "${GREEN}🚀 Deploying xend to AWS Elastic Beanstalk...${NC}"
 
 # Validate inputs
 if [ -z "$AWS_ACCOUNT_ID" ]; then

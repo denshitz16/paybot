@@ -1,4 +1,4 @@
-# Render deployment config for PayBot
+# Render deployment config for xend
 # Adjust branch, plan, and secret management as needed in Render dashboard.
 
 services:

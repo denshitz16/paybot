@@ -1,4 +1,4 @@
-# User Experience (UX) Guidelines - PayBot
+# User Experience (UX) Guidelines - xend
 
 ## Design Principles
 

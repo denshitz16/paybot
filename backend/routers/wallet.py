@@ -738,7 +738,7 @@ async def admin_approve_withdrawal(
         bank_code=disb.bank_code,
         account_number=disb.account_number,
         account_name=disb.account_name,
-        description=f"PayBot Withdrawal #{disb.external_id}",
+        description=f"xend Withdrawal #{disb.external_id}",
         external_id=disb.external_id
     )
 

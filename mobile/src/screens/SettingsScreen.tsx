@@ -34,7 +34,7 @@ export const SettingsScreen = () => {
               <Text style={styles.avatarText}>{user?.username?.substring(0, 1).toUpperCase() || 'P'}</Text>
            </View>
            <View style={styles.profileInfo}>
-              <Text style={[styles.profileName, { color: colors.text }]}>{user?.username || 'PayBot User'}</Text>
+              <Text style={[styles.profileName, { color: colors.text }]}>{user?.username || 'xend User'}</Text>
               <Text style={[styles.profileRole, { color: colors.textSecondary }]}>
                 {user?.permissions?.is_super_admin ? 'Super Administrator' : 'Terminal Operator'}
               </Text>
@@ -66,7 +66,7 @@ export const SettingsScreen = () => {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>More</Text>
           <SettingItem icon="help-outline" label="Support Center" />
-          <SettingItem icon="info-outline" label="About PayBot" />
+          <SettingItem icon="info-outline" label="About xend" />
           <SettingItem
             icon="logout"
             label="Log Out"
@@ -76,7 +76,7 @@ export const SettingsScreen = () => {
           />
         </View>
 
-        <Text style={[styles.versionText, { color: colors.textSecondary }]}>PayBot v2.4.2-stable (Last Sync: 2024-05-26)</Text>
+        <Text style={[styles.versionText, { color: colors.textSecondary }]}>xend v2.4.2-stable (Last Sync: 2024-05-26)</Text>
       </ScrollView>
     </SafeAreaView>
   );

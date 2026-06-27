@@ -8,7 +8,7 @@
 ### 1️⃣ Get Your Bot Token
 - Open Telegram: [@BotFather](https://t.me/BotFather)
 - Send: `/token`
-- Select your PayBot
+- Select your xend
 - Copy the token (looks like: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
 
 ### 2️⃣ Add Token to Railway

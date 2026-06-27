@@ -1,4 +1,4 @@
-"""Tests for PayBot — bot command handlers, health endpoints, and core API flows."""
+"""Tests for xend — bot command handlers, health endpoints, and core API flows."""
 import asyncio
 import os
 import hashlib
@@ -866,6 +866,40 @@ class TestMayaTopUpIntegration:
         assert data["invoice_id"] == "maya-checkout-123"
         assert data["invoice_url"] == "https://maya.example.com/checkout/123"
         assert data["external_id"] == "maya-external-abc"
+
+
+class TestXenditCollectionFallback:
+    def test_create_invoice_falls_back_to_maya_when_xendit_fails(self, client, auth_headers):
+        async def fake_xendit_create_invoice(*args, **kwargs):
+            return {"success": False, "error": "xendit bad request"}
+
+        async def fake_maya_create_checkout(*args, **kwargs):
+            return {
+                "success": True,
+                "checkout_id": "maya-checkout-456",
+                "checkout_url": "https://maya.example.com/checkout/456",
+                "external_id": "maya-external-456",
+            }
+
+        with patch("routers.xendit.XenditService.create_invoice", new=fake_xendit_create_invoice), patch(
+            "services.maya_service.MayaService.create_checkout", new=fake_maya_create_checkout
+        ):
+            r = client.post(
+                "/api/v1/xendit/create-invoice",
+                headers=auth_headers,
+                json={
+                    "amount": 120.0,
+                    "description": "Fallback invoice",
+                    "customer_name": "Test User",
+                    "customer_email": "test@example.com",
+                },
+            )
+
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["success"] is True
+        assert data["invoice_url"] == "https://maya.example.com/checkout/456"
+        assert data["external_id"] == "maya-external-456"
 
 
 class TestEvents:

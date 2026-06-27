@@ -1,7 +1,7 @@
-# Responsive Design Guide - PayBot UI
+# Responsive Design Guide - xend UI
 
 ## Overview
-PayBot frontend now supports comprehensive responsive design for mobile phones, tablets, and desktop computers. All UI components scale appropriately across device sizes.
+xend frontend now supports comprehensive responsive design for mobile phones, tablets, and desktop computers. All UI components scale appropriately across device sizes.
 
 ## Breakpoints
 Following Tailwind CSS standard breakpoints:

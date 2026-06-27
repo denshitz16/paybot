@@ -1,11 +1,11 @@
-# PayBot POS Terminal Bug Fixes & Branding Walkthrough
+# xend POS Terminal Bug Fixes & Branding Walkthrough
 
-I have completed the task of fixing bugs, improving UX, and aligning the branding for the PayBot POS Terminal mobile application.
+I have completed the task of fixing bugs, improving UX, and aligning the branding for the xend POS Terminal mobile application.
 
 ## Summary of Changes
 
 ### 1. Unified Branding
-- **App Identity**: Updated `app.json` and `package.json` to correctly identify the app as "PayBot POS Terminal".
+- **App Identity**: Updated `app.json` and `package.json` to correctly identify the app as "xend POS Terminal".
 - **Clean UI**: Removed debug console logs in `App.tsx` and ensured consistent UI colors across screens.
 
 ### 2. Enhanced Device Management

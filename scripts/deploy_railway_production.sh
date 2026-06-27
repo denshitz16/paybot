@@ -1,8 +1,8 @@
 #!/bin/bash
 # ============================================================================
-# PayBot POS Terminal - Production Railway Deployment Script
+# xend POS Terminal - Production Railway Deployment Script
 # ============================================================================
-# This script deploys PayBot to Railway with all required configurations.
+# This script deploys xend to Railway with all required configurations.
 # Run this AFTER you have your Railway credentials ready.
 # ============================================================================
 
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}=================================================="
-echo "🚀 PayBot POS Terminal - Railway Production Deployment"
+echo "🚀 xend POS Terminal - Railway Production Deployment"
 echo -e "==================================================${NC}"
 echo ""
 
@@ -297,5 +297,5 @@ echo "  - Deployment Guide: DEPLOY_RAILWAY.md"
 echo "  - Device Testing: POS_TERMINAL_README.md"
 echo "  - API Docs: https://your-railway-url/docs"
 echo ""
-echo -e "${GREEN}🎉 Your PayBot POS Terminal is now deploying to production!${NC}"
+echo -e "${GREEN}🎉 Your xend POS Terminal is now deploying to production!${NC}"
 echo ""

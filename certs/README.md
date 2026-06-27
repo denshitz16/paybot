@@ -1,6 +1,6 @@
 # certs/
 
-This directory contains CA certificates required by PayBot's payment integrations.
+This directory contains CA certificates required by xend's payment integrations.
 
 ## smartproxy.org.pem.crt
 

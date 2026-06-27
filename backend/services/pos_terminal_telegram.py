@@ -205,7 +205,7 @@ class POSTerminalTelegramHandler:
                             text=(
                                 f"🎊 *Your POS Terminal has been Approved!*\n\n"
                                 f"Terminal Code: `{terminal_code}`\n\n"
-                                f"You can now start using this terminal in the PayBot mobile app. "
+                                f"You can now start using this terminal in the xend mobile app. "
                                 f"Simply login and select this terminal to create payments."
                             ),
                             parse_mode="Markdown"

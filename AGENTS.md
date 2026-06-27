@@ -1,4 +1,4 @@
-# PayBot Agent Status
+# xend Agent Status
 
 ## Terminal Agent: LIVE 🟢
 The POS Terminal system is now fully operational with bank-grade settlement infrastructure.

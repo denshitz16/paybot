@@ -348,7 +348,7 @@ async def main():
     results = TestResults()
     
     print("="*60)
-    print("🚀 PayBot POS Terminal - Integration Test Suite")
+    print("🚀 xend POS Terminal - Integration Test Suite")
     print("="*60)
     print(f"Base URL: {BASE_URL}")
     print(f"Device ID: {DEVICE_ID}")

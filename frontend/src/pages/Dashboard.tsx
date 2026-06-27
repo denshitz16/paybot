@@ -86,11 +86,11 @@ function formatTxnDate(dateStr: string): string {
 
 function StatCard({ label, value, note, loading }: { label: string; value: string; note: string; loading: boolean }) {
   return (
-    <Card className="border border-white/10 bg-slate-950/70 shadow-sm">
+    <Card className="border border-slate-200 bg-white shadow-sm">
       <CardContent className="p-6">
         <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{label}</p>
-        <p className="mt-4 text-3xl font-black text-white tracking-tight">{loading ? '...' : value}</p>
-        <p className="mt-3 text-sm text-slate-400">{note}</p>
+        <p className="mt-4 text-3xl font-black text-slate-900 tracking-tight">{loading ? '...' : value}</p>
+        <p className="mt-3 text-sm text-slate-500">{note}</p>
       </CardContent>
     </Card>
   );
@@ -164,8 +164,8 @@ export default function Dashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="h-10 w-10 rounded-full border-2 border-t-slate-200 border-slate-700 animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="h-10 w-10 rounded-full border-2 border-t-slate-700 border-slate-300 animate-spin" />
       </div>
     );
   }
@@ -180,42 +180,41 @@ export default function Dashboard() {
 
   return (
     <Layout connected={connected}>
-      <div className="space-y-8">
-        <section className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-8 shadow-xl shadow-black/20">
+      <div className="space-y-8 max-w-[1800px] mx-auto px-4 py-8 sm:px-6 xl:px-10">
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Fintech dashboard</p>
-              <h1 className="mt-4 text-3xl font-black text-white">{greeting.text}, {userName}</h1>
-              <p className="mt-3 max-w-2xl text-sm text-slate-400">Quickly monitor payment flow, settlement status, and wallet balances in one clean interface.</p>
+              <h1 className="text-3xl font-semibold text-slate-900">{greeting.text}, {userName}</h1>
+              <p className="mt-3 max-w-3xl text-sm text-slate-600">Here is your current overview of payments, settlements, and available funds.</p>
             </div>
-            <div className="grid grid-cols-3 gap-3 sm:w-[420px]">
-              <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Processed</p>
-                <p className="mt-3 text-2xl font-black text-white">{loading ? '...' : stats.total_count}</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:w-full">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Transactions</p>
+                <p className="mt-3 text-2xl font-semibold text-slate-900">{loading ? '...' : stats.total_count}</p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Settled</p>
-                <p className="mt-3 text-2xl font-black text-emerald-400">{loading ? '...' : stats.paid_count}</p>
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Settled</p>
+                <p className="mt-3 text-2xl font-semibold text-emerald-700">{loading ? '...' : stats.paid_count}</p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Success</p>
-                <p className="mt-3 text-2xl font-black text-brandblue-400">{loading ? '...' : `${successRate}%`}</p>
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Success rate</p>
+                <p className="mt-3 text-2xl font-semibold text-slate-900">{loading ? '...' : `${successRate}%`}</p>
               </div>
             </div>
           </div>
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Total revenue" value={`₱${fmt(stats.total_amount || 0)}`} note="All transaction volume" loading={loading} />
-          <StatCard label="Settled revenue" value={`₱${fmt(stats.paid_amount || 0)}`} note="Confirmed settlements" loading={loading} />
-          <StatCard label="Pending orders" value={`${stats.pending_count}`} note="Awaiting settlement" loading={loading} />
-          <StatCard label="Wallet balance" value={`₱${fmt(walletBalance || 0)}`} note="Available funds" loading={loading} />
+          <StatCard label="Total volume" value={`₱${fmt(stats.total_amount || 0)}`} note="Transaction volume" loading={loading} />
+          <StatCard label="Settled amount" value={`₱${fmt(stats.paid_amount || 0)}`} note="Confirmed settlements" loading={loading} />
+          <StatCard label="Pending count" value={`${stats.pending_count}`} note="Awaiting action" loading={loading} />
+          <StatCard label="Available balance" value={`₱${fmt(walletBalance || 0)}`} note="Ready to use" loading={loading} />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-          <Card className="border border-white/10 bg-slate-950/70 shadow-xl">
-            <CardHeader className="px-6 py-5 border-b border-white/10">
-              <CardTitle className="text-sm font-black uppercase tracking-[0.35em] text-slate-400">Recent transactions</CardTitle>
+          <Card className="border border-slate-200 bg-white shadow-lg">
+            <CardHeader className="px-6 py-5 border-b border-slate-200">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.35em] text-slate-600">Recent transactions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 p-6">
               {recentTxns.length > 0 ? (
@@ -223,25 +222,25 @@ export default function Dashboard() {
                   const status = statusConfig[txn.status] || statusConfig.pending;
                   const type = typeConfig[txn.transaction_type] || { icon: <FileText className="h-4 w-4 text-slate-700" />, bg: 'bg-slate-100/80' };
                   return (
-                    <div key={txn.id} className="flex items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                    <div key={txn.id} className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
                       <div className="flex items-center gap-4 min-w-0">
                         <div className={`h-12 w-12 rounded-3xl ${type.bg} flex items-center justify-center`}>
                           {type.icon}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-black text-white truncate">{txn.description || txn.transaction_type}</p>
+                          <p className="text-sm font-black text-slate-900 truncate">{txn.description || txn.transaction_type}</p>
                           <p className="mt-1 text-xs text-slate-500">{formatTxnDate(txn.created_at)} · {txn.currency}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-black text-white">₱{fmt(txn.amount)}</p>
+                        <p className="font-black text-slate-900">₱{fmt(txn.amount)}</p>
                         <span className={`mt-2 inline-flex rounded-full border ${status.color} px-3 py-1 text-[10px] font-black uppercase tracking-[0.3em]`}>{status.label}</span>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="rounded-3xl border border-dashed border-white/10 bg-slate-900/60 p-12 text-center text-sm text-slate-500">
+                <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-sm text-slate-500">
                   No recent transactions to display.
                 </div>
               )}
@@ -249,50 +248,50 @@ export default function Dashboard() {
           </Card>
 
           <div className="space-y-4">
-            <Card className="border border-white/10 bg-slate-950/70 shadow-xl">
-              <CardHeader className="px-6 py-5 border-b border-white/10">
-                <CardTitle className="text-sm font-black uppercase tracking-[0.35em] text-slate-400">Quick actions</CardTitle>
+            <Card className="border border-slate-200 bg-white shadow-sm">
+              <CardHeader className="px-6 py-5 border-b border-slate-200">
+                <CardTitle className="text-sm font-semibold text-slate-700">Actions</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3 p-6">
                 {[
-                  { label: 'Create payment', href: '/create-payment', icon: <CreditCard className="h-4 w-4" /> },
-                  { label: 'View wallet', href: '/wallet', icon: <Wallet className="h-4 w-4" /> },
-                  { label: 'Settlement log', href: '/transactions', icon: <ArrowRight className="h-4 w-4" /> },
-                  { label: 'Refresh data', href: '#', icon: <RefreshCw className="h-4 w-4" /> },
+                  { label: 'Create payment', href: '/create-payment', icon: <CreditCard className="h-4 w-4 text-slate-700" /> },
+                  { label: 'View wallet', href: '/wallet', icon: <Wallet className="h-4 w-4 text-slate-700" /> },
+                  { label: 'Transactions', href: '/transactions', icon: <ArrowRight className="h-4 w-4 text-slate-700" /> },
+                  { label: 'Refresh data', href: '#', icon: <RefreshCw className="h-4 w-4 text-slate-700" /> },
                 ].map((item) => (
                   <Link
                     key={item.label}
                     to={item.href}
-                    className="flex items-center justify-between rounded-3xl border border-white/10 bg-slate-900/70 px-4 py-4 text-sm font-black text-white transition hover:border-brandblue-500/30"
+                    className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-slate-100"
                     onClick={(e) => item.label === 'Refresh data' && (e.preventDefault(), setLoading(true), fetchData().finally(() => setLoading(false)))}
                   >
                     <span>{item.label}</span>
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-800 ring-1 ring-white/10">{item.icon}</span>
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-700">{item.icon}</span>
                   </Link>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="border border-white/10 bg-slate-950/70 shadow-xl">
-              <CardHeader className="px-6 py-5 border-b border-white/10">
-                <CardTitle className="text-sm font-black uppercase tracking-[0.35em] text-slate-400">System health</CardTitle>
+            <Card className="border border-slate-200 bg-white shadow-sm">
+              <CardHeader className="px-6 py-5 border-b border-slate-200">
+                <CardTitle className="text-sm font-semibold text-slate-700">System health</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">
-                <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">API status</p>
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">API status</p>
                   <div className="mt-3 flex items-center justify-between gap-4">
-                    <p className="text-2xl font-black text-white">{apiStatus === 'healthy' ? 'Healthy' : apiStatus === 'degrading' ? 'Degrading' : 'Offline'}</p>
+                    <p className="text-2xl font-semibold text-slate-900">{apiStatus === 'healthy' ? 'Healthy' : apiStatus === 'degrading' ? 'Degrading' : 'Offline'}</p>
                     <span className={`h-3.5 w-3.5 rounded-full ${apiStatus === 'healthy' ? 'bg-emerald-400' : apiStatus === 'degrading' ? 'bg-amber-400' : 'bg-rose-500'}`} />
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Wallet balance</p>
-                    <p className="mt-3 text-2xl font-black text-white">₱{loading ? '...' : fmt(walletBalance || 0)}</p>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">Current balance</p>
+                    <p className="mt-3 text-2xl font-semibold text-slate-900">₱{loading ? '...' : fmt(walletBalance || 0)}</p>
                   </div>
-                  <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">USDT rate</p>
-                    <p className="mt-3 text-2xl font-black text-white">₱{exchangeRate.toFixed(2)}</p>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">FX rate</p>
+                    <p className="mt-3 text-2xl font-semibold text-slate-900">₱{exchangeRate.toFixed(2)}</p>
                   </div>
                 </div>
               </CardContent>

@@ -246,8 +246,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="PayBot API",
-    description="PayBot Philippines — Telegram Bot & Payment Gateway admin dashboard and bot backend",
+    title="xend API",
+    description="xend Philippines — Telegram Bot & Payment Gateway admin dashboard and bot backend",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -535,7 +535,7 @@ if _STATIC_DIR.exists():
 else:
     @app.get("/")
     def root():
-        return {"message": "PayBot API is running. Deploy with frontend for the admin UI."}
+        return {"message": "xend API is running. Deploy with frontend for the admin UI."}
 
 
 def run_in_debug_mode(app: FastAPI):

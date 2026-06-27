@@ -1,4 +1,4 @@
-# PayBot Deployment Guide
+# xend Deployment Guide
 
 ## Table of Contents
 1. [AWS Elastic Beanstalk Deployment](#aws-elastic-beanstalk-deployment)
@@ -292,7 +292,7 @@ adb install -r mobile/android/app/build/outputs/apk/debug/app-debug.apk
 
 2. **Log in to Google Play Console**
    - Go to https://play.google.com/console
-   - Select PayBot app
+   - Select xend app
 
 3. **Create Release**
    - Go to Release → Production
@@ -444,7 +444,7 @@ aws cloudwatch put-metric-alarm \
 
 ### Railway Monitoring
 
-If you deploy PayBot to Railway, use Railway CLI logs and helper scripts to monitor production.
+If you deploy xend to Railway, use Railway CLI logs and helper scripts to monitor production.
 
 ```bash
 export RAILWAY_PROJECT_ID="your_project_id"

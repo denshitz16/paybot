@@ -1,4 +1,4 @@
-# PayBot Production & Compliance Audit Checklist
+# xend Production & Compliance Audit Checklist
 
 ## 🏛️ Regulatory & Operational Prerequisites
 
@@ -87,4 +87,4 @@ The immutable source of truth for the platform.
 - Contact the DRL Solutions on-call compliance engineering team.
 
 ---
-*© 2024 PayBot Infrastructure Group • Proprietary and Confidential*
+*© 2024 xend Infrastructure Group • Proprietary and Confidential*

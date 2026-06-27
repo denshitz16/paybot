@@ -1,8 +1,8 @@
-# Copilot Instructions for PayBot
+# Copilot Instructions for xend
 
 ## Project Overview
 
-PayBot Philippines is a **Telegram Payment Bot** platform with a React admin dashboard. It integrates Xendit and PayMongo payment gateways for Philippine merchants.
+xend Philippines is a **Telegram Payment Bot** platform with a React admin dashboard. It integrates Xendit and PayMongo payment gateways for Philippine merchants.
 
 ## Tech Stack
 

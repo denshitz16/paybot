@@ -52,7 +52,7 @@ jobs:
             cat > mobile/app.json <<'EOF'
               {
                 "name": "tempapp",
-                "displayName": "PayBot POS Terminal"
+                "displayName": "xend POS Terminal"
               }
             EOF
           fi

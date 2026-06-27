@@ -1,14 +1,14 @@
 #!/bin/bash
-# PayBot Railway Deployment Helper Script
+# xend Railway Deployment Helper Script
 # Usage: bash scripts/deploy_to_railway_interactive.sh
 
 set -e
 
 echo "=================================================="
-echo "🚀 PayBot Railway Deployment Assistant"
+echo "🚀 xend Railway Deployment Assistant"
 echo "=================================================="
 echo ""
-echo "This script will help you deploy PayBot to Railway"
+echo "This script will help you deploy xend to Railway"
 echo "and configure it for device testing."
 echo ""
 

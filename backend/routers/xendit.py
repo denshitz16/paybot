@@ -290,7 +290,45 @@ async def create_xendit_invoice(
         payer_email=data.customer_email,
         description=data.description or "Invoice",
     )
+
     if not result.get("success"):
+        try:
+            from services.maya_service import MayaService
+
+            maya = MayaService()
+            fallback = await maya.create_checkout(
+                amount=data.amount,
+                description=data.description or "Invoice",
+                customer_name=data.customer_name,
+                customer_email=data.customer_email,
+                external_id=external_id,
+            )
+            if fallback.get("success"):
+                txn_svc = TransactionsService(db)
+                txn = await txn_svc.create_transaction(
+                    user_id=str(current_user.id),
+                    transaction_type="invoice",
+                    amount=data.amount,
+                    external_id=fallback.get("external_id", external_id),
+                    gateway_id=fallback.get("checkout_id", ""),
+                    description=data.description,
+                    customer_name=data.customer_name,
+                    customer_email=data.customer_email,
+                    payment_url=fallback.get("checkout_url", ""),
+                )
+                return {
+                    "success": True,
+                    "message": "Invoice created via fallback gateway",
+                    "transaction_id": txn.id,
+                    "invoice_id": fallback.get("checkout_id"),
+                    "external_id": fallback.get("external_id", external_id),
+                    "invoice_url": fallback.get("checkout_url", ""),
+                    "amount": data.amount,
+                    "gateway": "maya",
+                }
+        except Exception as exc:
+            logger.warning("Invoice fallback to Maya failed: %s", exc)
+
         return {"success": False, "message": result.get("error", "Failed to create Xendit invoice")}
 
     txn_svc = TransactionsService(db)
@@ -314,6 +352,7 @@ async def create_xendit_invoice(
         "external_id": external_id,
         "invoice_url": result.get("payment_url"),
         "amount": data.amount,
+        "gateway": "xendit",
     }
 
 
@@ -334,6 +373,39 @@ async def create_xendit_qr(
         description=data.description,
     )
     if not result.get("success"):
+        try:
+            from services.maya_service import MayaService
+
+            maya = MayaService()
+            fallback = await maya.create_qr_payment(
+                amount=data.amount,
+                description=data.description,
+                external_id=external_id,
+            )
+            if fallback.get("success"):
+                txn_svc = TransactionsService(db)
+                txn = await txn_svc.create_transaction(
+                    user_id=str(current_user.id),
+                    transaction_type="qr_code",
+                    amount=data.amount,
+                    external_id=fallback.get("external_id", external_id),
+                    gateway_id=fallback.get("qr_id", ""),
+                    description=data.description,
+                    payment_url=fallback.get("qr_content", "") or fallback.get("redirect_url", ""),
+                )
+                return {
+                    "success": True,
+                    "message": "QR code created via fallback gateway",
+                    "transaction_id": txn.id,
+                    "qr_id": fallback.get("qr_id"),
+                    "qr_image_url": fallback.get("qr_content", ""),
+                    "external_id": fallback.get("external_id", external_id),
+                    "amount": data.amount,
+                    "gateway": "maya",
+                }
+        except Exception as exc:
+            logger.warning("QR fallback to Maya failed: %s", exc)
+
         return {"success": False, "message": result.get("error", "Failed to create Xendit QR")}
 
     txn_svc = TransactionsService(db)
@@ -355,6 +427,7 @@ async def create_xendit_qr(
         "qr_image_url": result.get("qr_image_url"),
         "external_id": external_id,
         "amount": data.amount,
+        "gateway": "xendit",
     }
 
 
@@ -376,6 +449,43 @@ async def create_xendit_payment_link(
         description=data.description or "Payment Link",
     )
     if not result.get("success"):
+        try:
+            from services.maya_service import MayaService
+
+            maya = MayaService()
+            fallback = await maya.create_checkout(
+                amount=data.amount,
+                description=data.description or "Payment Link",
+                customer_name=data.customer_name,
+                customer_email=data.customer_email,
+                external_id=external_id,
+            )
+            if fallback.get("success"):
+                txn_svc = TransactionsService(db)
+                txn = await txn_svc.create_transaction(
+                    user_id=str(current_user.id),
+                    transaction_type="payment_link",
+                    amount=data.amount,
+                    external_id=fallback.get("external_id", external_id),
+                    gateway_id=fallback.get("checkout_id", ""),
+                    description=data.description,
+                    customer_name=data.customer_name,
+                    customer_email=data.customer_email,
+                    payment_url=fallback.get("checkout_url", ""),
+                )
+                return {
+                    "success": True,
+                    "message": "Payment link created via fallback gateway",
+                    "transaction_id": txn.id,
+                    "invoice_id": fallback.get("checkout_id"),
+                    "external_id": fallback.get("external_id", external_id),
+                    "checkout_url": fallback.get("checkout_url", ""),
+                    "amount": data.amount,
+                    "gateway": "maya",
+                }
+        except Exception as exc:
+            logger.warning("Payment link fallback to Maya failed: %s", exc)
+
         return {"success": False, "message": result.get("error", "Failed to create payment link")}
 
     txn_svc = TransactionsService(db)
@@ -399,6 +509,7 @@ async def create_xendit_payment_link(
         "external_id": external_id,
         "checkout_url": result.get("payment_url"),
         "amount": data.amount,
+        "gateway": "xendit",
     }
 
 
@@ -483,7 +594,7 @@ async def xendit_disburse(
         bank_code=data.bank_code,
         account_holder_name=data.account_name,
         account_number=data.account_number,
-        description=data.description or "PayBot Disbursement",
+        description=data.description or "xend Disbursement",
         amount=data.amount,
     )
 

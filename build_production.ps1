@@ -5,7 +5,7 @@ $repoRoot = $PSScriptRoot
 if (-not $repoRoot) { $repoRoot = Get-Location }
 Set-Location $repoRoot
 
-Write-Host "`n=== PayBot Philippines: Production Build ===" -ForegroundColor Cyan
+Write-Host "`n=== xend Philippines: Production Build ===" -ForegroundColor Cyan
 
 # 1. Build Frontend
 Write-Host "`n[1/3] Building Frontend (React/Vite)..." -ForegroundColor Yellow

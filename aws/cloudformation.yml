@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: PayBot Philippines — ECS Fargate + RDS + ALB + ECR
+Description: xend Philippines — ECS Fargate + RDS + ALB + ECR
 
 Parameters:
   DBPassword:
@@ -165,7 +165,7 @@ Resources:
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: PayBot RDS subnet group
+      DBSubnetGroupDescription: xend RDS subnet group
       SubnetIds:
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2

@@ -130,7 +130,7 @@ export const LoginScreen = () => {
               <View style={[styles.logoIcon, { backgroundColor: common.primary }]}>
                  <MaterialIcons name="bolt" size={48} color="#fff" />
               </View>
-              <Text style={[styles.title, { color: colors.text }]}>PayBot</Text>
+              <Text style={[styles.title, { color: colors.text }]}>xend</Text>
               <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Terminal Edition</Text>
             </View>
 
@@ -190,7 +190,7 @@ export const LoginScreen = () => {
 
             <View style={styles.footer}>
                <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-                 Protected by PayBot Security
+                 Protected by xend Security
                </Text>
             </View>
           </View>

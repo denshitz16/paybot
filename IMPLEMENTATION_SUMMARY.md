@@ -1,4 +1,4 @@
-# PayBot Wallet & SMS Enhancement - Changes Summary
+# xend Wallet & SMS Enhancement - Changes Summary
 
 ## Executive Summary
 

@@ -1,10 +1,10 @@
 """Shared constants to prevent circular imports between routers."""
 
-# PayBot PH bank accounts
+# xend PH bank accounts
 PAYBOT_BANK_ACCOUNTS = {
-    "GoTyme Digital Bank": {"number": "012116012891", "name": "PayBot PH"},
-    "Security Bank Corporation": {"number": "0000068888173", "name": "PayBot PH"},
-    "Asia United Bank": {"number": "934105321485", "name": "PayBot PH"},
+    "GoTyme Digital Bank": {"number": "012116012891", "name": "xend PH"},
+    "Security Bank Corporation": {"number": "0000068888173", "name": "xend PH"},
+    "Asia United Bank": {"number": "934105321485", "name": "xend PH"},
 }
 
 # Directory for uploaded bank transfer receipts

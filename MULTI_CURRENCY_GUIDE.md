@@ -1,6 +1,6 @@
 # Multi-Currency & Exchange Rate Enhancement Guide
 
-Complete guide for PayBot's multi-currency wallet system with real-time exchange rates, conversions, and admin controls.
+Complete guide for xend's multi-currency wallet system with real-time exchange rates, conversions, and admin controls.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ Complete guide for PayBot's multi-currency wallet system with real-time exchange
 
 ## Overview
 
-PayBot now supports real-time multi-currency wallets with:
+xend now supports real-time multi-currency wallets with:
 
 - **Live Exchange Rates**: Fetch rates from CoinGecko API with intelligent caching
 - **Currency Conversion**: Atomic wallet-to-wallet conversions with fee calculation

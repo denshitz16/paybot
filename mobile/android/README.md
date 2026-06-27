@@ -1,6 +1,6 @@
-# PayBot POS Terminal (Android) - PRODUCTION 🟢
+# xend POS Terminal (Android) - PRODUCTION 🟢
 
-Official POS Terminal application for the PayBot Philippines ecosystem. Built with React Native.
+Official POS Terminal application for the xend Philippines ecosystem. Built with React Native.
 
 ## 🚀 Live Configuration
 - **Production API**: `https://mayaproduction.up.railway.app/api/v1`

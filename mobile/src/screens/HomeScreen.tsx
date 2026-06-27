@@ -314,7 +314,7 @@ export const HomeScreen = ({ navigation }) => {
         <View style={styles.headerTop}>
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={[styles.headerTitle, { marginRight: 8 }]}>PayBot</Text>
+              <Text style={[styles.headerTitle, { marginRight: 8 }]}>xend</Text>
               <MaterialIcons name="verified" size={20} color="#fff" style={{ marginTop: 2 }} />
             </View>
             <View style={styles.statusRow}>
@@ -336,7 +336,7 @@ export const HomeScreen = ({ navigation }) => {
            <NavButton icon="receipt-long" label="History" onPress={() => navigation.navigate('Transactions')} color="#F59E0B" />
            <NavButton icon="account-balance-wallet" label="Wallet" onPress={() => navigation.navigate('Wallet')} color="#10B981" />
            <NavButton icon="settings" label="Settings" onPress={() => navigation.navigate('Settings')} color="#6366F1" />
-           <NavButton icon="support-agent" label="Support" onPress={() => Alert.alert('Support', 'Connecting to PayBot Support Agent...')} color="#EC4899" />
+           <NavButton icon="support-agent" label="Support" onPress={() => Alert.alert('Support', 'Connecting to xend Support Agent...')} color="#EC4899" />
         </View>
       </Animated.View>
 

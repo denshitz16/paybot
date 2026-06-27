@@ -170,7 +170,7 @@ class SMSService:
         Direct notification to the user about a failed transfer.
         """
         message = (
-            f"PayBot Alert: Your transfer of ₱{amount:,.2f} to {bank_name} has failed. "
+            f"xend Alert: Your transfer of ₱{amount:,.2f} to {bank_name} has failed. "
             f"The funds have been returned to your wallet. Ref: {reference_id}"
         )
         return await cls.send_sms(mobile_number, message)
@@ -187,7 +187,7 @@ class SMSService:
         Notification to the user about a successful transfer.
         """
         message = (
-            f"PayBot: Successfully transferred ₱{amount:,.2f} to {recipient}. "
+            f"xend: Successfully transferred ₱{amount:,.2f} to {recipient}. "
             f"Ref: {reference_id}"
         )
         return await cls.send_sms(mobile_number, message)
@@ -207,7 +207,7 @@ class SMSService:
         """
         status_text = "pending" if status == "pending" else "completed"
         message = (
-            f"PayBot: Disbursement of ₱{amount:,.2f} to {account_name} ({bank_name}) "
+            f"xend: Disbursement of ₱{amount:,.2f} to {account_name} ({bank_name}) "
             f"is {status_text}. Ref: {reference_id}"
         )
         return await cls.send_sms(mobile_number, message)
@@ -224,7 +224,7 @@ class SMSService:
         Notification to the user about a wallet top-up.
         """
         message = (
-            f"PayBot: Your wallet has been credited with {currency} {amount:,.2f}. "
+            f"xend: Your wallet has been credited with {currency} {amount:,.2f}. "
             f"Ref: {reference_id}"
         )
         return await cls.send_sms(mobile_number, message)

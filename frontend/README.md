@@ -1,6 +1,6 @@
 # Institutional Settlement Dashboard (Mainnet)
 
-The primary industrial-grade web interface for institutional merchants and cluster administrators to oversee the PayBot PH ecosystem.
+The primary industrial-grade web interface for institutional merchants and cluster administrators to oversee the xend PH ecosystem.
 
 ## 🏛️ Enterprise Specifications
 
@@ -18,4 +18,4 @@ The primary industrial-grade web interface for institutional merchants and clust
 - **SSE / WebSockets**: Real-time event synchronization across the cluster.
 
 ---
-*© 2024 PayBot Infrastructure Group*
+*© 2024 xend Infrastructure Group*

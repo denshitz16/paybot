@@ -397,16 +397,11 @@ def _mask_card_number(card_number: str) -> str:
         return f"{digits[:4]}{'*' * (len(digits) - 4)}"
     return f"{digits[:4]}{'*' * (len(digits) - 8)}{digits[-4:]}"
 def _start_kb() -> dict:
-    """Full quick-action keyboard for /start and /help. Shows English / Chinese labels."""
+    """Quick-action keyboard for /start and /help with only the requested actions."""
     return {
         "keyboard": [
-            [{"text": "Recharge / 充值"}, {"text": "Wallet / 钱包"}, {"text": "Stats / 统计"}],
-            [{"text": "Terminal / 终端"}, {"text": "List / 列表"}, {"text": "Fees / 费用"}],
-            [{"text": "Top-up / 充值"}, {"text": "Deposit / 存款"}, {"text": "Help / 帮助"}],
-            [{"text": "Withdraw / 提款"}, {"text": "Transfer / 转账"}, {"text": "Collect / 收款"}],
-            [{"text": "Red Packet / 红包"}, {"text": "Flash Swap / 闪兑"}, {"text": "Anon Card / 匿名信用卡"}],
-            [{"text": "Membership / 会员"}, {"text": "Profile / 个人中心"}, {"text": "Add to Group / 加入群组"}],
-            [{"text": "OTC / 自由承兑群"}, {"text": "Games / 游戏中心"}],
+            [{"text": "Send / 转账"}, {"text": "Withdraw / 提款"}],
+            [{"text": "Deposit / 存款"}, {"text": "Top-up / 充值"}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -426,7 +421,7 @@ def _lang_kb() -> dict:
 def _welcome_en(name: str = "") -> str:
     greeting = f"Hi {name}! 🎉" if name else "🎉 You're in!"
     return (
-        f"👋 <b>PayBot Philippines ✅</b>\n"
+        f"👋 <b>xend Philippines ✅</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"{greeting} Your all-in-one payment terminal is ready.\n\n"
         f"💳 <b>Accept Payments</b>\n"
@@ -447,7 +442,7 @@ def _welcome_en(name: str = "") -> str:
 def _welcome_zh(name: str = "") -> str:
     greeting = f"嗨 {name}！🎉" if name else "🎉 欢迎回来！"
     return (
-        f"👋 <b>PayBot Philippines ✅</b>\n"
+        f"👋 <b>xend Philippines ✅</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"{greeting} 您的一站式支付终端已就绪。\n\n"
         f"💳 <b>收款功能</b>\n"
@@ -484,7 +479,7 @@ async def _send_start_panel(db: AsyncSession, chat_id: str, first_name: str):
 
     # Construct Message Text
     text = (
-        f"🛡️ <b>PayBot Philippines ✅</b>\n"
+        f"🛡️ <b>xend Philippines ✅</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"👤 <b>昵称:</b> {_escape_html(first_name)}\n"
         f"🆔 <b>ID:</b> <code>{chat_id}</code>\n\n"
@@ -542,9 +537,8 @@ def _pay_kb() -> dict:
     """Quick-action keyboard shown after payment creation commands."""
     return {
         "keyboard": [
-            [{"text": "💰 /balance"}, {"text": "📋 /list"}, {"text": "📊 /report"}],
-            [{"text": "💳 /invoice"}, {"text": "📱 /qr"}, {"text": "🔗 /link"}],
-            [{"text": "❓ /help"}],
+            [{"text": "Send / 转账"}, {"text": "Withdraw / 提款"}],
+            [{"text": "Deposit / 存款"}, {"text": "Top-up / 充值"}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -555,9 +549,8 @@ def _wallet_kb() -> dict:
     """Quick-action keyboard shown after wallet commands."""
     return {
         "keyboard": [
-            [{"text": "💳 /invoice"}, {"text": "🔗 /link"}, {"text": "📱 /qr"}],
-            [{"text": "📋 /list"}, {"text": "📊 /report"}, {"text": "💱 /fees"}],
-            [{"text": "❓ /help"}],
+            [{"text": "Send / 转账"}, {"text": "Withdraw / 提款"}],
+            [{"text": "Deposit / 存款"}, {"text": "Top-up / 充值"}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -568,8 +561,8 @@ def _info_kb() -> dict:
     """Quick-action keyboard shown after info/report commands."""
     return {
         "keyboard": [
-            [{"text": "💳 /invoice"}, {"text": "💰 /balance"}, {"text": "📋 /list"}],
-            [{"text": "📊 /report"}, {"text": "💱 /fees"}, {"text": "❓ /help"}],
+            [{"text": "Send / 转账"}, {"text": "Withdraw / 提款"}],
+            [{"text": "Deposit / 存款"}, {"text": "Top-up / 充值"}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -3304,7 +3297,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
         # ==================== /help ====================
         elif text.startswith("/help"):
             help_en = (
-                "📋 <b>PayBot Commands — Quick Reference</b>\n"
+                "📋 <b>xend Commands — Quick Reference</b>\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
                 "💳 <b>Accept Payments</b>\n"
                 "  /pay — Open payment menu\n"

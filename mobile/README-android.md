@@ -1,6 +1,6 @@
 # Industrial Terminal Node Signing & Distribution
 
-This guide details the cryptographic signing protocols for the PayBot industrial Android terminal nodes.
+This guide details the cryptographic signing protocols for the xend industrial Android terminal nodes.
 
 ## 🔐 Institutional Signing Setup
 
@@ -39,4 +39,4 @@ This guide details the cryptographic signing protocols for the PayBot industrial
 - **Crucial**: Institutional keys must NEVER be stored in the source grid.
 
 ---
-*© 2024 PayBot Infrastructure Engineering*
+*© 2024 xend Infrastructure Engineering*

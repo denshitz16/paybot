@@ -1,4 +1,4 @@
-# PayBot Wallet Enhancements - Quick Reference
+# xend Wallet Enhancements - Quick Reference
 
 ## 🚀 Quick Start
 

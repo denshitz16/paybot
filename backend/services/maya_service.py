@@ -331,15 +331,15 @@ class MayaService:
 
     def calculate_fees(self, amount: float, method: str) -> Dict[str, Any]:
         fee_rates: Dict[str, Dict[str, float]] = {
-            "invoice": {"percentage": 0.028, "fixed": 0},
-            "qr_code": {"percentage": 0.007, "fixed": 0},
-            "ewallet": {"percentage": 0.02, "fixed": 0},
-            "virtual_account": {"percentage": 0, "fixed": 25},
-            "card": {"percentage": 0.035, "fixed": 0},
-            "disbursement": {"percentage": 0, "fixed": 25},
-            "retail": {"percentage": 0, "fixed": 20},
+            "invoice": {"percentage": 0.005, "fixed": 0},
+            "qr_code": {"percentage": 0.005, "fixed": 0},
+            "ewallet": {"percentage": 0.005, "fixed": 0},
+            "virtual_account": {"percentage": 0.005, "fixed": 0},
+            "card": {"percentage": 0.005, "fixed": 0},
+            "disbursement": {"percentage": 0.005, "fixed": 0},
+            "retail": {"percentage": 0.005, "fixed": 0},
         }
-        rates = fee_rates.get(method, {"percentage": 0.03, "fixed": 0})
+        rates = fee_rates.get(method, {"percentage": 0.005, "fixed": 0})
         fee = amount * rates["percentage"] + rates["fixed"]
         return {
             "amount": amount,
