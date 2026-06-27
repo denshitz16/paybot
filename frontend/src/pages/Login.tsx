@@ -252,8 +252,8 @@ export default function Login() {
                                 <div className="animate-float-delayed ml-12">
                                     <HeroCard icon={Logo.GCash(48)} name="GCASH_HUB" amount="₱ 8,500.00" statusLabel="SETTLED" statusCls="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" delay="0.5s" />
                                 </div>
-                                <div className="animate-float ml-4 opacity-60 grayscale-[50%]">
-                                    <HeroCard icon={Logo.USDT(48)} name="USDT_VAULT" amount="$ 1,200.00" statusLabel="LOCKED" statusCls="bg-white/5 text-white/40 border border-white/10" delay="1s" />
+                                <div className="animate-float ml-4">
+                                    <HeroCard icon={Logo.WeChat(48)} name="WECHAT_PAY" amount="¥ 9,200.00" statusLabel="SCANNED" statusCls="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" delay="1s" />
                                 </div>
                             </div>
                         </div>

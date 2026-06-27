@@ -36,6 +36,30 @@ const features = [
   },
 ];
 
+const paymentMethods = [
+  {
+    name: 'Alipay',
+    logo: '/logos/alipay.svg',
+    description: 'Chinese QR payments for tourists and cross-border commerce.',
+    bg: 'bg-blue-50',
+    text: 'text-sky-700',
+  },
+  {
+    name: 'WeChat Pay',
+    logo: '/logos/wechat.svg',
+    description: 'WeChat wallet acceptance from local and international shoppers.',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+  },
+  {
+    name: 'GCash',
+    logo: '/logos/gcash.svg',
+    description: 'Philippine e-wallet payments for domestic customers.',
+    bg: 'bg-sky-50',
+    text: 'text-sky-700',
+  },
+];
+
 export default function LandingPage() {
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileNavOpen] = useState(false);
@@ -189,16 +213,18 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                { name: 'GCash', color: 'bg-sky-500/10 text-sky-300' },
-                { name: 'Maya', color: 'bg-rose-500/10 text-rose-300' },
-                { name: 'Bank Transfer', color: 'bg-emerald-500/10 text-emerald-300' },
-                { name: 'USDT', color: 'bg-amber-500/10 text-amber-300' },
-              ].map((method) => (
-                <div key={method.name} className={`rounded-[1.75rem] border border-slate-800/90 ${method.color} px-6 py-5`}>
-                  <p className="font-black text-white">{method.name}</p>
-                  <p className="mt-2 text-sm text-slate-400">Instant, trusted settlement routing.</p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {paymentMethods.map((method) => (
+                <div key={method.name} className={`${method.bg} rounded-[1.75rem] border border-slate-800/90 px-6 py-6`}>
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                      <img src={method.logo} alt={method.name} className="h-8 w-8 object-contain" />
+                    </div>
+                    <div>
+                      <p className={`font-black text-lg ${method.text}`}>{method.name}</p>
+                      <p className="text-sm text-slate-400 mt-1">{method.description}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
