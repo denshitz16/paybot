@@ -53,23 +53,24 @@ const defaultStats: Stats = {
   pending_amount: 0,
 };
 
+// More conservative, fintech-friendly status colors
 const statusConfig: Record<string, { color: string; label: string }> = {
-  paid: { color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', label: 'Paid' },
-  pending: { color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', label: 'Pending' },
-  expired: { color: 'bg-rose-500/10 text-rose-400 border-rose-500/20', label: 'Expired' },
+  paid: { color: 'bg-emerald-50 text-emerald-700 border-emerald-100', label: 'Settled' },
+  pending: { color: 'bg-amber-50 text-amber-700 border-amber-100', label: 'Pending' },
+  expired: { color: 'bg-rose-50 text-rose-700 border-rose-100', label: 'Expired' },
 };
 
 const typeConfig: Record<string, { icon: ReactNode; bg: string }> = {
-  invoice: { icon: <FileText className="h-4 w-4 text-slate-700" />, bg: 'bg-slate-100/80' },
-  qr_code: { icon: <CreditCard className="h-4 w-4 text-slate-700" />, bg: 'bg-slate-100/80' },
-  payment_link: { icon: <ArrowRight className="h-4 w-4 text-slate-700" />, bg: 'bg-slate-100/80' },
+  invoice: { icon: <FileText className="h-4 w-4 text-gray-700" />, bg: 'bg-gray-100' },
+  qr_code: { icon: <CreditCard className="h-4 w-4 text-gray-700" />, bg: 'bg-gray-100' },
+  payment_link: { icon: <ArrowRight className="h-4 w-4 text-gray-700" />, bg: 'bg-gray-100' },
 };
 
 function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return { text: 'Good morning', icon: <Sun className="h-5 w-5 text-amber-500" /> };
   if (hour < 18) return { text: 'Good afternoon', icon: <Sunset className="h-5 w-5 text-orange-500" /> };
-  return { text: 'Good evening', icon: <Moon className="h-5 w-5 text-slate-300" /> };
+  return { text: 'Good evening', icon: <Moon className="h-5 w-5 text-gray-400" /> };
 }
 
 function formatTxnDate(dateStr: string): string {
@@ -86,11 +87,11 @@ function formatTxnDate(dateStr: string): string {
 
 function StatCard({ label, value, note, loading }: { label: string; value: string; note: string; loading: boolean }) {
   return (
-    <Card className="border border-slate-200 bg-white shadow-sm">
-      <CardContent className="p-6">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{label}</p>
-        <p className="mt-4 text-3xl font-black text-slate-900 tracking-tight">{loading ? '...' : value}</p>
-        <p className="mt-3 text-sm text-slate-500">{note}</p>
+    <Card className="border border-gray-200 bg-white shadow-sm rounded-md">
+      <CardContent className="p-5">
+        <p className="text-[11px] uppercase tracking-wider text-gray-500">{label}</p>
+        <p className="mt-3 text-2xl font-semibold text-gray-900 tracking-tight">{loading ? '...' : value}</p>
+        <p className="mt-2 text-sm text-gray-500">{note}</p>
       </CardContent>
     </Card>
   );
@@ -104,7 +105,7 @@ export default function Dashboard() {
   const [apiStatus, setApiStatus] = useState<'healthy' | 'degrading' | 'offline'>('healthy');
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [usdWalletBalance, setUsdWalletBalance] = useState<number>(0);
-  const [exchangeRate, setExchangeRate] = useState<number>(58.20);
+  const [exchangeRate, setExchangeRate] = useState<number>(58.2);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -164,8 +165,8 @@ export default function Dashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="h-10 w-10 rounded-full border-2 border-t-slate-700 border-slate-300 animate-spin" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="h-10 w-10 rounded-full border-2 border-t-gray-700 border-gray-300 animate-spin" />
       </div>
     );
   }
@@ -180,67 +181,67 @@ export default function Dashboard() {
 
   return (
     <Layout connected={connected}>
-      <div className="space-y-8 max-w-[1800px] mx-auto px-4 py-8 sm:px-6 xl:px-10">
-        <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="space-y-8 max-w-[1400px] mx-auto px-4 py-8 sm:px-6 xl:px-8">
+        <section className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-semibold text-slate-900">{greeting.text}, {userName}</h1>
-              <p className="mt-3 max-w-3xl text-sm text-slate-600">Here is your current overview of payments, settlements, and available funds.</p>
+              <h1 className="text-2xl font-semibold text-gray-900">{greeting.text}, {userName}</h1>
+              <p className="mt-2 max-w-3xl text-sm text-gray-600">Accounts overview — payments, settlements, and available funds.</p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:w-full">
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">Transactions</p>
-                <p className="mt-3 text-2xl font-semibold text-slate-900">{loading ? '...' : stats.total_count}</p>
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Transactions</p>
+                <p className="mt-3 text-xl font-semibold text-gray-900">{loading ? '...' : stats.total_count}</p>
               </div>
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">Settled</p>
-                <p className="mt-3 text-2xl font-semibold text-emerald-700">{loading ? '...' : stats.paid_count}</p>
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Settled</p>
+                <p className="mt-3 text-xl font-semibold text-emerald-700">{loading ? '...' : stats.paid_count}</p>
               </div>
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">Success rate</p>
-                <p className="mt-3 text-2xl font-semibold text-slate-900">{loading ? '...' : `${successRate}%`}</p>
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Success rate</p>
+                <p className="mt-3 text-xl font-semibold text-gray-900">{loading ? '...' : `${successRate}%`}</p>
               </div>
             </div>
           </div>
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Total volume" value={`₱${fmt(stats.total_amount || 0)}`} note="Transaction volume" loading={loading} />
+          <StatCard label="Total volume" value={`₱${fmt(stats.total_amount || 0)}`} note="Transaction volume (PHP)" loading={loading} />
           <StatCard label="Settled amount" value={`₱${fmt(stats.paid_amount || 0)}`} note="Confirmed settlements" loading={loading} />
           <StatCard label="Pending count" value={`${stats.pending_count}`} note="Awaiting action" loading={loading} />
-          <StatCard label="Available balance" value={`₱${fmt(walletBalance || 0)}`} note="Ready to use" loading={loading} />
+          <StatCard label="Available balance" value={`₱${fmt(walletBalance || 0)}`} note={`USD: $${fmtUsd(usdWalletBalance || 0)} • FX ₱${exchangeRate.toFixed(2)}`} loading={loading} />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-          <Card className="border border-slate-200 bg-white shadow-lg">
-            <CardHeader className="px-6 py-5 border-b border-slate-200">
-              <CardTitle className="text-sm font-black uppercase tracking-[0.35em] text-slate-600">Recent transactions</CardTitle>
+          <Card className="border border-gray-200 bg-white shadow-md rounded-md">
+            <CardHeader className="px-6 py-5 border-b border-gray-200">
+              <CardTitle className="text-sm font-semibold text-gray-700">Recent transactions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 p-6">
               {recentTxns.length > 0 ? (
                 recentTxns.map((txn) => {
                   const status = statusConfig[txn.status] || statusConfig.pending;
-                  const type = typeConfig[txn.transaction_type] || { icon: <FileText className="h-4 w-4 text-slate-700" />, bg: 'bg-slate-100/80' };
+                  const type = typeConfig[txn.transaction_type] || { icon: <FileText className="h-4 w-4 text-gray-700" />, bg: 'bg-gray-100' };
                   return (
-                    <div key={txn.id} className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <div key={txn.id} className="flex items-center justify-between gap-4 rounded-md border border-gray-200 bg-gray-50 p-4">
                       <div className="flex items-center gap-4 min-w-0">
-                        <div className={`h-12 w-12 rounded-3xl ${type.bg} flex items-center justify-center`}>
+                        <div className={`h-12 w-12 rounded-md ${type.bg} flex items-center justify-center`}>
                           {type.icon}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-black text-slate-900 truncate">{txn.description || txn.transaction_type}</p>
-                          <p className="mt-1 text-xs text-slate-500">{formatTxnDate(txn.created_at)} · {txn.currency}</p>
+                          <p className="text-sm font-medium text-gray-900 truncate">{txn.description || txn.transaction_type}</p>
+                          <p className="mt-1 text-xs text-gray-500">{formatTxnDate(txn.created_at)} · {txn.currency}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-black text-slate-900">₱{fmt(txn.amount)}</p>
-                        <span className={`mt-2 inline-flex rounded-full border ${status.color} px-3 py-1 text-[10px] font-black uppercase tracking-[0.3em]`}>{status.label}</span>
+                        <p className="font-semibold text-gray-900">₱{fmt(txn.amount)}</p>
+                        <span className={`mt-2 inline-flex rounded-full border ${status.color} px-3 py-1 text-[11px] font-semibold uppercase tracking-wider`}>{status.label}</span>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-sm text-slate-500">
+                <div className="rounded-md border border-dashed border-gray-200 bg-gray-50 p-12 text-center text-sm text-gray-500">
                   No recent transactions to display.
                 </div>
               )}
@@ -248,50 +249,50 @@ export default function Dashboard() {
           </Card>
 
           <div className="space-y-4">
-            <Card className="border border-slate-200 bg-white shadow-sm">
-              <CardHeader className="px-6 py-5 border-b border-slate-200">
-                <CardTitle className="text-sm font-semibold text-slate-700">Actions</CardTitle>
+            <Card className="border border-gray-200 bg-white shadow-sm rounded-md">
+              <CardHeader className="px-6 py-5 border-b border-gray-200">
+                <CardTitle className="text-sm font-semibold text-gray-700">Actions</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3 p-6">
                 {[
-                  { label: 'Create payment', href: '/create-payment', icon: <CreditCard className="h-4 w-4 text-slate-700" /> },
-                  { label: 'View wallet', href: '/wallet', icon: <Wallet className="h-4 w-4 text-slate-700" /> },
-                  { label: 'Transactions', href: '/transactions', icon: <ArrowRight className="h-4 w-4 text-slate-700" /> },
-                  { label: 'Refresh data', href: '#', icon: <RefreshCw className="h-4 w-4 text-slate-700" /> },
+                  { label: 'Initiate Payment', href: '/create-payment', icon: <CreditCard className="h-4 w-4 text-gray-700" /> },
+                  { label: 'Accounts', href: '/wallet', icon: <Wallet className="h-4 w-4 text-gray-700" /> },
+                  { label: 'Transactions', href: '/transactions', icon: <ArrowRight className="h-4 w-4 text-gray-700" /> },
+                  { label: 'Refresh', href: '#', icon: <RefreshCw className="h-4 w-4 text-gray-700" /> },
                 ].map((item) => (
                   <Link
                     key={item.label}
                     to={item.href}
-                    className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-slate-100"
-                    onClick={(e) => item.label === 'Refresh data' && (e.preventDefault(), setLoading(true), fetchData().finally(() => setLoading(false)))}
+                    className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-4 py-4 text-sm font-medium text-gray-800 transition hover:border-gray-300 hover:shadow-sm"
+                    onClick={(e) => item.label === 'Refresh' && (e.preventDefault(), setLoading(true), fetchData().finally(() => setLoading(false)))}
                   >
                     <span>{item.label}</span>
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-700">{item.icon}</span>
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-white border border-gray-200 text-gray-700">{item.icon}</span>
                   </Link>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="border border-slate-200 bg-white shadow-sm">
-              <CardHeader className="px-6 py-5 border-b border-slate-200">
-                <CardTitle className="text-sm font-semibold text-slate-700">System health</CardTitle>
+            <Card className="border border-gray-200 bg-white shadow-sm rounded-md">
+              <CardHeader className="px-6 py-5 border-b border-gray-200">
+                <CardTitle className="text-sm font-semibold text-gray-700">System health</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">API status</p>
+                <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-sm text-gray-500">API status</p>
                   <div className="mt-3 flex items-center justify-between gap-4">
-                    <p className="text-2xl font-semibold text-slate-900">{apiStatus === 'healthy' ? 'Healthy' : apiStatus === 'degrading' ? 'Degrading' : 'Offline'}</p>
-                    <span className={`h-3.5 w-3.5 rounded-full ${apiStatus === 'healthy' ? 'bg-emerald-400' : apiStatus === 'degrading' ? 'bg-amber-400' : 'bg-rose-500'}`} />
+                    <p className="text-lg font-medium text-gray-900">{apiStatus === 'healthy' ? 'Healthy' : apiStatus === 'degrading' ? 'Degrading' : 'Offline'}</p>
+                    <span className={`h-3.5 w-3.5 rounded-full ${apiStatus === 'healthy' ? 'bg-emerald-500' : apiStatus === 'degrading' ? 'bg-amber-400' : 'bg-rose-500'}`} />
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm text-slate-500">Current balance</p>
-                    <p className="mt-3 text-2xl font-semibold text-slate-900">₱{loading ? '...' : fmt(walletBalance || 0)}</p>
+                  <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-sm text-gray-500">Current balance</p>
+                    <p className="mt-3 text-xl font-semibold text-gray-900">₱{loading ? '...' : fmt(walletBalance || 0)}</p>
                   </div>
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm text-slate-500">FX rate</p>
-                    <p className="mt-3 text-2xl font-semibold text-slate-900">₱{exchangeRate.toFixed(2)}</p>
+                  <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-sm text-gray-500">FX rate</p>
+                    <p className="mt-3 text-xl font-semibold text-gray-900">₱{exchangeRate.toFixed(2)}</p>
                   </div>
                 </div>
               </CardContent>
