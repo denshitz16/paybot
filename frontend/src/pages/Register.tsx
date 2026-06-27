@@ -164,24 +164,24 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F0F7FF] flex">
+<div className="min-h-screen bg-[#F4FFF8] flex">
 
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between w-[44%] bg-gradient-to-br from-[#0070FF] to-[#0047CC] border-r border-blue-400/20 px-14 py-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between w-[44%] bg-gradient-to-br from-[#0F8A4A] via-[#00A66C] to-[#1DB954] border-r border-emerald-400/20 px-14 py-12 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]"
           style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         <div className="relative">
           <div className="flex items-center gap-3 mb-10">
-            <img src="/logo.svg" alt={APP_NAME} className="h-10 w-10 rounded-xl shadow-xl shadow-blue-500/20" />
+            <img src="/logo.svg" alt={APP_NAME} className="h-10 w-10 rounded-xl shadow-xl shadow-emerald-500/20" />
             <div>
               <p className="text-white font-bold text-lg leading-tight">{APP_NAME}</p>
-              <p className="text-blue-100 text-sm">by {COMPANY_NAME}</p>
+              <p className="text-emerald-50/90 text-sm">by {COMPANY_NAME}</p>
             </div>
           </div>
 
           <h2 className="text-2xl font-bold text-white mb-3">Apply for Access</h2>
-          <p className="text-blue-100 text-sm mb-8 leading-relaxed">
+          <p className="text-emerald-50/95 text-sm mb-8 leading-relaxed">
             Submit your KYC information to request admin dashboard access. After approval, you'll be notified via Telegram.
           </p>
 
@@ -198,7 +198,7 @@ export default function Register() {
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">{s.label}</p>
-                  <p className="text-blue-100 text-xs mt-0.5">{s.desc}</p>
+                  <p className="text-emerald-50/90 text-xs mt-0.5">{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -206,17 +206,17 @@ export default function Register() {
 
           <div className="mt-8 bg-white/15 border border-white/20 rounded-xl p-3">
             <p className="text-white text-xs font-semibold mb-1">Security Notice</p>
-            <p className="text-blue-100 text-xs">Your Telegram username is required to receive approval notifications and to link your account after approval.</p>
+            <p className="text-emerald-50/90 text-xs">Your Telegram username is required to receive approval notifications and to link your account after approval.</p>
           </div>
         </div>
 
-        <p className="relative text-blue-200 text-xs">© {new Date().getFullYear()} {COMPANY_NAME}</p>
+        <p className="relative text-emerald-100/90 text-xs">© {new Date().getFullYear()} {COMPANY_NAME}</p>
       </div>
 
       {/* Right panel — form */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative overflow-y-auto">
         <div className="lg:hidden flex items-center gap-2.5 mb-8">
-          <img src="/logo.svg" alt={APP_NAME} className="h-9 w-9 rounded-xl shadow-lg shadow-blue-500/20" />
+          <img src="/logo.svg" alt={APP_NAME} className="h-9 w-9 rounded-xl shadow-lg shadow-emerald-500/20" />
           <div>
             <p className="text-foreground font-bold text-base leading-tight">{APP_NAME}</p>
             <p className="text-muted-foreground text-xs">by {COMPANY_NAME}</p>
@@ -294,7 +294,7 @@ export default function Register() {
                   type="text"
                   value={form.business_name}
                   onChange={(e) => handleChange('business_name', e.target.value)}
-                  placeholder="DRL Solutions Inc."
+                  placeholder="Your business name"
                   className="w-full bg-white border border-border rounded-xl pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:border-primary/50 focus:ring-0 transition-colors"
                 />
               </div>

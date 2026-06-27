@@ -420,7 +420,7 @@ export default function Features() {
     { icon: <Building2 className="h-4 w-4 text-amber-400" />, title: 'Money Management', description: 'Manage disbursements, refunds, subscriptions, and customer profiles in one place.', color: 'bg-amber-500/10' },
     { icon: <PieChart className="h-4 w-4 text-rose-400" />, title: 'Reports & Analytics', description: 'Revenue breakdowns, payment method analysis, success rates, and fee calculator.', color: 'bg-rose-500/10' },
     { icon: <ShieldCheck className="h-4 w-4 text-violet-400" />, title: 'Admin Management', description: 'Role-based access control with per-admin permissions for secure team management.', color: 'bg-violet-500/10' },
-    { icon: <Users className="h-4 w-4 text-teal-400" />, title: 'Telegram-Only Auth', description: 'Secure login — only verified Telegram users authorized by DRL Solutions can access the UI.', color: 'bg-teal-500/10' },
+    { icon: <Users className="h-4 w-4 text-teal-400" />, title: 'Telegram-Only Auth', description: 'Secure login — only verified Telegram users authorized by the team can access the UI.', color: 'bg-teal-500/10' },
   ];
 
   const [videoLoaded, setVideoLoaded] = useState(false);
