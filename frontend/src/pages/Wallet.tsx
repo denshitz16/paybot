@@ -160,11 +160,11 @@ const txnTypeConfig: Record<string, { label: string; color: string; icon: React.
 
 const BANKS = ['BDO', 'BPI', 'UNIONBANK', 'RCBC', 'CHINABANK', 'PNB', 'METROBANK'];
 
-// PayBot PH bank accounts for top-up
+// xend bank accounts for top-up
 const TOPUP_BANKS: { bank: string; name: string; number: string }[] = [
-  { bank: 'GoTyme Digital Bank',       name: 'PayBot PH', number: '012116012891'  },
-  { bank: 'Security Bank Corporation', name: 'PayBot PH', number: '0000068888173' },
-  { bank: 'Asia United Bank',          name: 'PayBot PH', number: '934105321485'  },
+  { bank: 'GoTyme Digital Bank',       name: 'xend', number: '012116012891'  },
+  { bank: 'Security Bank Corporation', name: 'xend', number: '0000068888173' },
+  { bank: 'Asia United Bank',          name: 'xend', number: '934105321485'  },
 ];
 
 interface BankOption {
@@ -953,7 +953,7 @@ export default function Wallet() {
                       {topupDialogMethod === 'bank' && (
                         <div className="space-y-3 mt-1">
                           <p className="text-muted-foreground text-sm leading-relaxed">
-                            To top-up your balance, transfer to one of the PayBot PH bank accounts below. Your top-up will be credited after admin verification.
+                            To top-up your balance, transfer to one of the xend bank accounts below. Your top-up will be credited after admin verification.
                           </p>
                           <div className="overflow-x-auto rounded-lg border border-border/50">
                             <table className="w-full text-sm border-collapse">
@@ -1108,7 +1108,7 @@ export default function Wallet() {
                           </div>
                           <div className="flex items-center justify-between px-4 py-2.5">
                             <span className="text-muted-foreground">Account Name</span>
-                            <span className="text-foreground">{TOPUP_BANKS.find((b) => b.bank === topupToBank)?.name ?? 'PayBot PH'}</span>
+                            <span className="text-foreground">{TOPUP_BANKS.find((b) => b.bank === topupToBank)?.name ?? 'xend'}</span>
                           </div>
                           <div className="flex items-center justify-between px-4 py-2.5">
                             <span className="text-muted-foreground">Account Number</span>

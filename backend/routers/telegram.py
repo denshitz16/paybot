@@ -1110,7 +1110,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     if lang == "en":
                         greeting = f"Hi {cq_first_name}! 👋" if cq_first_name else "👋 Hello!"
                         msg = (
-                            f"🌟 <b>PayBot Philippines ✅</b>\n"
+                            f"🌟 <b>xend ✅</b>\n"
                             f"━━━━━━━━━━━━━━━━━━━━\n"
                             f"{greeting} Great to have you here! 😊\n\n"
                             f"This bot is currently available to <b>registered merchants</b> only.\n\n"
@@ -1121,7 +1121,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                     else:
                         greeting = f"嗨 {cq_first_name}！👋" if cq_first_name else "👋 你好！"
                         msg = (
-                            f"🌟 <b>欢迎使用 PayBot Philippines！</b>\n"
+                            f"🌟 <b>欢迎使用 xend！</b>\n"
                             f"━━━━━━━━━━━━━━━━━━━━\n"
                             f"{greeting} 很高兴认识你！😊\n\n"
                             f"本机器人目前仅对<b>已注册商户</b>开放。\n\n"
@@ -1212,7 +1212,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
             if not is_admin:
                 await tg.send_message(
                     chat_id,
-                    "👋 <b>PayBot Philippines ✅</b>\n"
+                    "👋 <b>xend ✅</b>\n"
                     "━━━━━━━━━━━━━━━━━━━━\n"
                     "Please type /start to begin."
                 )
@@ -1727,7 +1727,7 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 greeting = f"Hi {first_name}! 👋" if first_name else "👋 Hello!"
                 await tg.send_message(
                     chat_id,
-                    f"🌐 {greeting}\n\n<b>PayBot Philippines ✅</b>\n<b>Select your language / 请选择语言</b>",
+                    f"🌐 {greeting}\n\n<b>xend ✅</b>\n<b>Select your language / 请选择语言</b>",
                     reply_markup=_lang_kb(),
                 )
             else:
