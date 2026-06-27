@@ -194,7 +194,7 @@ export default function Register() {
                    <Send className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/30 group-focus-within:text-brandblue-600 transition-colors" />
                    <Input value={form.telegram_username} onChange={e => handleChange('telegram_username', e.target.value)} placeholder="@HANDLE" className="pl-14 h-18 bg-muted/20 border-border/40 rounded-2xl font-black text-brandblue-600 tracking-[0.2em] border-2 focus:ring-brandblue-500/10 shadow-inner uppercase" required />
                  </div>
-                 <p className="text-[9px] text-muted-foreground/40 font-black uppercase tracking-[0.2em] px-4 leading-relaxed">Used to synchronize your account with the PayBot Kernel for institutional notifications.</p>
+                 <p className="text-[9px] text-muted-foreground/40 font-black uppercase tracking-[0.2em] px-4 leading-relaxed">Used to synchronize your account with the xend Kernel for institutional notifications.</p>
                </div>
 
                <Button type="submit" disabled={submitting} className="w-full h-20 bg-brandblue-600 hover:bg-brandblue-700 text-white font-black rounded-[2rem] uppercase tracking-[0.4em] shadow-2xl shadow-brandblue-500/30 transition-all active:scale-95 mt-10 text-xs">

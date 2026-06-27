@@ -47,9 +47,9 @@ interface PaymentTypeOption {
 }
 
 const TYPE_OPTIONS: PaymentTypeOption[] = [
-    { id: 'card', label: 'Card Payment', icon: CreditCard, color: 'blue', desc: 'Debit or Credit Card (Visa, Mastercard, JCB)' },
-    { id: 'qr_code', label: 'QR Ph / Maya', icon: QrCode, color: 'emerald', desc: 'Maya and QR Ph Universal Scanner' },
-    { id: 'ewallet', label: 'GCash via QR Ph', icon: Smartphone, color: 'blue', desc: 'Direct GCash payment via QR Ph' },
+    { id: 'card', label: 'Card Payment', icon: CreditCard, color: 'blue', desc: 'Debit or credit card processing' },
+    { id: 'qr_code', label: 'QR Code', icon: QrCode, color: 'emerald', desc: 'QRPH universal scanner' },
+    { id: 'ewallet', label: 'E-Wallet', icon: Smartphone, color: 'blue', desc: 'Digital wallet QR checkout' },
     { id: 'invoice', label: 'E-Invoice', icon: FileText, color: 'purple', desc: 'Enterprise billing with full tax support' },
     { id: 'payment_link', label: 'Payment Link', icon: LinkIcon, color: 'cyan', desc: 'Secure reusable links for social commerce' },
 ];
@@ -312,13 +312,12 @@ export default function CreatePayment() {
                                     </div>
                                 </div>
 
-                                {/* Maya Business Header */}
                                 <div className="bg-[#0A0F1E] border-b border-white/5 p-6 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-brandblue-400 font-black text-lg tracking-tighter uppercase italic">maya</span>
-                                        <span className="bg-brandblue-500 text-white text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest">BUSINESS</span>
+                                        <span className="text-brandblue-400 font-black text-lg tracking-tighter uppercase italic">payment</span>
+                                        <span className="bg-brandblue-500 text-white text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest">terminal</span>
                                     </div>
-                                    <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Select Payment Option</div>
+                                    <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Select Payment Method</div>
                                 </div>
 
                                 <div className="bg-[#0A0F1E]/50 border-b border-white/5 p-8">
@@ -425,18 +424,22 @@ export default function CreatePayment() {
                                         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
                                             <TerminalLabel className="ml-1">Provider Node</TerminalLabel>
                                             <div className="grid grid-cols-3 gap-4">
-                                                {['PH_GCASH', 'PH_MAYA', 'PH_GRABPAY'].map(p => (
+                                                {[
+                                                { code: 'PH_GCASH', label: 'Digital Wallet A' },
+                                                { code: 'PH_MAYA', label: 'Digital Wallet B' },
+                                                { code: 'PH_GRABPAY', label: 'Digital Wallet C' },
+                                            ].map((provider) => (
                                                     <button
-                                                        key={p}
+                                                        key={provider.code}
                                                         type="button"
-                                                        onClick={() => updateForm({ channelCode: p })}
+                                                        onClick={() => updateForm({ channelCode: provider.code })}
                                                         className={`p-4 rounded-xl border-2 transition-all font-black text-[10px] uppercase tracking-widest ${
-                                                            form.channelCode === p
+                                                            form.channelCode === provider.code
                                                                 ? 'bg-brandblue-500 border-brandblue-500 text-white'
                                                                 : 'bg-muted/20 border-border/40 text-muted-foreground hover:bg-muted/30'
                                                         }`}
                                                     >
-                                                        {p.replace('PH_', '')}
+                                                        {provider.label}
                                                     </button>
                                                 ))}
                                             </div>
@@ -507,7 +510,7 @@ export default function CreatePayment() {
                                     <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
                                 </p>
                                 <p className="text-xs text-white/40 leading-relaxed font-medium uppercase tracking-tight">
-                                    Current node state: <span className="text-emerald-400">100%_OPERATIONAL</span>. High-priority clearing active across Maya & GCash networks.
+                                    Current node state: <span className="text-emerald-400">100%_OPERATIONAL</span>. High-priority clearing is active across all regional payment channels.
                                     Cryptographic hashing enabled for all transmission payloads.
                                 </p>
                             </div>

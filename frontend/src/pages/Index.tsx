@@ -119,8 +119,7 @@ export default function LandingPage() {
               </div>
 
               <div className="space-y-6">
-                <h1 className="max-w-3xl text-5xl font-black tracking-tight text-white sm:text-6xl">
-                  Run payments, settlements, and merchant operations from one powerful dashboard.
+                  <h1 className="max-w-3xl text-4xl sm:text-5xl font-bold tracking-tight text-white">
                 </h1>
                 <p className="max-w-2xl text-base leading-8 text-slate-400">
                   A premium payment control plane for local businesses that need fast settlement visibility, live support insights, and trusted payout routing.
@@ -176,7 +175,7 @@ export default function LandingPage() {
 
               <Card className="rounded-[2rem] border border-border/50 bg-slate-950/90 text-slate-100">
                 <CardHeader>
-                  <CardTitle className="text-base text-white">Why PayBot</CardTitle>
+                  <CardTitle className="text-base text-white">Why xend</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {features.map((feature) => {

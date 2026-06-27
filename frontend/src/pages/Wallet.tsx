@@ -124,9 +124,9 @@ const txnTypeConfig: Record<string, { label: string; color: string; icon: ReactN
 };
 
 const TOPUP_BANKS = [
-  { bank: 'GoTyme Digital Bank',       name: 'PayBot PH', number: '012116012891'  },
-  { bank: 'Security Bank Corporation', name: 'PayBot PH', number: '0000068888173' },
-  { bank: 'Asia United Bank',          name: 'PayBot PH', number: '934105321485'  },
+  { bank: 'GoTyme Digital Bank',       name: 'xend', number: '012116012891'  },
+  { bank: 'Security Bank Corporation', name: 'xend', number: '0000068888173' },
+  { bank: 'Asia United Bank',          name: 'xend', number: '934105321485'  },
 ];
 
 export default function Wallet() {
@@ -569,7 +569,7 @@ export default function Wallet() {
                </div>
                <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex gap-3">
                   <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                  <p className="text-[10px] font-bold text-amber-700 uppercase leading-relaxed">After transfer, please send a screenshot of the receipt to @PayBotPH_Bot on Telegram for manual verification.</p>
+                  <p className="text-[10px] font-bold text-amber-700 uppercase leading-relaxed">After transfer, please send a screenshot of the receipt to @xend_bot on Telegram for manual verification.</p>
                </div>
                <Button onClick={() => setTopupDialogOpen(false)} className="w-full h-12 bg-brandblue-500 hover:bg-brandblue-600 text-white font-black rounded-xl uppercase tracking-widest">Got it</Button>
             </div>

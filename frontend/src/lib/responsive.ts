@@ -1,5 +1,5 @@
 /**
- * Responsive design utilities for PayBot
+ * Responsive design utilities for xend
  * Provides consistent breakpoints and responsive classNames across the app
  */
 

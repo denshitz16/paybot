@@ -138,7 +138,7 @@ export default function Users() {
                         aria-sort={sortField === 'username' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         className="cursor-pointer focus:ring-2 focus:ring-brandblue-500 focus:ring-offset-1"
                       >Username</th>
-                      <th className="text-right"
+                      <th
                         tabIndex={0}
                         role="button"
                         onClick={() => handleSort('created_at')}

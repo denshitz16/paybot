@@ -121,8 +121,8 @@ const BOT_COMMANDS = [
 const COMMAND_CATEGORIES = ['General', 'Wallet', 'Payments', 'Transfers', 'Tools'];
 
 const DEFAULT_TEMPLATES = {
-  welcome_message_en: `👋 Welcome to PayBot PH!\n━━━━━━━━━━━━━━━━━━━━\nHi {name}! 🎉 Your all-in-one Philippine payment gateway is ready.\n\n📄 /invoice · 📱 /qr · 🔗 /link\n💸 /disburse · 📤 /send · 💰 /wallet\n\nType /help for the full guide.`,
-  welcome_message_zh: `👋 欢迎使用 PayBot PH！\n━━━━━━━━━━━━━━━━━━━━\n嗨 {name}！🎉 您的一站式菲律宾支付机器人已就绪。\n\n📄 /invoice · 📱 /qr · 🔗 /link\n💸 /disburse · 📤 /send · 💰 /wallet\n\n输入 /help 查看完整参考。`,
+  welcome_message_en: `👋 Welcome to xend!\n━━━━━━━━━━━━━━━━━━━━\nHi {name}! 🎉 Your all-in-one Philippine payment gateway is ready.\n\n📄 /invoice · 📱 /qr · 🔗 /link\n💸 /disburse · 📤 /send · 💰 /wallet\n\nType /help for the full guide.`,
+  welcome_message_zh: `👋 欢迎使用 xend！\n━━━━━━━━━━━━━━━━━━━━\n嗨 {name}！🎉 您的一站式菲律宾支付机器人已就绪。\n\n📄 /invoice · 📱 /qr · 🔗 /link\n💸 /disburse · 📤 /send · 💰 /wallet\n\n输入 /help 查看完整参考。`,
   payment_success_message: `✅ Payment Successful!\n━━━━━━━━━━━━━━━━━━━━\n💰 Amount: ₱{amount}\n📝 Description: {description}\n🆔 Ref: {external_id}\n\nThank you for your payment! 🎉`,
   payment_failed_message: `❌ Payment Failed\n━━━━━━━━━━━━━━━━━━━━\n💰 Amount: ₱{amount}\n📝 Description: {description}\n🆔 Ref: {external_id}\n\nPlease try again or contact support.`,
   payment_pending_message: `⏳ Payment Pending\n━━━━━━━━━━━━━━━━━━━━\n💰 Amount: ₱{amount}\n📝 Description: {description}\n🆔 Ref: {external_id}\n\nWaiting for confirmation...`,

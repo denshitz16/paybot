@@ -167,7 +167,7 @@ export default function Merchants() {
                         aria-sort={sortField === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         className="cursor-pointer focus:ring-2 focus:ring-brandblue-500 focus:ring-offset-1"
                       >Status</th>
-                      <th className="text-right"
+                      <th
                         tabIndex={0}
                         role="button"
                         onClick={() => handleSort('balance')}

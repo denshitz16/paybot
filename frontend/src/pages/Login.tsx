@@ -225,22 +225,22 @@ export default function Login() {
                                 </span>
                                 <span className="text-white text-[10px] font-black uppercase tracking-[0.4em]">System Status: <span className="text-brandblue-400">OPTIMAL</span></span>
                             </div>
-                            <h1 className="text-7xl lg:text-9xl font-black text-white leading-[0.85] tracking-tighter mb-10 animate-in slide-in-from-left-12 duration-1000">
+                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-8 animate-in slide-in-from-left-12 duration-1000">
                                 START YOUR <br />
                                 <span className="text-gradient">SESSION</span>
                             </h1>
-                            <p className="text-white/40 text-xl lg:text-2xl font-medium max-w-lg mb-16 leading-relaxed mx-auto lg:mx-0 uppercase tracking-tight">
-                                Authorize your merchant identity to access the PayBot network and real-time payment processing.
+                            <p className="text-white/40 text-base sm:text-lg font-medium max-w-lg mb-12 leading-relaxed mx-auto lg:mx-0">
+                                Authorize your merchant identity to access the xend network and real-time payment processing.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-8 justify-center lg:justify-start mb-12">
-                                <button onClick={scrollToLogin} className="flex items-center justify-center gap-4 bg-white text-[#0A0F1E] font-black px-12 py-6 rounded-[2.5rem] text-xs w-full sm:w-auto shadow-2xl hover:shadow-brandblue-500/20 transition-all active:scale-95 group uppercase tracking-[0.3em] hover-lift">
+                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 justify-center lg:justify-start mb-10">
+                                <button onClick={scrollToLogin} className="flex items-center justify-center gap-3 bg-white text-[#0A0F1E] font-black px-10 py-4 rounded-[2rem] text-sm w-full sm:w-auto shadow-2xl hover:shadow-brandblue-500/20 transition-all active:scale-95 group uppercase tracking-[0.3em] hover-lift">
                                     Sign In Now <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
                                 </button>
-                                <div className="flex items-center gap-4 px-6 opacity-40">
+                                <div className="flex items-center gap-3 px-4 opacity-40">
                                     <div className="h-1 w-12 bg-white/20 rounded-full overflow-hidden">
                                         <div className="h-full bg-brandblue-500 animate-progress"></div>
                                     </div>
-                                    <span className="text-[9px] font-black text-white uppercase tracking-widest">Latency: 14ms</span>
+                                    <span className="text-[10px] font-semibold text-white uppercase tracking-[0.35em]">Latency: 14ms</span>
                                 </div>
                             </div>
                         </div>
@@ -270,11 +270,11 @@ export default function Login() {
                         <div className="absolute top-0 left-0 w-full h-1.5 bg-brandblue-600 shadow-[0_0_20px_rgba(0,122,255,0.5)]" />
 
                         <div className="text-center mb-16">
-                            <div className="w-24 h-24 bg-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-2xl border border-white/10 transition-transform hover:rotate-3 duration-500 group">
-                                <Lock className="h-10 w-10 text-brandblue-400 group-hover:scale-110 transition-transform" />
+                            <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/10 transition-transform hover:rotate-3 duration-500 group">
+                                <Lock className="h-8 w-8 text-brandblue-400 group-hover:scale-110 transition-transform" />
                             </div>
-                            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">PayBot Admin</h2>
-                            <p className="text-white/40 font-black text-[10px] mt-4 uppercase tracking-[0.4em]">Merchant Dashboard Portal</p>
+                            <h2 className="text-3xl font-bold text-white uppercase tracking-tight">xend Admin</h2>
+                            <p className="text-white/40 font-semibold text-[11px] mt-3 uppercase tracking-[0.35em]">Merchant Dashboard Portal</p>
                         </div>
 
                         <form onSubmit={handleLogin} className="space-y-8">
@@ -287,7 +287,7 @@ export default function Login() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="merchant@paybot.ph"
+                                        placeholder="merchant@xend.ph"
                                         className="w-full h-18 bg-white/5 border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-brandblue-500/20 focus:border-brandblue-500/50 border-2 outline-none transition-all text-sm font-black uppercase tracking-widest shadow-sm relative z-10 text-white placeholder:text-white/10 hover:bg-white/8 focus:bg-white/10"
                                         required
                                     />
@@ -375,7 +375,7 @@ export default function Login() {
 
                         <div className="mt-16 pt-10 border-t border-white/5 text-center space-y-6">
                             <p className="text-white/40 text-[11px] font-black uppercase tracking-[0.3em]">
-                                New to PayBot?{' '}
+                                New to xend?{' '}
                                 <Link to="/register" className="text-brandblue-400 hover:text-brandblue-300 transition-colors ml-2">Create Account</Link>
                             </p>
                             <div className="flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">

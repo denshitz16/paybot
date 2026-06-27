@@ -64,11 +64,11 @@ export default function PaymentsHub() {
           break;
         case 'alipay':
           endpoint = '/api/v1/photonpay/alipay-session';
-          payload = { amount: amt, description: description || 'Alipay payment' };
+          payload = { amount: amt, description: description || 'Cross-border wallet session' };
           break;
         case 'wechat':
           endpoint = '/api/v1/photonpay/wechat-session';
-          payload = { amount: amt, description: description || 'WeChat Pay' };
+          payload = { amount: amt, description: description || 'Cross-border wallet session' };
           break;
       }
 
@@ -106,9 +106,9 @@ export default function PaymentsHub() {
     { id: 'qr_code', label: 'QR Code', icon: QrCode, color: 'purple', desc: 'Scan to pay instantly' },
     { id: 'payment_link', label: 'Link', icon: LinkIcon, color: 'cyan', desc: 'Reusable universal link' },
     { id: 'virtual_account', label: 'VA Bank', icon: Building2, color: 'emerald', desc: 'Direct bank transfer' },
-    { id: 'ewallet', label: 'E-Wallet', icon: Smartphone, color: 'orange', desc: 'GCash / Maya checkout' },
-    { id: 'alipay', label: 'Alipay', icon: Store, color: 'rose', desc: 'Chinese wallet support' },
-    { id: 'wechat', label: 'WeChat', icon: Store, color: 'green', desc: 'WeChat Pay support' },
+    { id: 'ewallet', label: 'E-Wallet', icon: Smartphone, color: 'orange', desc: 'Digital wallet checkout' },
+    { id: 'alipay', label: 'Wallet Session', icon: Store, color: 'rose', desc: 'Cross-border wallet support' },
+    { id: 'wechat', label: 'Global Wallet', icon: Store, color: 'green', desc: 'Cross-border wallet support' },
   ];
 
   const currentMethod = useMemo(() => methods.find(m => m.id === tab) || methods[0], [tab]);
@@ -225,7 +225,11 @@ export default function PaymentsHub() {
                           <Select value={ewalletProvider} onValueChange={setEwalletProvider}>
                             <SelectTrigger className="bg-muted/20 border-border/40 h-16 rounded-2xl px-6 font-black uppercase text-[11px] tracking-widest border-2"><SelectValue /></SelectTrigger>
                             <SelectContent className="rounded-2xl border-border/40 shadow-2xl p-2">
-                              {[['PH_GCASH', 'GCash'], ['PH_MAYA', 'Maya'], ['PH_GRABPAY', 'GrabPay']].map(([v, l]) => (
+                              {[
+                                ['PH_GCASH', 'Digital Wallet A'],
+                                ['PH_MAYA', 'Digital Wallet B'],
+                                ['PH_GRABPAY', 'Digital Wallet C'],
+                              ].map(([v, l]) => (
                                 <SelectItem key={v} value={v} className="py-3 font-black rounded-xl mb-1">{l}</SelectItem>
                               ))}
                             </SelectContent>
@@ -267,7 +271,7 @@ export default function PaymentsHub() {
               <div className="space-y-2">
                 <p className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Institutional Compliance</p>
                 <p className="text-xs text-white/40 leading-relaxed font-medium uppercase tracking-tight">
-                  Transactions are routed through the Maya PCI-DSS verified production cluster. Real-time AML monitoring and fraud prevention protocols are active across all regional nodes.
+                  Transactions are routed through a PCI-DSS verified production cluster. Real-time AML monitoring and fraud prevention protocols are active across all regional nodes.
                 </p>
               </div>
             </div>

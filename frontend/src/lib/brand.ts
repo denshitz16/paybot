@@ -1,4 +1,4 @@
-export const APP_NAME = 'PayBot Philippines';
+export const APP_NAME = 'xend';
 export const APP_TAGLINE = 'Institutional Settlement Infrastructure';
 export const APP_DESCRIPTION =
   'Industrial-grade financial clearing platform for institutional merchants, providing bank-direct POS settlement and global liquidity management.';
