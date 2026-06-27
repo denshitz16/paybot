@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { client } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
-import { fmtCurrencyPhp } from '@/lib/format';
 
 interface ReportData {
   period: string; start_date: string; end_date: string;
@@ -81,8 +80,7 @@ export default function ReportsPage() {
     setFeeLoading(false);
   };
 
-  // use shared safe currency formatter
-  const fmt = (n: number | undefined | null) => fmtCurrencyPhp(n ?? 0);
+  const fmt = (n: number) => `₱${n.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
 
   const typeLabels: Record<string, string> = {
     invoice: 'Invoice', qr_code: 'QR Code', payment_link: 'Payment Link',
@@ -256,7 +254,7 @@ export default function ReportsPage() {
                       const colors: Record<string, string> = {
                         paid: 'bg-emerald-500', pending: 'bg-amber-500', expired: 'bg-red-500', refunded: 'bg-orange-500',
                       };
-                      const icons: Record<string, ReactNode> = {
+                      const icons: Record<string, React.ReactNode> = {
                         paid: <ArrowUpRight className="h-4 w-4 text-emerald-400" />,
                         pending: <DollarSign className="h-4 w-4 text-amber-400" />,
                         expired: <ArrowDownRight className="h-4 w-4 text-red-400" />,

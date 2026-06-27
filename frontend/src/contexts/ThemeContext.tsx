@@ -16,15 +16,29 @@ export const useTheme = (): ThemeContextType => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme: Theme = 'light';
+  const [theme, setTheme] = useState<Theme>(() => {
+    // v2: GCash light redesign — reset any legacy dark preference
+    const stored = localStorage.getItem('theme') as Theme | null;
+    const version = localStorage.getItem('theme_version');
+    if (version !== '2') {
+      localStorage.setItem('theme', 'light');
+      localStorage.setItem('theme_version', '2');
+      return 'light';
+    }
+    return stored ?? 'light';
+  });
 
   useEffect(() => {
-    document.documentElement.classList.remove('dark');
-  }, []);
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
-  const toggleTheme = () => {
-    // Dark mode is disabled for the dashboard experience.
-  };
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
   return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 };

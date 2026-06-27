@@ -119,11 +119,9 @@ export default function RolesPage() {
     try {
       const res = await fetch('/api/v1/roles');
       if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      setRoles(Array.isArray(data) ? data : []);
+      setRoles(await res.json());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load roles');
-      setRoles([]);
     } finally {
       setRolesLoading(false);
     }
@@ -134,11 +132,9 @@ export default function RolesPage() {
     try {
       const res = await fetch('/api/v1/admin-users');
       if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      setAdmins(Array.isArray(data) ? data : []);
+      setAdmins(await res.json());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load admins');
-      setAdmins([]);
     } finally {
       setAdminsLoading(false);
     }
@@ -252,7 +248,7 @@ export default function RolesPage() {
         {/* Role Cards */}
         {!rolesLoading && (
           <div className="space-y-4">
-            {Array.isArray(roles) && roles.map((role) => {
+            {roles.map((role) => {
               const colorCls = BADGE_COLORS[role.color] || BADGE_COLORS['blue'];
               const icon = ROLE_ICONS[role.id] ?? <Shield className="h-4 w-4 text-blue-400" />;
 
@@ -302,7 +298,7 @@ export default function RolesPage() {
                             Apply to admin
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            {Array.isArray(activeAdmins) && activeAdmins.map((admin) => {
+                            {activeAdmins.map((admin) => {
                               const key = `${role.id}-${admin.id}`;
                               const isApplying = applying === key;
                               return (

@@ -4,11 +4,11 @@ import {
   Bot, LayoutDashboard, Wallet, FileText, Building2, Activity,
   WifiOff, LogOut, ShieldCheck, MessageSquare, Crown, User,
   Menu, X, Send, ClipboardList, DollarSign, ChevronDown,
-  MessageCircle, UserCheck, ScanLine, ChevronRight,
+  MessageCircle, UserCheck, Sun, Moon, ScanLine, ChevronRight,
   Settings2, Inbox, Shield, Zap, QrCode, ArrowRightLeft, BookOpen,
-  Smartphone, Monitor, CreditCard,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { APP_NAME, APP_SUBTITLE, SUPPORT_URL } from '@/lib/brand';
 import AppFooter from '@/components/AppFooter';
@@ -46,6 +46,7 @@ export default function Layout({ children, connected }: LayoutProps) {
   const location = useLocation();
   const path = location.pathname;
   const { user, logout, isAdmin, isSuperAdmin, permissions } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -82,6 +83,9 @@ export default function Layout({ children, connected }: LayoutProps) {
       if (['/usdt-send-requests', '/topup-requests', '/bank-deposits'].some((r) => path.startsWith(r))) {
         next.add('requests');
       }
+      if (['/kyb-registrations', '/kyc-verifications'].some((r) => path.startsWith(r))) {
+        next.add('compliance');
+      }
       return next;
     });
   }, [path]);
@@ -100,13 +104,11 @@ export default function Layout({ children, connected }: LayoutProps) {
       items: [
         { to: '/', icon: LayoutDashboard, label: t('nav_dashboard') },
         { to: '/wallet', icon: Wallet, label: t('nav_wallet') },
-        { to: '/merchants', icon: Building2, label: t('nav_merchants') },
       ],
     },
     {
       label: t('nav_payments'),
       items: [
-        { to: '/create-payment', icon: CreditCard, label: 'Collect Payment', badge: 'New' },
         {
           type: 'group' as const,
           key: 'gateways',
@@ -147,10 +149,7 @@ export default function Layout({ children, connected }: LayoutProps) {
           label: t('nav_administration'),
           items: [
             { to: '/admin-management', icon: ShieldCheck, label: t('nav_admin_management'), badge: 'Super' },
-            { to: '/pos-terminals', icon: Smartphone, label: 'POS Terminals', badge: 'Super' },
-            { to: '/terminal-simulator', icon: Monitor, label: 'ECR Simulator', badge: 'Super' },
             { to: '/roles', icon: Shield, label: t('nav_roles'), badge: 'Super' },
-            { to: '/users', icon: User, label: t('nav_users'), badge: 'Super' },
             {
               type: 'group' as const,
               key: 'requests',
@@ -161,6 +160,17 @@ export default function Layout({ children, connected }: LayoutProps) {
                 { to: '/usdt-send-requests', icon: Send, label: t('nav_usdt_requests'), badge: 'Super' },
                 { to: '/topup-requests', icon: DollarSign, label: t('nav_topup_requests'), badge: 'Super' },
                 { to: '/bank-deposits', icon: Building2, label: t('nav_bank_deposits'), badge: 'Super' },
+              ],
+            },
+            {
+              type: 'group' as const,
+              key: 'compliance',
+              icon: Settings2,
+              label: t('nav_compliance'),
+              badge: 'Super',
+              children: [
+                { to: '/kyb-registrations', icon: ClipboardList, label: t('nav_kyb_registrations'), badge: 'Super' },
+                { to: '/kyc-verifications', icon: UserCheck, label: t('nav_kyc_verifications'), badge: 'Super' },
               ],
             },
           ] as NavEntry[],
@@ -175,13 +185,11 @@ export default function Layout({ children, connected }: LayoutProps) {
   ];
 
   /* ─── NavLinks renderer ─────────────────────────────────────── */
-  const NavLinks = ({ onNav, isMobile }: { onNav?: () => void; isMobile?: boolean }) => (
+  const NavLinks = ({ onNav }: { onNav?: () => void }) => (
     <nav className="flex-1 overflow-y-auto py-3 px-2">
       {navSections.map((section) => (
         <div key={section.label} className="mb-1">
-          <p className={`px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest ${
-            isMobile ? 'text-slate-600' : 'text-slate-500'
-          }`}>
+          <p className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
             {section.label}
           </p>
           {section.items.map((entry) => {
@@ -196,10 +204,8 @@ export default function Layout({ children, connected }: LayoutProps) {
                     onClick={() => toggleGroup(group.key)}
                     className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 ${
                       hasActiveChild
-                        ? 'text-primary bg-primary/10 border-primary'
-                        : isMobile
-                          ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border-transparent'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-transparent'
+                        ? 'text-primary bg-primary/10 border-primary dark:bg-primary/15'
+                        : 'text-foreground/70 hover:text-foreground hover:bg-muted border-transparent'
                     }`}
                   >
                     <div className={`flex items-center justify-center h-6 w-6 rounded-lg shrink-0 transition-all duration-150 ${
@@ -209,7 +215,7 @@ export default function Layout({ children, connected }: LayoutProps) {
                     </div>
                     <span className="flex-1 truncate text-left">{group.label}</span>
                     {group.badge && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-200 text-amber-800">
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
                         {group.badge}
                       </span>
                     )}
@@ -217,7 +223,7 @@ export default function Layout({ children, connected }: LayoutProps) {
                       className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
                     />
                   </button>
-                  {isOpen && group.children && Array.isArray(group.children) && (
+                  {isOpen && (
                     <div className="mt-0.5 mb-1 ml-3">
                       {group.children.map(({ to, icon: Icon, label, badge }) => {
                         const active = isActive(to);
@@ -228,16 +234,14 @@ export default function Layout({ children, connected }: LayoutProps) {
                             onClick={onNav}
                             className={`flex items-center gap-3 pl-7 pr-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 ${
                               active
-                                ? 'bg-primary/10 text-primary border-primary font-semibold'
-                                : isMobile
-                                  ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border-transparent'
-                                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-transparent'
+                                ? 'bg-primary/10 text-primary border-primary font-semibold dark:bg-primary/15'
+                                : 'text-foreground/60 hover:text-foreground hover:bg-muted border-transparent'
                             }`}
                           >
                             <Icon className="h-3.5 w-3.5 shrink-0" />
                             <span className="flex-1 truncate text-xs">{label}</span>
                             {badge && (
-                              <span className="text-[8px] font-bold px-1 py-0.5 rounded-full bg-amber-200 text-amber-800">
+                              <span className="text-[8px] font-bold px-1 py-0.5 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
                                 {badge}
                               </span>
                             )}
@@ -260,10 +264,8 @@ export default function Layout({ children, connected }: LayoutProps) {
                 onClick={onNav}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 ${
                   active
-                    ? 'bg-primary/10 text-primary border-primary font-semibold'
-                    : isMobile
-                      ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border-transparent'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-transparent'
+                    ? 'bg-primary/10 text-primary border-primary font-semibold dark:bg-primary/15'
+                    : 'text-foreground/70 hover:text-foreground hover:bg-muted border-transparent'
                 }`}
               >
                 <div className={`flex items-center justify-center h-6 w-6 rounded-lg shrink-0 transition-all duration-150 ${
@@ -271,9 +273,9 @@ export default function Layout({ children, connected }: LayoutProps) {
                 }`}>
                   <item.icon className="h-3.5 w-3.5" />
                 </div>
-                <span className="flex-1 truncate text-slate-700">{item.label}</span>
+                <span className="flex-1 truncate">{item.label}</span>
                 {item.badge && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-200 text-amber-800">
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
                     {item.badge}
                   </span>
                 )}
@@ -289,9 +291,7 @@ export default function Layout({ children, connected }: LayoutProps) {
           href={SUPPORT_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border-l-2 border-transparent ${
-            isMobile ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-          }`}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-150 border-l-2 border-transparent"
         >
           <div className="flex items-center justify-center h-6 w-6 rounded-lg shrink-0">
             <MessageCircle className="h-3.5 w-3.5" />
@@ -303,39 +303,39 @@ export default function Layout({ children, connected }: LayoutProps) {
   );
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 text-slate-900 flex">
+    <div className="h-screen overflow-hidden bg-background text-foreground flex">
 
       {/* ─── Desktop Sidebar ─── */}
-      <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 z-40 bg-white/95 backdrop-blur-2xl border-r border-slate-200 shadow-xl">
+      <aside className="hidden md:flex flex-col w-56 fixed inset-y-0 left-0 z-40 bg-card border-r border-border shadow-sm">
         {/* Brand */}
-            <Link to="/" className="flex items-center gap-4 px-8 h-24 border-b border-slate-200 shrink-0 group transition-all hover:bg-slate-100">
-          <div className="h-11 w-11 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-all duration-500 border border-slate-200">
-            <img src="/logo.svg" alt={APP_NAME} className="h-7 w-7 shrink-0" />
+        <Link to="/" className="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0 group">
+          <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+            <img src="/logo.svg" alt={APP_NAME} className="h-5 w-5 shrink-0" />
           </div>
           <div>
-            <p className="text-lg font-black tracking-tighter text-slate-900 uppercase">{APP_NAME}</p>
-            <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.3em]">{APP_SUBTITLE}</p>
+            <p className="text-sm font-bold leading-tight text-foreground">{APP_NAME}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">{APP_SUBTITLE}</p>
           </div>
         </Link>
 
         <NavLinks />
 
         {/* User */}
-        <div className="shrink-0 border-t border-slate-200 p-6 bg-slate-50">
-          <div className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-white border border-slate-200 shadow-sm group cursor-pointer hover:border-slate-300 transition-all duration-300">
-            <div className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
-              {isSuperAdmin ? <Crown className="h-5 w-5 text-amber-500" /> : <User className="h-5 w-5 text-slate-600" />}
+        <div className="shrink-0 border-t border-border p-3">
+          <div className="flex items-center gap-2 px-2 py-2 rounded-xl bg-accent/50 border border-accent">
+            <div className="h-7 w-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              {isSuperAdmin ? <Crown className="h-3.5 w-3.5 text-amber-500" /> : <User className="h-3.5 w-3.5 text-primary" />}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-black truncate tracking-widest text-slate-900 uppercase">{userName}</p>
-              <p className="text-[9px] font-black uppercase text-slate-500 tracking-[0.2em] leading-none mt-1">{isSuperAdmin ? 'Super Admin' : 'Admin'}</p>
+              <p className="text-xs font-semibold truncate">{userName}</p>
+              <p className="text-[10px] text-muted-foreground">{isSuperAdmin ? t('super_admin') : t('admin')}</p>
             </div>
             <button
               onClick={() => logout()}
-                className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all active:scale-90"
+              className="p-1 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
               title="Sign out"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -344,29 +344,27 @@ export default function Layout({ children, connected }: LayoutProps) {
       {/* ─── Mobile Drawer ─── */}
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-md animate-in fade-in duration-500" onClick={() => setSidebarOpen(false)} />
-          <aside className="relative z-10 w-80 h-full bg-white border-l border-slate-200 flex flex-col shadow-2xl animate-in slide-in-from-left-8 duration-500">
-            <div className="flex items-center justify-between px-8 h-24 border-b border-slate-200 shrink-0">
-              <Link to="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-4 group">
-                <div className="h-11 w-11 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 shadow-sm">
-                  <img src="/logo.svg" alt={APP_NAME} className="h-7 w-7" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <aside className="relative z-10 w-64 h-full bg-card border-r border-border flex flex-col shadow-xl">
+            <div className="flex items-center justify-between px-4 h-14 border-b border-border shrink-0">
+              <Link to="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 group">
+                <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shrink-0">
+                  <img src="/logo.svg" alt={APP_NAME} className="h-5 w-5" />
                 </div>
-                <p className="text-xl font-black tracking-tighter text-slate-900 uppercase">{APP_NAME}</p>
+                <p className="text-sm font-bold text-foreground">{APP_NAME}</p>
               </Link>
-              <button onClick={() => setSidebarOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:text-slate-900 transition-all active:scale-90" aria-label="Close navigation menu">
-                <X className="h-5 w-5" />
+              <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-6">
-               <NavLinks onNav={() => setSidebarOpen(false)} isMobile />
-            </div>
-            <div className="shrink-0 border-t border-slate-200 p-6">
+            <NavLinks onNav={() => setSidebarOpen(false)} />
+            <div className="shrink-0 border-t border-border p-3">
               <button
                 onClick={() => logout()}
-                className="w-full h-12 flex items-center justify-center gap-3 rounded-xl text-sm font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all active:scale-95 shadow-sm"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {t('sign_out')}
               </button>
             </div>
           </aside>
@@ -374,54 +372,61 @@ export default function Layout({ children, connected }: LayoutProps) {
       )}
 
       {/* ─── Main Content ─── */}
-      <div className="flex-1 flex flex-col min-h-0 md:ml-64 transition-all duration-300">
+      <div className="flex-1 flex flex-col min-h-0 md:ml-56">
 
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 h-20 flex items-center px-10 gap-6 bg-white/90 backdrop-blur-2xl border-b border-slate-200 shrink-0">
+        <header className="sticky top-0 z-30 h-14 flex items-center px-4 gap-3 bg-card/95 backdrop-blur-md border-b border-border shrink-0">
           <button
-            className="md:hidden h-12 w-12 flex items-center justify-center rounded-2xl bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition-all active:scale-90"
+            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             onClick={() => setSidebarOpen(true)}
-            aria-label="Open navigation menu"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           </button>
 
           {/* Mobile brand */}
-          <div className="md:hidden flex items-center gap-4">
-            <div className="h-10 w-10 rounded-2xl bg-slate-100 flex items-center justify-center shadow-sm border border-slate-200">
-              <img src="/logo.svg" alt={APP_NAME} className="h-6 w-6" />
+          <div className="md:hidden flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
+              <img src="/logo.svg" alt={APP_NAME} className="h-4 w-4" />
             </div>
-            <span className="text-base font-black tracking-tighter text-slate-900 uppercase">{APP_NAME}</span>
+            <span className="text-sm font-bold text-foreground">{APP_NAME}</span>
           </div>
 
           <div className="flex-1" />
 
-          <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-[1.5rem] border border-slate-200 shadow-inner">
-            {/* Language toggle */}
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
-              className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition-all text-[10px] font-black uppercase tracking-tighter border border-transparent hover:border-slate-300"
-              title={language === 'en' ? t('switch_chinese') : t('switch_english')}
-            >
-              {language === 'en' ? '中' : 'EN'}
-            </button>
-          </div>
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title={theme === 'dark' ? t('switch_light') : t('switch_dark')}
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+
+          {/* Language toggle */}
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-xs font-semibold w-8 h-8 flex items-center justify-center"
+            title={language === 'en' ? t('switch_chinese') : t('switch_english')}
+          >
+            {language === 'en' ? '中' : 'EN'}
+          </button>
 
           {/* Live indicator */}
           {connected !== undefined && (
-            <div className={`flex items-center gap-3 px-6 py-2.5 rounded-full border shadow-sm transition-all duration-1000 ${
-              connected
-              ? 'bg-emerald-500/10 text-emerald-700 border-emerald-200 shadow-emerald-200'
-              : 'bg-rose-500/10 text-rose-700 border-rose-200 shadow-rose-200'
-            }`}>
-              <div className="relative flex h-2.5 w-2.5">
-                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${connected ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+            connected ? (
+              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                </span>
+                <span className="hidden sm:inline">{t('live')}</span>
               </div>
-              <span className="hidden sm:inline text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-700">
-                 {connected ? 'Online' : 'Offline'}
-              </span>
-            </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+                <WifiOff className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{t('offline')}</span>
+              </div>
+            )
           )}
 
           {/* User menu */}
@@ -429,32 +434,27 @@ export default function Layout({ children, connected }: LayoutProps) {
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className="hidden md:flex items-center gap-4 pl-6 border-l border-slate-200 text-slate-700 hover:text-slate-900 transition-all group"
+                className="hidden md:flex items-center gap-2 pl-3 border-l border-border text-muted-foreground hover:text-foreground transition-colors"
               >
-                <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform border border-slate-200">
-                  {isSuperAdmin ? <Crown className="h-5 w-5 text-amber-400" /> : <User className="h-5 w-5 text-slate-100" />}
+                <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  {isSuperAdmin ? <Crown className="h-3.5 w-3.5 text-amber-500" /> : <User className="h-3.5 w-3.5 text-primary" />}
                 </div>
-                <div className="text-left space-y-0.5">
-                  <p className="text-sm font-semibold text-slate-900 truncate max-w-[120px] leading-none">{userName}</p>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em]">{isSuperAdmin ? 'Super Admin' : 'Admin'}</p>
-                </div>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-500 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                <span className="text-xs font-semibold max-w-[100px] truncate">{userName}</span>
+                <ChevronDown className="h-3.5 w-3.5" />
               </button>
               {userMenuOpen && (
-                <div className="absolute right-0 mt-5 w-64 bg-white border border-slate-200 rounded-[2rem] shadow-lg py-3 z-50 animate-in fade-in zoom-in-95 duration-300 origin-top-right backdrop-blur-xl">
-                  <div className="px-8 py-6 border-b border-slate-200 space-y-1">
-                    <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{userName}</p>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em]">{isSuperAdmin ? 'Super Admin' : 'Operator'}</p>
+                <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-2xl shadow-xl py-1.5 z-50">
+                  <div className="px-4 py-2.5 border-b border-border">
+                    <p className="text-sm font-semibold truncate">{userName}</p>
+                    <p className="text-[11px] text-muted-foreground">{isSuperAdmin ? t('super_administrator') : t('administrator')}</p>
                   </div>
-                  <div className="p-2">
-                    <button
-                      onClick={() => { setUserMenuOpen(false); logout(); }}
-                      className="w-full flex items-center gap-4 px-6 py-4 text-xs font-black text-rose-400 hover:bg-rose-500 hover:text-white rounded-[1.25rem] transition-all duration-300 group"
-                    >
-                      <LogOut className="h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
-                      TERMINATE_PROTOCOL
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => { setUserMenuOpen(false); logout(); }}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t('sign_out')}
+                  </button>
                 </div>
               )}
             </div>
@@ -462,16 +462,11 @@ export default function Layout({ children, connected }: LayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-8 sm:p-12 overflow-y-auto overflow-x-hidden min-h-0 bg-slate-50 relative custom-scrollbar">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-sky-500/5 blur-[150px] pointer-events-none -z-10 rounded-full" />
-          <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 blur-[150px] pointer-events-none -z-10 rounded-full" />
-
+        <main className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden min-h-0">
           <div className="max-w-7xl w-full mx-auto">
             {children}
           </div>
-          <div className="mt-20">
-             <AppFooter variant="admin" />
-          </div>
+          <AppFooter variant="admin" />
         </main>
       </div>
     </div>

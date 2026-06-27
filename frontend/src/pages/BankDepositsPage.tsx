@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import Layout from '@/components/Layout';
-import { fmt } from '@/lib/format';
 import { CheckCircle, XCircle, Clock, Eye, RefreshCw, Building2 } from 'lucide-react';
 
 interface BankDepositRequest {
@@ -45,14 +44,8 @@ export default function BankDepositsPage() {
     try {
       const url = filter ? `/api/v1/bank-deposits?status=${filter}` : '/api/v1/bank-deposits';
       const res = await fetch(url, { credentials: 'include' });
-      if (res.ok) {
-        const d = await res.json();
-        setRequests(Array.isArray(d.items) ? d.items : []);
-      }
-    } catch (e) {
-      console.error(e);
-      setRequests([]);
-    }
+      if (res.ok) { const d = await res.json(); setRequests(d.items || []); }
+    } catch (e) { console.error(e); }
     setLoading(false);
   }, [filter]);
 
@@ -132,7 +125,7 @@ export default function BankDepositsPage() {
               </div>
             ))}
           </div>
-        ) : (!Array.isArray(requests) || requests.length === 0) ? (
+        ) : requests.length === 0 ? (
           <div className="bg-background border border-border/40 rounded-2xl p-12 flex flex-col items-center text-center">
             <div className="h-12 w-12 bg-muted rounded-2xl flex items-center justify-center mb-3">
               <Building2 className="h-6 w-6 text-muted-foreground" />
@@ -145,7 +138,7 @@ export default function BankDepositsPage() {
               const sc = statusConfig[req.status] || statusConfig.pending;
               const isActive = activeId === req.id;
               const emoji = channelEmoji[req.channel] || '🏦';
-              const phpFormatted = fmt(req.amount_php);
+              const phpFormatted = req.amount_php.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
               return (
                 <div key={req.id} className="bg-background border border-border/40 rounded-2xl overflow-hidden">
                   <div className="p-4 flex items-start gap-4">

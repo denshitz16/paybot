@@ -1,21 +1,61 @@
-# Institutional Settlement Dashboard (Mainnet)
+# Shadcn-UI Template Usage Instructions
 
-The primary industrial-grade web interface for institutional merchants and cluster administrators to oversee the xend PH ecosystem.
+## technology stack
 
-## 🏛️ Enterprise Specifications
+This project is built with:
 
-- **Mainnet Grid Telemetry**: High-fidelity live sales dynamics and successful clearing metrics.
-- **Liquidity Vault Oversight**: Visual governance of industrial PHP/USD/USDT liquidity pools.
-- **Node Infrastructure Control**: Remote hardware-level management of POS settlement nodes.
-- **Compliance Portal**: Industrial-scale merchant registration and KYB verification interface.
-- **Clearing Suite**: Professional tools for generating institutional invoices and dynamic QRPH nodes.
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-## 🛠 Strategic Architecture
+All shadcn/ui components have been downloaded under `@/components/ui`.
 
-- **React 18** on **Vite**: High-performance rendering for real-time grid dynamics.
-- **TypeScript**: Industrial-grade type safety for financial data integrity.
-- **Tailwind CSS & Shadcn**: Professional, high-fidelity UI engineered for efficiency.
-- **SSE / WebSockets**: Real-time event synchronization across the cluster.
+## File Structure
 
----
-*© 2024 xend Infrastructure Group*
+- `index.html` - HTML entry point
+- `vite.config.ts` - Vite configuration file
+- `tailwind.config.js` - Tailwind CSS configuration file
+- `package.json` - NPM dependencies and scripts
+- `src/app.tsx` - Root component of the project
+- `src/main.tsx` - Project entry point
+- `src/index.css` - Existing CSS configuration
+
+## Components
+
+- All shadcn/ui components are pre-downloaded and available at `@/components/ui`
+
+## Styling
+
+- Add global styles to `src/index.css` or create new CSS files as needed
+- Use Tailwind classes for styling components
+
+## Development
+
+- Import components from `@/components/ui` in your React components
+- Customize the UI by modifying the Tailwind configuration
+
+## Note
+
+The `@/` path alias points to the `src/` directory
+
+# Commands
+
+**Install Dependencies**
+
+```shell
+pnpm i
+```
+
+**Start Preview**
+
+```shell
+pnpm run dev
+```
+
+**To build**
+
+```shell
+pnpm run build
+```

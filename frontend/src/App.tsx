@@ -8,7 +8,6 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import React, { useEffect, useState } from 'react';
 import TopProgressBar from '@/components/TopProgressBar';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
-import { XCircle } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Wallet from './pages/Wallet';
 import Transactions from './pages/Transactions';
@@ -18,12 +17,12 @@ import ReportsPage from './pages/ReportsPage';
 import BotSettings from './pages/BotSettings';
 import MessengerPage from './pages/MessengerPage';
 import AdminManagement from './pages/AdminManagement';
-import POSTerminalsPage from './pages/POSTerminalsPage';
-import TerminalSimulator from './pages/TerminalSimulator';
 import BotMessagesPage from './pages/BotMessagesPage';
 import TopupRequestsPage from './pages/TopupRequestsPage';
 import UsdtSendRequestsPage from './pages/UsdtSendRequestsPage';
 import BankDepositsPage from './pages/BankDepositsPage';
+import KybRegistrationsPage from './pages/KybRegistrationsPage';
+import KycVerificationsPage from './pages/KycVerificationsPage';
 import RolesPage from './pages/RolesPage';
 import RequireSuperAdmin from './components/RequireSuperAdmin';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
@@ -43,11 +42,6 @@ import XenditPage from './pages/XenditPage';
 import AlipayPage from './pages/AlipayPage';
 import WeChatPage from './pages/WeChatPage';
 import HomePage from './pages/Index';
-import DesignSystemDemo from './pages/DesignSystemDemo';
-import WalletNew from './pages/new/WalletNew';
-import TransactionsNew from './pages/new/TransactionsNew';
-import Merchants from './pages/Merchants';
-import Users from './pages/Users';
 
 const queryClient = new QueryClient();
 
@@ -60,30 +54,17 @@ function MaintenanceGuard({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.warn('Maintenance check timed out');
-      setChecked(true);
-    }, 3000);
-
-    fetch('/api/v1/app-settings/maintenance', { signal: controller.signal })
+    fetch('/api/v1/app-settings/maintenance')
       .then((r) => r.json())
       .then((data) => {
         setMaintenanceMode(!!data.maintenance_mode);
       })
       .catch((err) => {
+        // If the check fails, don't block access — log for debugging
         console.warn('Maintenance mode check failed:', err);
         setMaintenanceMode(false);
       })
-      .finally(() => {
-        clearTimeout(timeoutId);
-        setChecked(true);
-      });
-
-    return () => {
-      controller.abort();
-      clearTimeout(timeoutId);
-    };
+      .finally(() => setChecked(true));
   }, [location.pathname]);
 
   if (!checked) return null;
@@ -100,15 +81,10 @@ function MaintenanceGuard({ children }: { children: React.ReactNode }) {
 // Wraps children in a div that re-mounts (and fades in) on every route change
 function PageFade({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  // Provide a main landmark and a screen-reader-only page title
-  const path = location.pathname === '/' ? 'Home' : location.pathname.replace(/^\/+/g, '').replace(/[-_/]/g, ' ') || 'Page';
-  const title = path.split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-
   return (
-    <main key={location.key} id="main-content" role="main" className="page-enter">
-      <h1 className="sr-only">{title}</h1>
+    <div key={location.key} className="page-enter">
       {children}
-    </main>
+    </div>
   );
 }
 
@@ -117,50 +93,6 @@ function PageFade({ children }: { children: React.ReactNode }) {
  * Must be rendered inside BrowserRouter so TopProgressBar / PageFade can call useLocation().
  * The AppLoadingScreen plays an exit animation before it is unmounted.
  */
-// Error Boundary Component to prevent total app crashes
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: any) {
-    console.error("ErrorBoundary caught an error", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
-          <div className="max-w-md space-y-6">
-            <div className="h-20 w-20 bg-rose-500/10 rounded-3xl flex items-center justify-center mx-auto border border-rose-500/20">
-               <XCircle className="h-10 w-10 text-rose-500" />
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-2xl font-black text-white uppercase tracking-tighter">System Kernel Panic</h1>
-              <p className="text-slate-400 text-sm font-medium">The interface encountered an unexpected sequence error. Our automated repair systems are notified.</p>
-            </div>
-            <div className="p-4 bg-black/40 rounded-2xl border border-white/5 text-left overflow-auto max-h-32">
-               <code className="text-[10px] text-rose-300/70 font-mono break-all">{this.state.error?.toString()}</code>
-            </div>
-            <button
-              onClick={() => window.location.href = '/'}
-              className="w-full h-12 bg-white text-black font-black rounded-xl uppercase tracking-widest active:scale-95 transition-all"
-            >
-              Reboot UI
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 function AuthAwareShell() {
   const { loading } = useAuth();
   const [showLoader, setShowLoader] = useState(true);
@@ -185,7 +117,6 @@ function AuthAwareShell() {
       <MaintenanceGuard>
         <PageFade>
           <Routes>
-            <Route path="/design" element={<DesignSystemDemo />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/intro" element={<BotIntro />} />
             <Route path="/login" element={<Login />} />
@@ -196,10 +127,7 @@ function AuthAwareShell() {
             <Route path="/auth/error" element={<AuthError />} />
             <Route path="/logout-callback" element={<LogoutCallbackPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/" element={<HomePage />} />
-            <Route path="/merchants" element={<Merchants />} />
-            <Route path="/users" element={<Users />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/create-payment" element={<CreatePayment />} />
@@ -212,12 +140,12 @@ function AuthAwareShell() {
             <Route path="/bot-settings" element={<BotSettings />} />
             <Route path="/messenger" element={<MessengerPage />} />
             <Route path="/admin-management" element={<RequireSuperAdmin><AdminManagement /></RequireSuperAdmin>} />
-            <Route path="/pos-terminals" element={<RequireSuperAdmin><POSTerminalsPage /></RequireSuperAdmin>} />
-            <Route path="/terminal-simulator" element={<RequireSuperAdmin><TerminalSimulator /></RequireSuperAdmin>} />
             <Route path="/bot-messages" element={<ProtectedAdminRoute><BotMessagesPage /></ProtectedAdminRoute>} />
             <Route path="/topup-requests" element={<RequireSuperAdmin><TopupRequestsPage /></RequireSuperAdmin>} />
             <Route path="/usdt-send-requests" element={<RequireSuperAdmin><UsdtSendRequestsPage /></RequireSuperAdmin>} />
             <Route path="/bank-deposits" element={<RequireSuperAdmin><BankDepositsPage /></RequireSuperAdmin>} />
+            <Route path="/kyb-registrations" element={<RequireSuperAdmin><KybRegistrationsPage /></RequireSuperAdmin>} />
+            <Route path="/kyc-verifications" element={<RequireSuperAdmin><KycVerificationsPage /></RequireSuperAdmin>} />
             <Route path="/roles" element={<RequireSuperAdmin><RolesPage /></RequireSuperAdmin>} />
             <Route path="/policies" element={<Policies />} />
             <Route path="*" element={<NotFound />} />
@@ -236,9 +164,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
-            <ErrorBoundary>
-              <AuthAwareShell />
-            </ErrorBoundary>
+            <AuthAwareShell />
           </BrowserRouter>
         </TooltipProvider>
         </AuthProvider>

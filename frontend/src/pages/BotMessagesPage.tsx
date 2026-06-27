@@ -44,12 +44,9 @@ export default function BotMessagesPage() {
       const res = await fetch('/api/v1/bot-messages/conversations', { credentials: 'include' });
       if (res.ok) {
         const d = await res.json();
-        setConversations(Array.isArray(d.items) ? d.items : []);
+        setConversations(d.items || []);
       }
-    } catch (e) {
-      console.error(e);
-      setConversations([]);
-    }
+    } catch (e) { console.error(e); }
     setLoading(false);
   }, []);
 
@@ -58,13 +55,10 @@ export default function BotMessagesPage() {
       const res = await fetch(`/api/v1/bot-messages?chat_id=${chatId}&limit=100`, { credentials: 'include' });
       if (res.ok) {
         const d = await res.json();
-        setMessages(Array.isArray(d.items) ? d.items : []);
+        setMessages(d.items || []);
         setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
-    } catch (e) {
-      console.error(e);
-      setMessages([]);
-    }
+    } catch (e) { console.error(e); }
   }, []);
 
   useEffect(() => {
@@ -155,7 +149,7 @@ export default function BotMessagesPage() {
                     </div>
                   ))}
                 </div>
-              ) : (!Array.isArray(filtered) || filtered.length === 0) ? (
+              ) : filtered.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground text-sm">No conversations yet</div>
               ) : (
                 filtered.map(c => (
@@ -224,7 +218,7 @@ export default function BotMessagesPage() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                  {Array.isArray(messages) && messages.map(m => {
+                  {messages.map(m => {
                     const isAdmin = m.log_type === 'admin_reply';
                     return (
                       <div key={m.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>

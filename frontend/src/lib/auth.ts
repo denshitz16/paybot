@@ -42,32 +42,15 @@ export const authApi = {
         };
       }
       return null;
-    } catch (error) {
-      console.error('Failed to fetch current user:', error);
+    } catch {
       return null;
     }
   },
 
-  async login(email: string, password: string) {
-    const response = await fetch('/api/v1/auth/terminal-login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data?.detail || 'Login failed');
-    }
-
-    const data = await response.json();
-    if (!data?.access_token) {
-      throw new Error('Login failed: missing access token');
-    }
-
-    setStoredToken(data.access_token);
+  async login(userId: string, password: string) {
+    void userId;
+    void password;
+    throw new Error('Legacy login is disabled. Use Telegram sign-in.');
   },
 
   async loginWithTelegram(user: TelegramWidgetUser, cfTurnstileToken?: string | null) {
@@ -88,13 +71,11 @@ export const authApi = {
     }
 
     const data = await response.json();
-    // Check for both 'token' and 'access_token' to handle API inconsistencies
-    const token = data?.token || data?.access_token;
-    if (!token) {
-      throw new Error('Telegram login failed: missing token or access_token');
+    if (!data?.token) {
+      throw new Error('Telegram login failed: missing token');
     }
 
-    setStoredToken(token);
+    setStoredToken(data.token);
   },
 
   async logout() {

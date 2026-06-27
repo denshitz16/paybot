@@ -55,60 +55,58 @@ interface AppFooterProps {
 
 export default function AppFooter({ variant = 'public' }: AppFooterProps) {
   const isAdmin = variant === 'admin';
-  const dividerClass = isAdmin ? 'border-border/10' : 'border-slate-800/40';
-  const bgClass = isAdmin ? 'bg-transparent' : 'bg-[#0A0F1E]';
+  const dividerClass = isAdmin ? 'border-border' : 'border-slate-800';
+  const bgClass = isAdmin ? 'bg-background' : 'bg-slate-950';
 
   return (
-    <footer className={`relative overflow-hidden border-t ${dividerClass} ${bgClass} pt-20 pb-16`}>
+    <footer className={`relative overflow-hidden border-t ${dividerClass} ${bgClass}`}>
       {/* Decorative gradient glow */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
-        <div className="absolute -bottom-48 left-1/4 w-[500px] h-[500px] bg-brandblue-700/10 blur-[120px] rounded-full animate-float" />
-        <div className="absolute -bottom-32 right-1/4 w-[400px] h-[400px] bg-emerald-700/5 blur-[100px] rounded-full animate-float-delayed" />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -bottom-32 left-1/4 w-96 h-96 bg-blue-700/8 blur-[100px] rounded-full" />
+        <div className="absolute -bottom-24 right-1/4 w-64 h-64 bg-teal-700/6 blur-[80px] rounded-full" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-10">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* ── TOP ROW: Brand + Nav columns ────────────────────── */}
-        <div className="pb-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16">
+        <div className="pt-10 pb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
 
           {/* Brand column */}
-          <div className="lg:col-span-2 space-y-8">
-            <Link to="/login" className="inline-flex items-center gap-4 group">
-              <div className="h-12 w-12 bg-[#0A0F1E] border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-brandblue-600">
-                <Bot className="h-6 w-6 text-brandblue-400 group-hover:text-white" />
+          <div className="lg:col-span-2 space-y-4">
+            <Link to="/login" className="inline-flex items-center gap-3">
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25 shrink-0 animate-logo-entrance hover:animate-logo-bounce">
+                <Bot className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-foreground font-black text-xl leading-none uppercase tracking-tighter">{APP_NAME}</p>
-                <p className="text-muted-foreground/80 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5">{APP_TAGLINE}</p>
+                <p className="text-white font-bold text-base leading-tight">{APP_NAME}</p>
+                <p className="text-muted-foreground text-xs">{APP_TAGLINE}</p>
               </div>
             </Link>
-            <p className="text-muted-foreground/90 text-sm font-bold leading-relaxed max-w-sm uppercase tracking-tight">
-              The institutional transmission layer for Philippine liquidity nodes. Real-time clearing between local networks and global asset vaults.
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
+              The unified Telegram payment platform for Philippine merchants. Accept Alipay, WeChat Pay,
+              GCash, Maya, and all major PH banks — settle in USDT same day.
             </p>
-            <div className="pt-4 flex flex-col gap-3">
-               <p className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.4em]">Kernel_Support</p>
-               <a
-                 href={SUPPORT_URL}
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="inline-flex items-center gap-3 text-brandblue-500 hover:text-brandblue-400 text-xs font-black uppercase tracking-widest transition-all group/link"
-               >
-                 <MessageCircle className="h-4 w-4" />
-                 {SUPPORT_URL.replace('https://t.me/', '@')}
-                 <ExternalLink className="h-3 w-3 opacity-40 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-               </a>
-            </div>
+            <a
+              href={SUPPORT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sky-400 hover:text-sky-300 text-sm font-medium transition-colors"
+            >
+              <MessageCircle className="h-4 w-4" />
+              {SUPPORT_URL.replace('https://t.me/', '@')}
+              <ExternalLink className="h-3 w-3 opacity-60" />
+            </a>
           </div>
 
           {/* Navigation column */}
           <div>
-            <p className="text-muted-foreground/80 text-[10px] font-black uppercase tracking-[0.4em] mb-8">Protocol_Links</p>
-            <ul className="space-y-4">
+            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-4">Platform</p>
+            <ul className="space-y-2.5">
               {NAV_LINKS.map(({ label, to }) => (
                 <li key={label}>
                   <Link
                     to={to}
-                    className="text-muted-foreground hover:text-brandblue-500 text-xs font-black uppercase tracking-widest transition-all"
+                    className="text-muted-foreground hover:text-slate-200 text-sm transition-colors"
                   >
                     {label}
                   </Link>
@@ -119,60 +117,64 @@ export default function AppFooter({ variant = 'public' }: AppFooterProps) {
 
           {/* Legal & compliance column */}
           <div>
-            <p className="text-muted-foreground/80 text-[10px] font-black uppercase tracking-[0.4em] mb-8">Node_Compliance</p>
-            <ul className="space-y-5">
-              {[
-                { img: '/logos/bsp.svg', label: 'BSP Regulated' },
-                { img: '/logos/pci.svg', label: 'PCI DSS v4.0' },
-                { img: '/logos/dpo.svg', label: 'DPO/NPC Node' },
-              ].map(c => (
-                <li key={c.label} className="flex items-center gap-3 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default">
-                  <img src={c.img} alt="" aria-hidden="true" className="h-6 w-auto shadow-sm" />
-                  <span className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">{c.label}</span>
-                </li>
-              ))}
-              <li className="flex items-center gap-3 pt-2">
-                <Shield className="h-4 w-4 text-emerald-500/70 shrink-0" />
-                <span className="text-muted-foreground/80 text-[9px] font-black uppercase tracking-widest">AES-256 GCM Encryption</span>
+            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-4">Compliance</p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-2">
+                <img src="/logos/bsp.svg" alt="BSP" className="h-5 w-auto opacity-80 logo-glow-hover" />
+                <span className="text-muted-foreground text-xs">BSP Regulated</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <img src="/logos/pci.svg" alt="PCI DSS" className="h-5 w-auto opacity-80 logo-glow-hover" />
+                <span className="text-muted-foreground text-xs">PCI DSS Compliant</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <img src="/logos/dpo.svg" alt="DPO / NPC" className="h-5 w-auto opacity-80 logo-glow-hover" />
+                <span className="text-muted-foreground text-xs">NPC / DPO Registered</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-teal-400/80 shrink-0" />
+                <span className="text-muted-foreground text-xs">256-bit TLS Encryption</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-blue-400/80 shrink-0" />
+                <Link to="/policies" className="text-muted-foreground hover:text-slate-300 text-xs transition-colors">
+                  Privacy Policy & Terms
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
         {/* ── PAYMENT BRANDS ROW ───────────────────────────────── */}
-        <div className={`border-t ${dividerClass} py-12`}>
-          <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.5em] text-center mb-10">
-            ACCEPTED_NETWORK_ENTITIES
+        <div className={`border-t ${dividerClass} py-6`}>
+          <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest text-center mb-4">
+            Accepted payment networks
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {PAYMENT_BRANDS.map(({ el, name }) => (
               <div
                 key={name}
-                className="flex items-center gap-3 bg-muted/20 border border-border/10 rounded-2xl px-4 py-2.5 hover:bg-muted/40 hover:border-brandblue-500/20 transition-all duration-500 cursor-default grayscale opacity-60 hover:grayscale-0 hover:opacity-100 shadow-sm"
+                className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] rounded-md px-2 py-1 logo-box-glow transition-all duration-150"
                 title={name}
               >
-                <div className="scale-110">{el}</div>
-                <span className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">{name}</span>
+                {el}
+                <span className="text-muted-foreground text-[11px] font-medium">{name}</span>
               </div>
             ))}
-              <div className="flex items-center gap-2 bg-muted/10 border border-transparent rounded-full px-5 py-2">
-              <span className="text-muted-foreground/60 text-[9px] font-black uppercase tracking-[0.2em]">+100 INSTITUTIONAL_BANKS</span>
+            <div className="flex items-center gap-1.5 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 py-1">
+              <span className="text-slate-600 text-[10px]">+100 PH banks</span>
             </div>
           </div>
         </div>
 
         {/* ── BOTTOM BAR: copyright ────────────────────────────── */}
-        <div className={`border-t ${dividerClass} pt-12 flex flex-col sm:flex-row items-center justify-between gap-6`}>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-             <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.3em]">
-               © {new Date().getFullYear()} {COMPANY_NAME}
-             </p>
-             <span className="hidden sm:block h-1 w-1 rounded-full bg-muted-foreground/30" />
-             <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.3em]">NODE_ID: PRODUCTION_PH_01</p>
-          </div>
-          <div className="flex items-center gap-4 bg-[#0A0F1E] border border-white/5 rounded-full px-6 py-2.5 shadow-2xl">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)] shrink-0" />
-            <span className="text-white text-[10px] font-black uppercase tracking-[0.4em]">Grid_Settlement: Active (T+0)</span>
+        <div className={`border-t ${dividerClass} py-5 flex flex-col sm:flex-row items-center justify-between gap-3`}>
+          <p className="text-slate-600 text-xs text-center sm:text-left">
+            © {new Date().getFullYear()} <span className="text-muted-foreground">{COMPANY_NAME}</span>. All rights reserved.
+          </p>
+          <div className="flex items-center gap-1.5 bg-teal-500/8 border border-teal-500/20 rounded-full px-3 py-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse shrink-0" />
+            <span className="text-teal-400 text-[11px] font-semibold">USDT T+0 Settlement &middot; Live</span>
           </div>
         </div>
       </div>
