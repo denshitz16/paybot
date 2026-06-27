@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ import {
   Check,
   Bitcoin,
   AlertCircle,
+  Bank,
   ShieldAlert,
   Link as LinkIcon,
 } from 'lucide-react';
@@ -161,10 +163,28 @@ const txnTypeConfig: Record<string, { label: string; color: string; icon: React.
 const BANKS = ['BDO', 'BPI', 'UNIONBANK', 'RCBC', 'CHINABANK', 'PNB', 'METROBANK'];
 
 // xend bank accounts for top-up
-const TOPUP_BANKS: { bank: string; name: string; number: string }[] = [
-  { bank: 'Security Bank Corporation', name: 'Xendit Philippines', number: '0000068888173' },
-  { bank: 'Asia United Bank',          name: 'Xendit Philippines', number: '934105321485'  },
+const TOPUP_BANKS: { bank: string; name: string; number: string; logo: string }[] = [
+  { bank: 'Security Bank Corporation', name: 'Xendit Philippines', number: '0000068888173', logo: '/logos/security-bank.svg' },
+  { bank: 'Asia United Bank',          name: 'Xendit Philippines', number: '934105321485',  logo: '/logos/asia-united-bank.svg' },
 ];
+
+function TopupBankLogo({ logo, bank }: { logo: string | undefined; bank: string }) {
+  if (logo) {
+    return (
+      <img
+        src={logo}
+        alt={`${bank} logo`}
+        className="h-6 w-auto rounded-md object-contain bg-slate-950/10"
+      />
+    );
+  }
+
+  return (
+    <div className="h-6 w-6 rounded-md bg-muted/80 flex items-center justify-center text-slate-100">
+      <Bank className="h-4 w-4" />
+    </div>
+  );
+}
 
 interface BankOption {
   name: string;
@@ -201,7 +221,7 @@ export default function Wallet() {
   const [paymentCodeCopied, setPaymentCodeCopied] = useState(false);
   const [topupStep, setTopupStep] = useState(0);
   const [topupAmount, setTopupAmount] = useState('');
-  const [topupToBank, setTopupToBank] = useState('GoTyme Digital Bank');
+  const [topupToBank, setTopupToBank] = useState(TOPUP_BANKS[0].bank);
   const [topupTransferMethod, setTopupTransferMethod] = useState('');
   const [topupRefNumber, setTopupRefNumber] = useState('');
   const [topupProofFile, setTopupProofFile] = useState<File | null>(null);
@@ -520,6 +540,22 @@ export default function Wallet() {
                     {loading ? <Loader2 className="h-7 w-7 animate-spin" /> : `₱${phpBal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`}
                   </p>
                   <p className="text-blue-200 text-[10px] mt-1">Philippine Peso</p>
+                  <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
+                    <Button
+                      size="sm"
+                      onClick={() => setActiveTab('withdraw')}
+                      className="bg-amber-500 hover:bg-amber-600 text-white w-full sm:w-auto"
+                    >
+                      Withdraw
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => { setTopupDialogOpen(true); setTopupDialogMethod('ubp'); }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white w-full sm:w-auto"
+                    >
+                      Top Up
+                    </Button>
+                  </div>
                 </div>
                 <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
                   <WalletIcon className="h-6 w-6 text-white" />
@@ -539,6 +575,22 @@ export default function Wallet() {
                     {loading ? <Loader2 className="h-7 w-7 animate-spin" /> : `$${usdBal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
                   </p>
                   <p className="text-teal-100 text-[10px] mt-1">US Dollar · via Crypto Topup</p>
+                  <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
+                    <Button
+                      size="sm"
+                      onClick={() => { setTopupDialogOpen(true); setTopupDialogMethod('ubp'); }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white w-full sm:w-auto"
+                    >
+                      Top Up
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setActiveTab('send-usdt')}
+                      className="bg-teal-500 hover:bg-teal-600 text-white w-full sm:w-auto"
+                    >
+                      Send USDT
+                    </Button>
+                  </div>
                 </div>
                 <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
                   <Bitcoin className="h-6 w-6 text-white" />
@@ -966,7 +1018,12 @@ export default function Wallet() {
                               <tbody className="divide-y divide-slate-600/30">
                                 {TOPUP_BANKS.map((b) => (
                                   <tr key={b.bank}>
-                                    <td className="px-3 py-2.5 text-muted-foreground text-xs">{b.bank}</td>
+                                    <td className="px-3 py-2.5 text-muted-foreground text-xs">
+                                      <div className="flex items-center gap-2">
+                                        <TopupBankLogo logo={b.logo} bank={b.bank} />
+                                        <span>{b.bank}</span>
+                                      </div>
+                                    </td>
                                     <td className="px-3 py-2.5 text-muted-foreground text-xs">{b.name}</td>
                                     <td className="px-3 py-2.5 text-muted-foreground text-xs font-mono">{b.number}</td>
                                   </tr>
@@ -1103,7 +1160,10 @@ export default function Wallet() {
                           </div>
                           <div className="flex items-center justify-between px-4 py-2.5">
                             <span className="text-muted-foreground">Bank</span>
-                            <span className="text-foreground">{topupToBank}</span>
+                            <div className="flex items-center gap-2">
+                              <TopupBankLogo logo={TOPUP_BANKS.find((b) => b.bank === topupToBank)?.logo} bank={topupToBank} />
+                              <span className="text-foreground">{topupToBank}</span>
+                            </div>
                           </div>
                           <div className="flex items-center justify-between px-4 py-2.5">
                             <span className="text-muted-foreground">Account Name</span>

@@ -462,8 +462,8 @@ export default function Layout({ children, connected }: LayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden min-h-0">
-          <div className="max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden min-h-0 motion-safe:animate-slide-in-up">
+          <div className="max-w-7xl w-full mx-auto animate-fade-in-scale">
             {children}
           </div>
           <AppFooter variant="admin" />

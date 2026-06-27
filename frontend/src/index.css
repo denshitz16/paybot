@@ -6,94 +6,96 @@
 
 @layer base {
   :root {
-    /* GCash Business – light mode */
-    --background: 220 20% 97%;
-    --foreground: 220 25% 12%;
+    /* Fintech professional – light mode */
+    --background: 216 18% 96%;
+    --foreground: 214 14% 18%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    --card: 214 14% 100%;
+    --card-foreground: 214 14% 18%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover: 214 14% 100%;
+    --popover-foreground: 214 14% 18%;
 
-    /* GCash signature blue #007AFF */
-    --primary: 211 100% 50%;
+    --primary: 213 96% 44%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 95%;
-    --secondary-foreground: 220 25% 20%;
+    --secondary: 175 72% 36%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 16% 93%;
-    --muted-foreground: 220 14% 46%;
+    --muted: 214 18% 94%;
+    --muted-foreground: 214 12% 46%;
 
-    --accent: 211 100% 95%;
-    --accent-foreground: 211 100% 38%;
+    --accent: 205 84% 56%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 58%;
+    --destructive: 354 76% 62%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 18% 89%;
-    --input: 220 18% 89%;
-    --ring: 211 100% 50%;
+    --border: 214 18% 88%;
+    --input: 214 18% 92%;
+    --ring: 213 96% 44%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 25% 12%;
-    --sidebar-primary: 211 100% 50%;
+    --sidebar-foreground: 214 14% 18%;
+    --sidebar-primary: 213 96% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 211 100% 95%;
-    --sidebar-accent-foreground: 211 100% 38%;
-    --sidebar-border: 220 18% 91%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-accent: 175 72% 36%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 214 18% 92%;
+    --sidebar-ring: 213 96% 44%;
 
-    --brand-blue-50: 211 100% 97%;
-    --brand-blue-100: 211 100% 93%;
-    --brand-blue-300: 211 90% 72%;
-    --brand-blue-400: 211 90% 58%;
-    --brand-blue-500: 211 100% 50%;
-    --brand-blue-600: 211 100% 42%;
-    --brand-blue-700: 211 100% 34%;
-    --brand-ink-900: 220 30% 10%;
+    --brand-blue-50: 214 100% 96%;
+    --brand-blue-100: 213 100% 90%;
+    --brand-blue-200: 213 100% 84%;
+    --brand-blue-300: 213 90% 71%;
+    --brand-blue-400: 213 90% 60%;
+    --brand-blue-500: 213 96% 44%;
+    --brand-blue-600: 213 100% 36%;
+    --brand-blue-700: 213 100% 30%;
+    --brand-blue-800: 214 100% 24%;
+    --brand-blue-900: 214 100% 18%;
+    --brand-ink-900: 214 16% 10%;
   }
 
   .dark {
-    --background: 222 47% 8%;
-    --foreground: 220 20% 96%;
+    --background: 214 18% 8%;
+    --foreground: 214 14% 92%;
 
-    --card: 222 38% 12%;
-    --card-foreground: 220 20% 96%;
+    --card: 214 18% 14%;
+    --card-foreground: 214 14% 92%;
 
-    --popover: 222 38% 12%;
-    --popover-foreground: 220 20% 96%;
+    --popover: 214 18% 14%;
+    --popover-foreground: 214 14% 92%;
 
-    --primary: 211 100% 55%;
+    --primary: 213 96% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 18%;
-    --secondary-foreground: 220 20% 88%;
+    --secondary: 175 72% 36%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 222 28% 16%;
-    --muted-foreground: 220 16% 60%;
+    --muted: 214 18% 18%;
+    --muted-foreground: 214 12% 66%;
 
-    --accent: 213 40% 18%;
-    --accent-foreground: 211 100% 75%;
+    --accent: 205 84% 56%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 78% 55%;
+    --destructive: 354 76% 62%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 28% 22%;
-    --input: 222 28% 22%;
-    --ring: 211 100% 55%;
+    --border: 214 16% 20%;
+    --input: 214 16% 20%;
+    --ring: 213 96% 58%;
 
-    --sidebar-background: 222 42% 10%;
-    --sidebar-foreground: 220 20% 92%;
-    --sidebar-primary: 211 100% 55%;
+    --sidebar-background: 214 18% 10%;
+    --sidebar-foreground: 214 14% 92%;
+    --sidebar-primary: 213 96% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 30% 18%;
-    --sidebar-accent-foreground: 220 20% 90%;
-    --sidebar-border: 222 28% 20%;
-    --sidebar-ring: 211 100% 55%;
+    --sidebar-accent: 175 72% 36%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 214 16% 16%;
+    --sidebar-ring: 213 96% 58%;
   }
 }
 
@@ -105,6 +107,13 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 22%),
+      radial-gradient(circle at 15% 12%, rgba(16, 185, 129, 0.10), transparent 18%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 }
 

@@ -858,7 +858,7 @@ export default function Login() {
                 Need access?{' '}
                 <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer"
                   className="text-[#00A66C] hover:text-[#028C5D] transition-colors">
-                  Contact @traxionpay
+                  Contact @phsystem
                 </a>
               </p>
             </div>
