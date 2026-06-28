@@ -172,7 +172,7 @@ function TopupBankLogo({ logo, bank }: { logo: string | undefined; bank: string 
   if (bankLower.includes('union')) {
     return (
       <img
-        src="/logos/unionbank-kogo.svg"
+        src="/logos/unionbank.svg"
         alt={`${bank} logo`}
         className="h-6 w-auto rounded-md object-contain"
       />
