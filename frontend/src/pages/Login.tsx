@@ -217,7 +217,13 @@ export default function Login() {
     setSubmitting(true);
     setLocalError(null);
     try {
-      await login(email.trim(), password);
+      // require Turnstile verification when site key is configured
+      if (turnstileSiteKey && !turnstileToken) {
+        setLocalError('Please complete the human verification before signing in.');
+        setSubmitting(false);
+        return;
+      }
+      await login(email.trim(), password, turnstileToken ?? undefined);
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -285,15 +291,15 @@ export default function Login() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-            <Link to="/features" className="text-[#595959] hover:text-[#00A66C] text-sm font-medium transition-colors">Features</Link>
-            <Link to="/pricing" className="text-[#595959] hover:text-[#00A66C] text-sm font-medium transition-colors">Pricing</Link>
-            <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="text-[#595959] hover:text-[#00A66C] text-sm font-medium transition-colors">Support</a>
+            <Link to="/features" className="text-[#595959] hover:text-[#0B63FF] text-sm font-medium transition-colors">Features</Link>
+            <Link to="/pricing" className="text-[#595959] hover:text-[#0B63FF] text-sm font-medium transition-colors">Pricing</Link>
+            <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="text-[#595959] hover:text-[#0B63FF] text-sm font-medium transition-colors">Support</a>
           </nav>
 
           <div className="flex items-center gap-2">
             <button
               onClick={scrollToLogin}
-              className="flex items-center gap-1.5 bg-[#00A66C] hover:bg-[#028C5D] text-white text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all hover-scale shadow-md shadow-emerald-500/20"
+                className="flex items-center gap-1.5 bg-[#0B63FF] hover:bg-[#095ed6] text-white text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all hover-scale shadow-md shadow-blue-500/20"
             >
               Sign In <ArrowRight className="h-3.5 w-3.5" />
             </button>
@@ -319,7 +325,7 @@ export default function Login() {
       </header>
 
       {/* ── HERO ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0F8A4A] via-[#00A66C] to-[#1DB954]">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#071A3F] via-[#0B3A66] to-[#0B63FF]">
         {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[400px] sm:h-[500px] bg-white/5 blur-[100px] sm:blur-[120px] rounded-full" />
@@ -357,7 +363,7 @@ export default function Login() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-8">
                 <button
                   onClick={scrollToLogin}
-                  className="flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-[#00A66C] font-semibold px-7 py-3.5 rounded-full text-sm transition-all hover-scale card-shadow-lg w-full sm:w-auto"
+                  className="flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-[#0B63FF] font-semibold px-7 py-3.5 rounded-full text-sm transition-all hover-scale card-shadow-lg w-full sm:w-auto"
                 >
                   Get Started Free <ArrowRight className="h-4 w-4" />
                 </button>
@@ -451,14 +457,14 @@ export default function Login() {
       <section className="py-12 sm:py-16 bg-[#F5F7FA] border-b border-[#E8EAED]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <RevealGroup className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center">
-            {[
-              { value: '10+',  label: 'Payment Methods', sub: 'Chinese · PH wallets · Banks' },
-              { value: 'T+0',  label: 'Settlement',      sub: 'USDT same-day payout'          },
-              { value: '100%', label: 'Telegram Native', sub: 'No app install needed'          },
-              { value: 'KYC',  label: 'KYB Verified',    sub: 'Compliance ready'               },
-            ].map(({ value, label, sub }) => (
+              {[
+                { value: '10+',  label: 'Payment Methods', sub: 'Chinese · PH wallets · Banks' },
+                { value: 'T+0',  label: 'Settlement',      sub: 'USDT same-day payout'          },
+                { value: '100%', label: 'Telegram Native', sub: 'No app install needed'          },
+                { value: 'KYC',  label: 'KYB Verified',    sub: 'Compliance ready'               },
+              ].map(({ value, label, sub }) => (
               <div key={label} className="reveal-item py-2">
-                <p className="text-3xl sm:text-4xl font-extrabold text-[#00A66C] mb-1">{value}</p>
+                <p className="text-3xl sm:text-4xl font-extrabold text-[#0B63FF] mb-1">{value}</p>
                 <p className="text-[#141414] font-semibold text-xs sm:text-sm mb-0.5">{label}</p>
                 <p className="text-[#595959] text-[11px] sm:text-xs">{sub}</p>
               </div>
@@ -722,7 +728,7 @@ export default function Login() {
       </section>
 
       {/* ── LOGIN ───────────────────────────────────────────────── */}
-      <section ref={loginSectionRef} className="py-16 sm:py-24 bg-gradient-to-br from-[#0F8A4A] via-[#00A66C] to-[#1DB954] relative overflow-hidden">
+      <section ref={loginSectionRef} className="py-16 sm:py-24 bg-gradient-to-br from-[#071A3F] via-[#0B3A66] to-[#0B63FF] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] sm:w-[700px] h-[300px] sm:h-[400px] bg-white/5 blur-[80px] sm:blur-[100px] rounded-full" />
         </div>
@@ -781,8 +787,8 @@ export default function Login() {
               </div>
               <button
                 type="submit"
-                disabled={submitting}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#00A66C] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#028C5D] disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={submitting || (turnstileSiteKey ? !turnstileToken : false)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0B63FF] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#095ed6] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {submitting ? 'Signing in…' : 'Sign in with email'}
               </button>
@@ -795,7 +801,7 @@ export default function Login() {
             <div className="flex justify-center mb-5" ref={widgetContainerRef} />
             {submitting && (
               <div className="flex items-center justify-center gap-2 text-[#595959] text-sm mb-4">
-                <span className="h-4 w-4 border-2 border-[#00A66C] border-t-transparent rounded-full animate-spin" />
+                <span className="h-4 w-4 border-2 border-[#0B63FF] border-t-transparent rounded-full animate-spin" />
                 Signing in…
               </div>
             )}
@@ -847,17 +853,17 @@ export default function Login() {
               )}
               <Link
                 to="/register"
-                className="flex items-center justify-between w-full bg-[#F5F7FA] hover:bg-[#ECFDF3] border border-[#E8EAED] hover:border-[#00A66C]/30 text-[#00A66C] hover:text-[#00A66C] text-sm font-semibold py-3 sm:py-3.5 px-4 sm:px-5 rounded-xl transition-all group"
+                className="flex items-center justify-between w-full bg-[#F5F7FA] hover:bg-[#ECF0FF] border border-[#E8EAED] hover:border-[#0B63FF]/30 text-[#0B63FF] hover:text-[#0B63FF] text-sm font-semibold py-3 sm:py-3.5 px-4 sm:px-5 rounded-xl transition-all group"
               >
                 <div className="flex items-center gap-2">
                   <UserPlus className="h-4 w-4" /> Create an account
                 </div>
-                <ChevronRight className="h-4 w-4 text-[#00A66C]/40 group-hover:text-[#00A66C] transition-colors" />
+                <ChevronRight className="h-4 w-4 text-[#0B63FF]/40 group-hover:text-[#0B63FF] transition-colors" />
               </Link>
               <p className="text-[#595959] text-xs text-center pt-1">
                 Need access?{' '}
                 <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer"
-                  className="text-[#00A66C] hover:text-[#028C5D] transition-colors">
+                  className="text-[#0B63FF] hover:text-[#095ed6] transition-colors">
                   Contact @phsystem
                 </a>
               </p>
