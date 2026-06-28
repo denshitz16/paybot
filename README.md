@@ -53,10 +53,18 @@ xend operates on a "Trusted Node" architecture, ensuring data integrity and high
 - **Security Bank Collect**: Enterprise-grade Apple Pay and Google Pay processing.
 - **Global Clearing**: Specialized PhotonPay channels for high-volume Alipay and WeChat Pay international trade.
 
+<<<<<<< HEAD
 ### 💎 Liquidity & Vault Management
 - **Multi-Currency Nodes**: Seamlessly manage PHP, USD, and USDT (TRC-20) liquidity.
 - **Regulated Clearing**: Automated T+1 local bank clearing and real-time inter-vault transfers.
 - **Audit-Ready Ledger**: Full immutable transaction history for compliance and regulatory reporting.
+=======
+### 🏦 Digital Wallet Ecosystem
+- **Instant KYB/KYC**: Guided registration flow via Telegram.
+- **Multi-Currency**: Manage PHP, USD, and USDT (TRC20) in a single interface.
+- **Peer-to-Peer**: Zero-fee instant transfers between platform users.
+- **Auto-Sync**: Real-time balance updates across bot, mobile, and dashboard.
+>>>>>>> parent of c6d943c (feat: delete KYC and KYB features from dashboard and telegram bot)
 
 ---
 

@@ -29,9 +29,13 @@ from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 from models.auth import User
 from models.admin_users import AdminUser
 from models.bot_settings import Bot_settings
+<<<<<<< HEAD
 from models.pos_terminal import POSTerminal, POSTerminalDevice, TerminalStatus
 from services.pos_terminal import POSTerminalService
 from schemas.pos_terminal import POSTerminalDeviceCreate
+=======
+from models.kyb_registrations import KybRegistration
+>>>>>>> parent of c6d943c (feat: delete KYC and KYB features from dashboard and telegram bot)
 from schemas.auth import (
     PlatformTokenExchangeRequest,
     TelegramWidgetLoginRequest,
@@ -1173,39 +1177,64 @@ class RegisterRequest(BaseModel):
         return stripped
 
 
-@router.post("/register")
+class RegisterResponse(BaseModel):
+    message: str
+    kyb_id: int
+    xendit_customer_id: Optional[str] = None
+
+
+@router.post("/register", response_model=RegisterResponse)
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Public registration endpoint.
-    Auto-creates an AdminUser for web registrations.
+
+    Creates a KYB registration record (status ``pending_review``) and a
+    matching Xendit customer record for KYC purposes.  A super admin must
+    review and approve the application before the applicant can access the
+    dashboard.
     """
+    # Deduplicate by telegram_username or email (use a fake chat_id based on email)
+    ref_id = f"reg-{uuid.uuid4().hex[:12]}"
+
     # Use email as the stable chat_id for web registrations
     chat_id = f"web-{hashlib.sha256(body.email.lower().encode()).hexdigest()[:16]}"
 
-    # Check if user already exists in admin_users
-    from models.admin_users import AdminUser
     existing = await db.execute(
-        select(AdminUser).where(AdminUser.telegram_id == chat_id)
+        select(KybRegistration).where(KybRegistration.chat_id == chat_id)
     )
-    if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="This email is already registered.")
+    existing_kyb = existing.scalar_one_or_none()
+    if existing_kyb:
+        if existing_kyb.status == "approved":
+            raise HTTPException(status_code=400, detail="This email is already registered and approved.")
+        # Return the existing pending registration
+        return RegisterResponse(
+            message="Your registration is already submitted and under review.",
+            kyb_id=existing_kyb.id,
+            xendit_customer_id=None,
+        )
 
-    # Create AdminUser record directly
-    new_admin = AdminUser(
-        telegram_id=chat_id,
+    # Xendit has been removed. Skip creating an external Xendit customer
+    # during KYB registration. The KYB record will be persisted locally and
+    # reviewed by an admin without external KYC linkage.
+    xendit_customer_id: Optional[str] = None
+
+    # Persist KYB record
+    kyb = KybRegistration(
+        chat_id=chat_id,
         telegram_username=body.telegram_username,
-        name=body.full_name,
-        is_active=True,
-        can_manage_payments=True,
-        can_manage_disbursements=True,
-        can_view_reports=True,
-        can_manage_wallet=True,
-        can_manage_transactions=True,
-        added_by="web_registration",
+        step="done",
+        full_name=body.full_name,
+        email=body.email,
+        phone=body.phone,
+        address=body.address,
+        bank_name=body.business_name,  # bank_name column reused to store business name for web registrations
+        status="pending_review",
     )
-    db.add(new_admin)
+    db.add(kyb)
     await db.commit()
+    await db.refresh(kyb)
 
-    return {
-        "message": "Registration successful. You can now log in.",
-        "success": True
-    }
+    return RegisterResponse(
+        message="Registration submitted successfully. An admin will review your application.",
+        kyb_id=kyb.id,
+        xendit_customer_id=xendit_customer_id,
+    )
