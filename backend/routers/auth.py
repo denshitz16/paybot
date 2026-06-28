@@ -102,8 +102,8 @@ def _get_allowed_telegram_admin_ids() -> tuple[set[str], set[str]]:
 
     Examples:
         TELEGRAM_ADMIN_IDS=123456789              -> ids={"123456789"}, usernames={}
-        TELEGRAM_ADMIN_IDS=@phsystem            -> ids={}, usernames={"phsystem"}
-        TELEGRAM_ADMIN_IDS=123456789,@phsystem  -> ids={"123456789"}, usernames={"phsystem"}
+        TELEGRAM_ADMIN_IDS=@traxionpay            -> ids={}, usernames={"traxionpay"}
+        TELEGRAM_ADMIN_IDS=123456789,@traxionpay  -> ids={"123456789"}, usernames={"traxionpay"}
     """
     allowed_ids: set[str] = set()
     allowed_usernames: set[str] = set()
@@ -340,10 +340,42 @@ async def telegram_login_widget(payload: TelegramWidgetLoginRequest, request: Re
     in_db = db_admin is not None and db_admin.is_active
 
     if not in_db and not in_env:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not authorized to access the admin dashboard.",
-        )
+        # Auto-signup: Create AdminUser if not found (accurate user records)
+        if not db_admin:
+            try:
+                display_name = " ".join(part for part in [payload.first_name, payload.last_name] if part).strip()
+                if not display_name:
+                    display_name = payload.username or telegram_user_id
+
+                db_admin = AdminUser(
+                    telegram_id=telegram_user_id,
+                    telegram_username=payload.username,
+                    name=display_name,
+                    is_active=True,
+                    is_super_admin=False,
+                    can_manage_payments=True,
+                    can_manage_disbursements=True,
+                    can_view_reports=True,
+                    can_manage_wallet=True,
+                    can_manage_transactions=True,
+                    can_manage_bot=False,
+                    can_approve_topups=False,
+                    added_by="telegram_widget_auto_signup",
+                )
+                db.add(db_admin)
+                await db.commit()
+                await db.refresh(db_admin)
+                in_db = True
+                logger.info("[telegram-login-widget] Auto-signed up user: %s", telegram_user_id)
+            except Exception as e:
+                logger.error("[telegram-login-widget] Auto-signup failed: %s", e)
+                await db.rollback()
+
+        if not in_db:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not authorized to access the admin dashboard.",
+            )
 
     valid, reason = _verify_telegram_widget_payload(payload, bot_token)
     if not valid:
@@ -1122,7 +1154,7 @@ class RegisterRequest(BaseModel):
     phone: str
     address: Optional[str] = None
     business_name: Optional[str] = None
-    telegram_payload: TelegramWidgetLoginRequest
+    telegram_username: str  # required — used to link the Telegram account after approval
 
     @field_validator("email", mode="before")
     @classmethod
@@ -1132,72 +1164,35 @@ class RegisterRequest(BaseModel):
             raise ValueError("Invalid email address")
         return str(v).strip().lower()
 
-    @field_validator("telegram_payload")
+    @field_validator("telegram_username", mode="before")
     @classmethod
-    def validate_telegram_payload(cls, v: TelegramWidgetLoginRequest) -> TelegramWidgetLoginRequest:
-        if not v or not getattr(v, "id", None) or not getattr(v, "hash", None):
-            raise ValueError("Valid Telegram login payload is required.")
-        return v
+    def strip_at(cls, v: str) -> str:
+        stripped = str(v).lstrip("@").strip()
+        if not stripped:
+            raise ValueError("Telegram username is required")
+        return stripped
 
 
 @router.post("/register")
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Public registration endpoint.
-    Auto-creates an AdminUser for web registrations using Telegram Login Widget verification.
+    Auto-creates an AdminUser for web registrations.
     """
-    bot_token = str(getattr(settings, "telegram_bot_token", "") or "")
-    if not bot_token:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Telegram bot token is not configured. Add TELEGRAM_BOT_TOKEN to environment variables.",
-        )
+    # Use email as the stable chat_id for web registrations
+    chat_id = f"web-{hashlib.sha256(body.email.lower().encode()).hexdigest()[:16]}"
 
-    valid, reason = _verify_telegram_widget_payload(body.telegram_payload, bot_token)
-    if not valid:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=(
-                "Invalid Telegram login payload. "
-                "Ensure TELEGRAM_BOT_TOKEN matches the token from @BotFather and try again."
-            ),
-        )
-
-    telegram_id = str(body.telegram_payload.id)
-    payload_username = (body.telegram_payload.username or "").strip()
-    payload_username_lower = payload_username.lower() if payload_username else None
-
+    # Check if user already exists in admin_users
     from models.admin_users import AdminUser
+    existing = await db.execute(
+        select(AdminUser).where(AdminUser.telegram_id == chat_id)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="This email is already registered.")
 
-    # Prevent duplicate registration for the same verified Telegram account.
-    existing_by_id = await db.execute(select(AdminUser).where(AdminUser.telegram_id == telegram_id))
-    if existing_by_id.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="This Telegram account is already registered.")
-
-    # If a web registration exists for the same Telegram username, link it now.
-    db_admin = None
-    if payload_username_lower:
-        existing_by_username = await db.execute(
-            select(AdminUser).where(func.lower(AdminUser.telegram_username) == payload_username_lower)
-        )
-        db_admin = existing_by_username.scalar_one_or_none()
-        if db_admin and db_admin.telegram_id.startswith("web-"):
-            db_admin.telegram_id = telegram_id
-            db_admin.name = body.full_name
-            db_admin.telegram_username = payload_username
-            await db.commit()
-            return {
-                "message": "Your Telegram account has been linked and registration completed.",
-                "success": True,
-            }
-        if db_admin and db_admin.telegram_id != telegram_id:
-            raise HTTPException(
-                status_code=400,
-                detail="This Telegram username is already associated with another account.",
-            )
-
+    # Create AdminUser record directly
     new_admin = AdminUser(
-        telegram_id=telegram_id,
-        telegram_username=payload_username or None,
+        telegram_id=chat_id,
+        telegram_username=body.telegram_username,
         name=body.full_name,
         is_active=True,
         can_manage_payments=True,
@@ -1211,6 +1206,6 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     await db.commit()
 
     return {
-        "message": "Registration successful. Your Telegram account has been linked.",
-        "success": True,
+        "message": "Registration successful. You can now log in.",
+        "success": True
     }

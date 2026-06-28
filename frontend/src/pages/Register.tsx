@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, CheckCircle, AlertCircle, User, Phone, Mail, MapPin, Building2 } from 'lucide-react';
+import { ShieldCheck, CheckCircle, AlertCircle, User, Phone, Mail, MapPin, Building2, Send } from 'lucide-react';
 import { APP_NAME, COMPANY_NAME } from '@/lib/brand';
-import TelegramLoginWidget from '@/components/TelegramLoginWidget';
-import type { TelegramWidgetUser } from '@/lib/auth';
 
 interface FormData {
   full_name: string;
@@ -11,6 +9,7 @@ interface FormData {
   phone: string;
   address: string;
   business_name: string;
+  telegram_username: string;
 }
 
 interface SocialConfig {
@@ -25,6 +24,7 @@ const INITIAL_FORM: FormData = {
   phone: '',
   address: '',
   business_name: '',
+  telegram_username: '',
 };
 
 /* Branded SVG icons for social platforms */
@@ -70,18 +70,11 @@ export default function Register() {
   const [kybId, setKybId] = useState<number | null>(null);
   const [kycId, setKycId] = useState<string | null>(null);
   const [socialConfig, setSocialConfig] = useState<SocialConfig | null>(null);
-  const [telegramUser, setTelegramUser] = useState<TelegramWidgetUser | null>(null);
-  const [botUsername, setBotUsername] = useState<string>('');
 
   useEffect(() => {
     fetch('/api/v1/auth/social-config')
       .then(r => r.ok ? r.json() : null)
       .then(d => d && setSocialConfig(d))
-      .catch(() => {});
-
-    fetch('/api/v1/auth/telegram-login-config')
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.bot_username) setBotUsername(d.bot_username); })
       .catch(() => {});
   }, []);
 
@@ -95,8 +88,8 @@ export default function Register() {
       setError('Full name, email, and phone are required.');
       return;
     }
-    if (!telegramUser) {
-      setError('Please sign in with Telegram to verify and link your account.');
+    if (!form.telegram_username.trim()) {
+      setError('Telegram username is required to link your account after approval.');
       return;
     }
     setSubmitting(true);
@@ -111,7 +104,7 @@ export default function Register() {
           phone: form.phone.trim(),
           address: form.address.trim() || null,
           business_name: form.business_name.trim() || null,
-          telegram_payload: telegramUser,
+          telegram_username: form.telegram_username.trim(),
         }),
       });
       const data = await res.json();
@@ -140,16 +133,14 @@ export default function Register() {
             <h2 className="text-2xl font-bold text-foreground mb-2">Application Submitted!</h2>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Your KYC registration has been received. An admin will review your application
-              and notify you via Telegram (<span className="text-emerald-600">@{telegramUser?.username || telegramUser?.id}</span>) once approved.
+              and notify you via Telegram (<span className="text-emerald-600">@{form.telegram_username}</span>) once approved.
             </p>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 text-left space-y-2">
-            {kybId != null && (
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Application ID</span>
-                <span className="text-foreground font-mono">#{kybId}</span>
-              </div>
-            )}
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Application ID</span>
+              <span className="text-foreground font-mono">#{kybId}</span>
+            </div>
             {kycId && (
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{APP_NAME} KYC ID</span>
@@ -196,7 +187,7 @@ export default function Register() {
 
           <div className="space-y-4">
             {[
-              { step: '1', label: 'Submit your information', desc: 'Fill in name, email, phone, and verify Telegram' },
+              { step: '1', label: 'Submit your information', desc: 'Fill in name, email, phone, and Telegram username' },
               { step: '2', label: 'KYC verification', desc: `Your identity is verified via the ${APP_NAME} KYC platform` },
               { step: '3', label: 'Admin review & approval', desc: 'A super admin reviews and approves your application' },
               { step: '4', label: 'Dashboard access granted', desc: 'Sign in with Telegram once approved' },
@@ -215,7 +206,7 @@ export default function Register() {
 
           <div className="mt-8 bg-white/15 border border-white/20 rounded-xl p-3">
             <p className="text-white text-xs font-semibold mb-1">Security Notice</p>
-            <p className="text-emerald-50/90 text-xs">Your Telegram account must be verified using the Telegram login widget to complete registration.</p>
+            <p className="text-emerald-50/90 text-xs">Your Telegram username is required to receive approval notifications and to link your account after approval.</p>
           </div>
         </div>
 
@@ -324,36 +315,21 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Telegram verification */}
+            {/* Telegram username */}
             <div>
-              <label className="block text-muted-foreground text-xs font-medium mb-1.5">Telegram Verification <span className="text-red-400">*</span></label>
-              <div className="rounded-3xl border border-border bg-white/95 p-4">
-                <p className="text-muted-foreground text-xs mb-3">
-                  Sign in with Telegram so we can verify and link your Telegram account during registration.
-                </p>
-                {botUsername ? (
-                  <TelegramLoginWidget
-                    botName={botUsername}
-                    onAuth={(user) => {
-                      setTelegramUser(user);
-                      setError(null);
-                    }}
-                    buttonSize="large"
-                  />
-                ) : (
-                  <div className="rounded-xl border border-border/80 bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                    Loading Telegram login button...
-                  </div>
-                )}
-                {telegramUser && (
-                  <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
-                    Connected as <span className="font-semibold">@{telegramUser.username || telegramUser.id}</span>
-                  </div>
-                )}
+              <label className="block text-muted-foreground text-xs font-medium mb-1.5">Telegram Username <span className="text-red-400">*</span></label>
+              <div className="relative">
+                <Send className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={form.telegram_username}
+                  onChange={(e) => handleChange('telegram_username', e.target.value)}
+                  placeholder="@yourusername"
+                  required
+                  className="w-full bg-white border border-border rounded-xl pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:border-primary/50 focus:ring-0 transition-colors"
+                />
               </div>
-              <p className="text-muted-foreground text-[10px] mt-1.5 ml-1">
-                Your Telegram account must be linked with a verified Telegram login widget.
-              </p>
+              <p className="text-muted-foreground text-[10px] mt-1.5 ml-1">Required to link and notify your Telegram account after approval.</p>
             </div>
 
             {/* KYC badge */}

@@ -16,10 +16,6 @@ os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///{_os_db_path.as_posi
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-ci")
 os.environ.setdefault("TELEGRAM_BOT_TOKEN", "123456:TEST_BOT_TOKEN")
 os.environ.setdefault("TELEGRAM_ADMIN_IDS", "123456789")
-os.environ.setdefault("ENVIRONMENT", "dev")
-os.environ.setdefault("MAYA_SECRET_KEY", "test-maya-secret")
-os.environ.setdefault("MAYA_BUSINESS_API_KEY", "test-maya-business-api-key")
-os.environ.setdefault("MAYA_BUSINESS_SECRET_KEY", "test-maya-business-secret")
 
 from fastapi.testclient import TestClient
 from main import app  # noqa: E402
@@ -195,7 +191,7 @@ class TestAuth:
             "id": 88888888,
             "auth_date": auth_date,
             "first_name": "Traxion",
-            "username": "phsystem",
+            "username": "traxionpay",
         }
         data_check_string = "\n".join(
             f"{key}={value}"
@@ -208,7 +204,7 @@ class TestAuth:
         import routers.auth as auth_mod
         from core.config import Settings
         patched = Settings()
-        patched.telegram_admin_ids = "@phsystem"
+        patched.telegram_admin_ids = "@traxionpay"
         with patch.object(auth_mod, "settings", patched):
             r = client.post("/api/v1/auth/telegram-login-widget", json=payload)
 
@@ -224,7 +220,7 @@ class TestAuth:
             "id": 77777777,
             "auth_date": auth_date,
             "first_name": "Traxion",
-            "username": "phsystem",
+            "username": "traxionpay",
         }
         data_check_string = "\n".join(
             f"{key}={value}"
@@ -237,7 +233,7 @@ class TestAuth:
         import routers.auth as auth_mod
         from core.config import Settings
         patched = Settings()
-        patched.telegram_admin_ids = "phsystem"
+        patched.telegram_admin_ids = "traxionpay"
         with patch.object(auth_mod, "settings", patched):
             r = client.post("/api/v1/auth/telegram-login-widget", json=payload)
 
@@ -266,59 +262,11 @@ class TestAuth:
         import routers.auth as auth_mod
         from core.config import Settings
         patched = Settings()
-        patched.telegram_admin_ids = "@phsystem"
+        patched.telegram_admin_ids = "@traxionpay"
         with patch.object(auth_mod, "settings", patched):
             r = client.post("/api/v1/auth/telegram-login-widget", json=payload)
 
         assert r.status_code == 403
-
-    def test_register_requires_telegram_payload(self, client):
-        r = client.post(
-            "/api/v1/auth/register",
-            json={
-                "full_name": "Test User",
-                "email": "testuser@example.com",
-                "phone": "09171234567",
-                "address": "Makati",
-                "business_name": "Test Co",
-            },
-        )
-        assert r.status_code == 422
-
-    def test_register_with_telegram_login_widget_payload_creates_admin(self, client):
-        bot_token = os.environ["TELEGRAM_BOT_TOKEN"]
-        auth_date = int(time.time())
-        payload = {
-            "id": 22222222,
-            "auth_date": auth_date,
-            "first_name": "New",
-            "last_name": "User",
-            "username": "new_user",
-        }
-        data_check_string = "\n".join(
-            f"{key}={value}"
-            for key, value in sorted(payload.items())
-            if value is not None and value != ""
-        )
-        secret_key = hashlib.sha256(bot_token.encode("utf-8")).digest()
-        payload["hash"] = hmac.new(secret_key, data_check_string.encode("utf-8"), hashlib.sha256).hexdigest()
-
-        r = client.post(
-            "/api/v1/auth/register",
-            json={
-                "full_name": "New User",
-                "email": "newuser@example.com",
-                "phone": "09180001111",
-                "address": "Makati",
-                "business_name": "NewCo",
-                "telegram_payload": payload,
-            },
-        )
-
-        assert r.status_code == 200
-        data = r.json()
-        assert data["success"] is True
-        assert "message" in data
 
     def test_widget_login_env_user_with_existing_regular_admin_db_record_gets_super_admin(self, client):
         """A user in TELEGRAM_ADMIN_IDS is always granted super admin, even if

@@ -173,7 +173,6 @@ async def approve_bank_deposit_request(
 
     wallet_service = WalletsService(db)
     wallet = await wallet_service.get_or_create_wallet(user_id, "PHP")
-    user_wallet_id = wallet.user_id
 
     balance_before = wallet.balance
     wallet.balance = round(wallet.balance + amount_php, 2)
