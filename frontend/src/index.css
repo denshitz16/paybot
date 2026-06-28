@@ -10,22 +10,22 @@
     --background: 216 18% 96%;
     --foreground: 214 14% 18%;
 
-    --card: 214 14% 100%;
+    --card: 216 25% 98%;
     --card-foreground: 214 14% 18%;
 
-    --popover: 214 14% 100%;
+    --popover: 216 25% 98%;
     --popover-foreground: 214 14% 18%;
 
-    --primary: 213 96% 44%;
+    --primary: 216 47% 23%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 175 72% 36%;
+    --secondary: 191 67% 32%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 214 18% 94%;
     --muted-foreground: 214 12% 46%;
 
-    --accent: 205 84% 56%;
+    --accent: 179 77% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 354 76% 62%;
@@ -33,30 +33,30 @@
 
     --border: 214 18% 88%;
     --input: 214 18% 92%;
-    --ring: 213 96% 44%;
+    --ring: 216 47% 23%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 214 14% 18%;
-    --sidebar-primary: 213 96% 44%;
+    --sidebar-primary: 216 47% 23%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 175 72% 36%;
+    --sidebar-accent: 191 67% 32%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 214 18% 92%;
-    --sidebar-ring: 213 96% 44%;
+    --sidebar-ring: 216 47% 23%;
 
-    --brand-blue-50: 214 100% 96%;
-    --brand-blue-100: 213 100% 90%;
-    --brand-blue-200: 213 100% 84%;
-    --brand-blue-300: 213 90% 71%;
-    --brand-blue-400: 213 90% 60%;
-    --brand-blue-500: 213 96% 44%;
-    --brand-blue-600: 213 100% 36%;
-    --brand-blue-700: 213 100% 30%;
-    --brand-blue-800: 214 100% 24%;
-    --brand-blue-900: 214 100% 18%;
-    --brand-ink-900: 214 16% 10%;
+    --brand-blue-50: 220 55% 96%;
+    --brand-blue-100: 220 50% 90%;
+    --brand-blue-200: 220 46% 82%;
+    --brand-blue-300: 220 42% 70%;
+    --brand-blue-400: 220 38% 58%;
+    --brand-blue-500: 220 34% 44%;
+    --brand-blue-600: 220 32% 38%;
+    --brand-blue-700: 220 30% 30%;
+    --brand-blue-800: 220 28% 22%;
+    --brand-blue-900: 220 26% 16%;
+    --brand-ink-900: 220 28% 10%;
   }
 
   .dark {
@@ -109,8 +109,8 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     background-image:
-      radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 22%),
-      radial-gradient(circle at 15% 12%, rgba(16, 185, 129, 0.10), transparent 18%);
+      radial-gradient(circle at top right, rgba(30, 64, 175, 0.18), transparent 22%),
+      radial-gradient(circle at 15% 12%, rgba(14, 165, 233, 0.10), transparent 18%);
     background-attachment: fixed;
     background-repeat: no-repeat;
     background-size: cover;
