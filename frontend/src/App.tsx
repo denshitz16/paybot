@@ -15,6 +15,7 @@ import CreatePayment from './pages/CreatePayment';
 import DisbursementsPage from './pages/DisbursementsPage';
 import ReportsPage from './pages/ReportsPage';
 import BotSettings from './pages/BotSettings';
+import Settings from './pages/Settings';
 import MessengerPage from './pages/MessengerPage';
 import AdminManagement from './pages/AdminManagement';
 import BotMessagesPage from './pages/BotMessagesPage';
@@ -139,6 +140,7 @@ function AuthAwareShell() {
             <Route path="/disbursements" element={<DisbursementsPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/bot-settings" element={<BotSettings />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/messenger" element={<MessengerPage />} />
             <Route path="/admin-management" element={<RequireSuperAdmin><AdminManagement /></RequireSuperAdmin>} />
             <Route path="/bot-messages" element={<ProtectedAdminRoute><BotMessagesPage /></ProtectedAdminRoute>} />
