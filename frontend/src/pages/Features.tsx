@@ -291,7 +291,7 @@ function TelegramMockup() {
     { from: 'user', text: '/balance' },
     { from: 'bot', text: '💰 Wallet Balance\n\nAvailable: ₱ 12,500.00\nPending: ₱ 1,200.00\n\nUse /withdraw to cash out.' },
     { from: 'user', text: '/invoice 1500 Web design deposit' },
-    { from: 'bot', text: '✅ Invoice Created!\n\nAmount: ₱ 1,500.00\nDesc: Web design deposit\n\n🔗 Pay Now: pay.paybotph.com/...' },
+    { from: 'bot', text: '✅ Invoice Created!\n\nAmount: ₱ 1,500.00\nDesc: Web design deposit\n\n🔗 Pay Now: pay.xend.ph/...' },
     { from: 'user', text: '/alipay 500 Product sale' },
     { from: 'bot', text: '✅ Alipay QR Ready!\n\n💰 ₱500.00\n📱 Scan QR with Alipay' },
   ];

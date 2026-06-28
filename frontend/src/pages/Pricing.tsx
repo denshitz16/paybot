@@ -179,17 +179,17 @@ const PLANS: Plan[] = [
 
 /* ─── Xendit fee schedule ────────────────────────────────────── */
 const XENDIT_FEES = [
-  { method: 'GCash', fee: '2.3%', note: '' },
-  { method: 'Maya', fee: '1.8%', note: '' },
-  { method: 'GrabPay', fee: '2.0%', note: '' },
-  { method: 'ShopeePay', fee: '2.0%', note: '' },
-  { method: 'QRPH (QR code payments)', fee: '1.4%', note: 'Min. ₱15 per transaction' },
-  { method: 'Local credit / debit cards', fee: '3.2% + ₱10', note: '' },
-  { method: 'International cards (PHP)', fee: '4.2% + ₱10', note: '' },
-  { method: 'Bank direct debit (BPI, UBP, RCBC, etc.)', fee: '1.0%', note: 'Min. ₱15 per transaction' },
-  { method: 'Over-the-counter (7-Eleven, ECPay)', fee: '1.5%', note: 'Min. ₱15 per transaction' },
-  { method: 'Over-the-counter (Cebuana, LBC, SM)', fee: '₱25', note: 'Fixed per transaction' },
-  { method: 'BillEase (BNPL)', fee: '1.5%', note: '' },
+  { method: 'GCash', fee: '0.5%', note: '' },
+  { method: 'Maya', fee: '0.5%', note: '' },
+  { method: 'GrabPay', fee: '0.5%', note: '' },
+  { method: 'ShopeePay', fee: '0.5%', note: '' },
+  { method: 'QRPH (QR code payments)', fee: '0.5%', note: '' },
+  { method: 'Local credit / debit cards', fee: '0.5%', note: '' },
+  { method: 'International cards (PHP)', fee: '0.5%', note: '' },
+  { method: 'Bank direct debit (BPI, UBP, RCBC, etc.)', fee: '0.5%', note: '' },
+  { method: 'Over-the-counter (7-Eleven, ECPay)', fee: '0.5%', note: '' },
+  { method: 'Over-the-counter (Cebuana, LBC, SM)', fee: '0.5%', note: '' },
+  { method: 'BillEase (BNPL)', fee: '0.5%', note: '' },
 ];
 
 const FAQS = [
@@ -203,7 +203,7 @@ const FAQS = [
   },
   {
     q: 'What are the transaction fees?',
-    a: 'Transaction fees follow Xendit\'s published rates: GCash 2.3%, Maya 1.8%, GrabPay 2.0%, QRPH 1.4% (min ₱15), local cards 3.2% + ₱10, international cards 4.2% + ₱10, bank direct debit 1.0% (min ₱15). See the full fee table on this page. All fees are exclusive of VAT.',
+    a: 'Transaction fees are a flat 0.5% for all supported payment methods. See the full fee table on this page. All fees are exclusive of VAT.',
   },
   {
     q: 'How does USDT T+0 settlement work?',
@@ -317,7 +317,7 @@ export default function Pricing() {
       {/* ── XENDIT FEE SCHEDULE ─────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20">
         <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-2">Xendit transaction fees</h2>
-        <p className="text-muted-foreground text-sm text-center mb-8 sm:mb-10">Pay only per successful transaction. No monthly fees, no hidden charges. All fees exclusive of VAT.</p>
+        <p className="text-muted-foreground text-sm text-center mb-8 sm:mb-10">Pay only per successful transaction. No monthly fees, no hidden charges. All supported methods use a flat 0.5% fee.</p>
         <div className="rounded-2xl border border-white/[0.08] overflow-hidden">
           <div className="grid grid-cols-3 bg-white/[0.03] border-b border-white/[0.08]">
             <div className="px-4 sm:px-6 py-3 text-muted-foreground text-xs font-semibold uppercase tracking-wider col-span-2">Payment Method</div>

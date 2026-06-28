@@ -72,7 +72,7 @@ export default function Layout({ children, connected }: LayoutProps) {
             <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center">
               <Zap className="h-4 w-4 text-white" />
             </div>
-            <span className="text-base font-semibold text-slate-900 tracking-tight">PayBot</span>
+            <span className="text-base font-semibold text-slate-900 tracking-tight">xend</span>
           </Link>
         </div>
 
@@ -137,7 +137,7 @@ export default function Layout({ children, connected }: LayoutProps) {
                     <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center">
                       <Zap className="h-4 w-4 text-white" />
                     </div>
-                    <span className="text-base font-semibold text-slate-900 tracking-tight">PayBot</span>
+                    <span className="text-base font-semibold text-slate-900 tracking-tight">xend</span>
                   </Link>
                 </div>
                 <nav className="py-4 px-3 space-y-0.5">
@@ -178,7 +178,7 @@ export default function Layout({ children, connected }: LayoutProps) {
               <div className="h-7 w-7 rounded-lg bg-slate-900 flex items-center justify-center">
                 <Zap className="h-3.5 w-3.5 text-white" />
               </div>
-              <span className="text-sm font-semibold text-slate-900">PayBot</span>
+              <span className="text-sm font-semibold text-slate-900">xend</span>
             </Link>
           </div>
 

@@ -330,16 +330,8 @@ class MayaService:
         return {"success": False, "error": "Maya Manager does not provide a bank list through the checkout API."}
 
     def calculate_fees(self, amount: float, method: str) -> Dict[str, Any]:
-        fee_rates: Dict[str, Dict[str, float]] = {
-            "invoice": {"percentage": 0.005, "fixed": 0},
-            "qr_code": {"percentage": 0.005, "fixed": 0},
-            "ewallet": {"percentage": 0.005, "fixed": 0},
-            "virtual_account": {"percentage": 0.005, "fixed": 0},
-            "card": {"percentage": 0.005, "fixed": 0},
-            "disbursement": {"percentage": 0.005, "fixed": 0},
-            "retail": {"percentage": 0.005, "fixed": 0},
-        }
-        rates = fee_rates.get(method, {"percentage": 0.005, "fixed": 0})
+        default_rates = {"percentage": 0.005, "fixed": 0.0}  # 0.5% flat fee for all supported payment methods
+        rates = default_rates
         fee = amount * rates["percentage"] + rates["fixed"]
         return {
             "amount": amount,
