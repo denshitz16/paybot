@@ -168,12 +168,23 @@ const TOPUP_BANKS: { bank: string; name: string; number: string; logo: string }[
 ];
 
 function TopupBankLogo({ logo, bank }: { logo: string | undefined; bank: string }) {
+  const bankLower = (bank || '').toLowerCase();
+  if (bankLower.includes('union')) {
+    return (
+      <img
+        src="/logos/unionbank-kogo.svg"
+        alt={`${bank} logo`}
+        className="h-6 w-auto rounded-md object-contain"
+      />
+    );
+  }
+
   if (logo) {
     return (
       <img
         src={logo}
         alt={`${bank} logo`}
-        className="h-6 w-auto rounded-md object-contain bg-slate-950/10"
+        className="h-6 w-auto rounded-md object-contain"
       />
     );
   }
@@ -529,7 +540,7 @@ export default function Wallet() {
         {/* Dual Wallet Balance Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Wallet Balance */}
-          <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 border-0 overflow-hidden relative">
+          <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 border-0 overflow-hidden relative transform-gpu transition-transform hover:-translate-y-1 hover:scale-[1.01]" style={{ boxShadow: '0 20px 40px rgba(8,30,60,0.12), inset 0 -6px 20px rgba(255,255,255,0.03)'}}>
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_20%,white,transparent)]" />
             <CardContent className="p-5 sm:p-6 relative">
               <div className="flex items-center justify-between">
@@ -564,7 +575,7 @@ export default function Wallet() {
           </Card>
 
           {/* USD Wallet */}
-          <Card className="bg-gradient-to-br from-teal-600 to-emerald-700 border-0 overflow-hidden relative">
+          <Card className="bg-gradient-to-br from-teal-600 to-emerald-700 border-0 overflow-hidden relative transform-gpu transition-transform hover:-translate-y-1 hover:scale-[1.01]" style={{ boxShadow: '0 20px 40px rgba(6,60,50,0.12), inset 0 -6px 20px rgba(255,255,255,0.02)'}}>
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_20%,white,transparent)]" />
             <CardContent className="p-5 sm:p-6 relative">
               <div className="flex items-center justify-between">
