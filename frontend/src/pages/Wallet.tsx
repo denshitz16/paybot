@@ -1,1567 +1,664 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { client } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePaymentEvents } from '@/hooks/usePaymentEvents';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Loader2,
-  Wallet as WalletIcon,
-  Send,
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  ArrowDownLeft,
-  TrendingUp,
-  CheckCircle,
-  Clock,
-  XCircle,
-  Building2,
-  PlusCircle,
-  ExternalLink,
-  Copy,
-  Check,
-  Bitcoin,
-  AlertCircle,
-  ShieldAlert,
-  Link as LinkIcon,
-} from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
+import {
+  Wallet, DollarSign, ArrowUpFromLine, ArrowDownToLine, Send, Bitcoin,
+  Loader2, ChevronRight, Clock, CheckCircle, XCircle, Building2, Landmark,
+  CreditCard, Receipt, AlertCircle, ArrowRight
+} from 'lucide-react';
 
-/** Extract a user-readable error message from a non-ok fetch Response. */
-async function getResponseError(res: Response, fallback: string): Promise<string> {
-  try {
-    const e = await res.json();
-    return (e.detail as string) || (e.message as string) || fallback;
-  } catch {
-    return fallback;
-  }
-}
-
+// ─── Types ──────────────────────────────────────────────────────────
 interface WalletBalance {
-  wallet_id: number;
   balance: number;
   currency: string;
+  updated_at?: string;
 }
 
 interface WalletTxn {
   id: number;
-  transaction_type: string;
+  type: 'deposit' | 'withdraw' | 'receive' | 'sent' | 'crypto_topup' | 'usdt_send' | 'disbursement' | 'refund';
   amount: number;
-  balance_before: number | null;
-  balance_after: number | null;
-  recipient: string | null;
-  note: string | null;
-  status: string | null;
-  reference_id: string | null;
-  created_at: string | null;
-}
-
-interface CryptoDepositInfo {
-  address: string;
-  network: string;
   currency: string;
-  notes: string;
-}
-
-interface CryptoTopupRequest {
-  id: number;
-  user_id: string;
-  amount_usdt: number;
-  tx_hash: string;
-  network: string;
-  status: string;
-  notes: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string | null;
-}
-
-interface UsdtSendRequest {
-  id: number;
-  user_id: string;
-  to_address: string;
-  amount: number;
-  note: string | null;
-  status: string;
-  denial_reason: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string | null;
-}
-
-const txnTypeConfig: Record<string, { label: string; color: string; icon: React.ReactNode; sign: string }> = {
-  top_up: {
-    label: 'Top Up',
-    color: 'text-emerald-400',
-    icon: <ArrowDownLeft className="h-4 w-4 text-emerald-400" />,
-    sign: '+',
-  },
-  send: {
-    label: 'Sent',
-    color: 'text-red-400',
-    icon: <Send className="h-4 w-4 text-red-400" />,
-    sign: '-',
-  },
-  withdraw: {
-    label: 'Withdrawal',
-    color: 'text-amber-400',
-    icon: <ArrowUpFromLine className="h-4 w-4 text-amber-400" />,
-    sign: '-',
-  },
-  receive: {
-    label: 'Received',
-    color: 'text-emerald-400',
-    icon: <ArrowDownToLine className="h-4 w-4 text-emerald-400" />,
-    sign: '+',
-  },
-  crypto_topup: {
-    label: 'Crypto Top Up',
-    color: 'text-teal-400',
-    icon: <Bitcoin className="h-4 w-4 text-teal-400" />,
-    sign: '+',
-  },
-  usdt_send: {
-    label: 'Sent USDT',
-    color: 'text-red-400',
-    icon: <Send className="h-4 w-4 text-red-400" />,
-    sign: '-',
-  },
-  usd_send: {
-    label: 'Sent USD',
-    color: 'text-red-400',
-    icon: <Send className="h-4 w-4 text-red-400" />,
-    sign: '-',
-  },
-  usd_receive: {
-    label: 'Received USD',
-    color: 'text-emerald-400',
-    icon: <ArrowDownToLine className="h-4 w-4 text-emerald-400" />,
-    sign: '+',
-  },
-  admin_credit: {
-    label: 'Admin Credit',
-    color: 'text-blue-400',
-    icon: <ArrowDownLeft className="h-4 w-4 text-blue-400" />,
-    sign: '+',
-  },
-  admin_debit: {
-    label: 'Admin Debit',
-    color: 'text-orange-400',
-    icon: <ArrowUpFromLine className="h-4 w-4 text-orange-400" />,
-    sign: '-',
-  },
-};
-
-const BANKS = ['BDO', 'BPI', 'UNIONBANK', 'RCBC', 'CHINABANK', 'PNB', 'METROBANK'];
-
-// xend bank accounts for top-up
-const TOPUP_BANKS: { bank: string; name: string; number: string; logo: string }[] = [
-  { bank: 'Security Bank Corporation', name: 'Xendit Philippines', number: '0000068888173', logo: '/logos/security-bank.svg' },
-  { bank: 'Asia United Bank',          name: 'Xendit Philippines', number: '934105321485',  logo: '/logos/asia-united-bank.svg' },
-];
-
-function TopupBankLogo({ logo, bank }: { logo: string | undefined; bank: string }) {
-  const bankLower = (bank || '').toLowerCase();
-  if (bankLower.includes('union')) {
-    return (
-      <img
-        src="/logos/unionbank.svg"
-        alt={`${bank} logo`}
-        className="h-6 w-auto rounded-md object-contain"
-      />
-    );
-  }
-
-  if (logo) {
-    return (
-      <img
-        src={logo}
-        alt={`${bank} logo`}
-        className="h-6 w-auto rounded-md object-contain"
-      />
-    );
-  }
-
-  return (
-    <div className="h-6 w-6 rounded-md bg-muted/80 flex items-center justify-center text-slate-100">
-      <div className="text-xs font-semibold">B</div>
-    </div>
-  );
+  status: 'completed' | 'pending' | 'failed' | 'cancelled';
+  description?: string;
+  created_at: string;
+  reference?: string;
 }
 
 interface BankOption {
-  name: string;
   code: string;
+  name: string;
 }
 
-export default function Wallet() {
-  const { user, loading: authLoading, login } = useAuth();
+interface WithdrawRequest {
+  id: number;
+  amount: number;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  note?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'processing' | 'completed';
+  created_at: string;
+  processed_at?: string;
+  processed_by?: string;
+  rejection_reason?: string;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────
+const BANKS: string[] = [
+  'BDO', 'BPI', 'Metrobank', 'UnionBank', 'Landbank', 'PNB',
+  'Chinabank', 'RCBC', 'Security Bank', 'EastWest', 'GCash', 'Maya'
+];
+
+const txnMeta: Record<string, { label: string; color: string; icon: React.ReactNode; sign: string }> = {
+  deposit:       { label: 'Deposit', color: 'text-emerald-600 dark:text-emerald-400', icon: <ArrowDownToLine className="h-4 w-4" />, sign: '+' },
+  withdraw:      { label: 'Withdrawal', color: 'text-amber-600 dark:text-amber-400', icon: <ArrowUpFromLine className="h-4 w-4" />, sign: '-' },
+  receive:       { label: 'Received', color: 'text-emerald-600 dark:text-emerald-400', icon: <ArrowDownToLine className="h-4 w-4" />, sign: '+' },
+  sent:          { label: 'Sent', color: 'text-red-600 dark:text-red-400', icon: <Send className="h-4 w-4" />, sign: '-' },
+  crypto_topup:  { label: 'Crypto Top Up', color: 'text-teal-600 dark:text-teal-400', icon: <Bitcoin className="h-4 w-4" />, sign: '+' },
+  usdt_send:     { label: 'Sent USDT', color: 'text-red-600 dark:text-red-400', icon: <Send className="h-4 w-4" />, sign: '-' },
+  disbursement:  { label: 'Disbursement', color: 'text-red-600 dark:text-red-400', icon: <Send className="h-4 w-4" />, sign: '-' },
+  refund:        { label: 'Refund', color: 'text-emerald-600 dark:text-emerald-400', icon: <Receipt className="h-4 w-4" />, sign: '+' },
+};
+
+const statusMeta: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  pending:   { label: 'Pending', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/30', icon: <Clock className="h-3.5 w-3.5" /> },
+  approved:  { label: 'Approved', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/30', icon: <CheckCircle className="h-3.5 w-3.5" /> },
+  processing:{ label: 'Processing', color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/30', icon: <Loader2 className="h-3.5 w-3.5 animate-spin" /> },
+  completed: { label: 'Completed', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/30', icon: <CheckCircle className="h-3.5 w-3.5" /> },
+  rejected:  { label: 'Rejected', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/30', icon: <XCircle className="h-3.5 w-3.5" /> },
+  failed:    { label: 'Failed', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/30', icon: <XCircle className="h-3.5 w-3.5" /> },
+  cancelled: { label: 'Cancelled', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-50 dark:bg-slate-900', icon: <XCircle className="h-3.5 w-3.5" /> },
+};
+
+const fmt = (n: number) => n.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+const fmtUsd = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ─── Component ───────────────────────────────────────────────────────
+export default function WalletPage() {
+  const { user, loading: authLoading } = useAuth();
   const [phpBalance, setPhpBalance] = useState<WalletBalance | null>(null);
   const [usdBalance, setUsdBalance] = useState<WalletBalance | null>(null);
   const [transactions, setTransactions] = useState<WalletTxn[]>([]);
+  const [withdrawRequests, setWithdrawRequests] = useState<WithdrawRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('withdraw');
   const [bankOptions, setBankOptions] = useState<BankOption[]>([]);
 
-  // Withdraw state
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [withdrawBank, setWithdrawBank] = useState('');
-  const [withdrawAccount, setWithdrawAccount] = useState('');
-  const [withdrawNote, setWithdrawNote] = useState('');
-  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  // Withdraw request form state
+  const [wrAmount, setWrAmount] = useState('');
+  const [wrBank, setWrBank] = useState('');
+  const [wrAccount, setWrAccount] = useState('');
+  const [wrName, setWrName] = useState('');
+  const [wrNote, setWrNote] = useState('');
+  const [wrLoading, setWrLoading] = useState(false);
 
-  // Disburse state
-  const [dAmount, setDAmount] = useState('');
-  const [dBank, setDBank] = useState('BDO');
-  const [dAccount, setDAccount] = useState('');
-  const [dName, setDName] = useState('');
-  const [dDesc, setDDesc] = useState('');
-  const [dLoading, setDLoading] = useState(false);
+  // USDT Send state
+  const [usdtAmount, setUsdtAmount] = useState('');
+  const [usdtAddress, setUsdtAddress] = useState('');
+  const [usdtNetwork, setUsdtNetwork] = useState('TRC20');
+  const [usdtLoading, setUsdtLoading] = useState(false);
 
-  // PHP Top Up Info Dialog
-  const [topupDialogOpen, setTopupDialogOpen] = useState(false);
-  const [topupDialogMethod, setTopupDialogMethod] = useState<'ubp' | 'bank'>('ubp');
-  const [paymentCodeCopied, setPaymentCodeCopied] = useState(false);
-  const [topupStep, setTopupStep] = useState(0);
-  const [topupAmount, setTopupAmount] = useState('');
-  const [topupToBank, setTopupToBank] = useState(TOPUP_BANKS[0].bank);
-  const [topupTransferMethod, setTopupTransferMethod] = useState('');
-  const [topupRefNumber, setTopupRefNumber] = useState('');
-  const [topupProofFile, setTopupProofFile] = useState<File | null>(null);
-  const [topupSubmitting, setTopupSubmitting] = useState(false);
-
-  // Crypto Top Up state
-  const [cryptoDepositInfo, setCryptoDepositInfo] = useState<CryptoDepositInfo | null>(null);
-  const [cryptoAmount, setCryptoAmount] = useState('');
-  const [cryptoTxHash, setCryptoTxHash] = useState('');
-  const [cryptoLoading, setCryptoLoading] = useState(false);
-  const [cryptoRequests, setCryptoRequests] = useState<CryptoTopupRequest[]>([]);
-  const [addressCopied, setAddressCopied] = useState(false);
-
-  // Send USDT state
-  const [sendUsdtAddress, setSendUsdtAddress] = useState('');
-  const [sendUsdtAmount, setSendUsdtAmount] = useState('');
-  const [sendUsdtNote, setSendUsdtNote] = useState('');
-  const [sendUsdtLoading, setSendUsdtLoading] = useState(false);
-  const [sendUsdtRequests, setSendUsdtRequests] = useState<UsdtSendRequest[]>([]);
-
-  // Send USD to user state
-  const [sendUsdUsername, setSendUsdUsername] = useState('');
-  const [sendUsdAmount, setSendUsdAmount] = useState('');
-  const [sendUsdNote, setSendUsdNote] = useState('');
-  const [sendUsdLoading, setSendUsdLoading] = useState(false);
-
-  const fetchWalletData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     try {
-      const [phpRes, usdRes, txnRes] = await Promise.all([
-        fetch('/api/v1/wallet/balance?currency=PHP').then(r => r.json()),
-        fetch('/api/v1/wallet/balance?currency=USD').then(r => r.json()),
-        fetch('/api/v1/wallet/transactions').then(r => r.json()),
+      const [phpRes, usdRes, txnRes, banksRes, wrRes] = await Promise.allSettled([
+        client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=PHP', method: 'GET', data: {} }),
+        client.apiCall.invoke({ url: '/api/v1/wallet/balance?currency=USD', method: 'GET', data: {} }),
+        client.apiCall.invoke({ url: '/api/v1/wallet/transactions?limit=20', method: 'GET', data: {} }),
+        client.apiCall.invoke({ url: '/api/v1/gateway/banks', method: 'GET', data: {} }),
+        client.apiCall.invoke({ url: '/api/v1/wallet/withdraw-requests', method: 'GET', data: {} }),
       ]);
-      setPhpBalance(phpRes);
-      setUsdBalance(usdRes);
-      setTransactions(txnRes?.items || []);
-    } catch (err) {
-      console.error('Failed to fetch wallet data:', err);
-    }
-  }, [user]);
 
-  const fetchCryptoRequests = useCallback(async () => {
-    if (!user) return;
-    try {
-      const res = await fetch('/api/v1/wallet/crypto-topup-requests');
-      if (res.ok) {
-        const data = await res.json();
-        setCryptoRequests(data.items || []);
+      if (phpRes.status === 'fulfilled' && phpRes.value?.data?.balance != null) {
+        setPhpBalance({ balance: phpRes.value.data.balance, currency: 'PHP' });
+      }
+      if (usdRes.status === 'fulfilled' && usdRes.value?.data?.balance != null) {
+        setUsdBalance({ balance: usdRes.value.data.balance, currency: 'USD' });
+      }
+      if (txnRes.status === 'fulfilled' && txnRes.value?.data?.items) {
+        setTransactions(txnRes.value.data.items);
+      }
+      if (banksRes.status === 'fulfilled' && banksRes.value?.data?.banks) {
+        setBankOptions(banksRes.value.data.banks);
+      }
+      if (wrRes.status === 'fulfilled' && wrRes.value?.data?.requests) {
+        setWithdrawRequests(wrRes.value.data.requests);
       }
     } catch (err) {
-      console.error('Failed to fetch crypto requests:', err);
+      console.error('Wallet fetch error:', err);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
-
-  const fetchSendUsdtRequests = useCallback(async () => {
-    if (!user) return;
-    try {
-      const res = await fetch('/api/v1/wallet/usdt-send-requests', { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setSendUsdtRequests(data.items || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch USDT send requests:', err);
-    }
-  }, [user]);
-
-  const onWalletUpdate = useCallback(() => { fetchWalletData(); }, [fetchWalletData]);
-  const onStatusChange = useCallback(() => { fetchWalletData(); }, [fetchWalletData]);
-
-  const { connected } = usePaymentEvents({
-    enabled: !!user,
-    onWalletUpdate,
-    onStatusChange,
-    pollInterval: 5000,
-  });
 
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
-      setLoading(true);
-      await fetchWalletData();
-      await fetchCryptoRequests();
-      await fetchSendUsdtRequests();
-      setLoading(false);
-    };
-    load();
+    fetchData();
+  }, [user, fetchData]);
 
-    // Fetch available banks
-    fetch('/api/v1/gateway/available-banks')
-      .then(r => r.json())
-      .then((data) => {
-        const banks: BankOption[] = (data || []).map((b: { name: string; code: string }) => ({
-          name: b.name,
-          code: b.code,
-        }));
-        if (banks.length > 0) {
-          setBankOptions(banks);
-          setWithdrawBank(banks[0].code);
-          setDBank(banks[0].code);
-        }
-      })
-      .catch(() => {
-        const fallback = BANKS.map(b => ({ name: b, code: b }));
-        setBankOptions(fallback);
-        setWithdrawBank(fallback[0].code);
-      });
-
-    // Fetch crypto deposit info
-    fetch('/api/v1/wallet/crypto-deposit-info')
-      .then(r => r.json())
-      .then(data => setCryptoDepositInfo(data))
-      .catch(() => {});
-  }, [user, fetchWalletData, fetchCryptoRequests, fetchSendUsdtRequests]);
-
-  const handleWithdraw = async () => {
-    const amount = parseFloat(withdrawAmount);
+  const handleWithdrawRequest = async () => {
+    const amount = parseFloat(wrAmount);
     if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
-    setWithdrawLoading(true);
-    try {
-      const res = await fetch('/api/v1/wallet/withdraw', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, bank_name: withdrawBank, account_number: withdrawAccount, note: withdrawNote }),
-      });
-      if (!res.ok) {
-        toast.error(await getResponseError(res, 'Failed to withdraw'));
-        return;
-      }
-      const data = await res.json();
-      if (data.success) {
-        toast.success(data.message || 'Withdrawal submitted');
-        setWithdrawAmount(''); setWithdrawBank(''); setWithdrawAccount(''); setWithdrawNote('');
-        await fetchWalletData();
-      } else {
-        toast.error(data.message || 'Failed to withdraw');
-      }
-    } catch {
-      toast.error('Failed to withdraw');
-    } finally { setWithdrawLoading(false); }
-  };
+    if (!wrBank) { toast.error('Select a bank'); return; }
+    if (!wrAccount.trim()) { toast.error('Enter account number'); return; }
+    if (!wrName.trim()) { toast.error('Enter account holder name'); return; }
+    if (phpBalance && amount > phpBalance.balance) { toast.error('Insufficient balance'); return; }
 
-  const handleDisburse = async () => {
-    const amount = parseFloat(dAmount);
-    if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
-    if (!dAccount || !dName) { toast.error('Enter account number and name'); return; }
-    setDLoading(true);
+    setWrLoading(true);
     try {
-      const res = await fetch('/api/v1/gateway/disbursement', {
+      const res = await fetch('/api/v1/wallet/withdraw-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, bank_code: dBank, account_number: dAccount, account_name: dName, description: dDesc }),
+        body: JSON.stringify({
+          amount,
+          bank_name: wrBank,
+          account_number: wrAccount.trim(),
+          account_name: wrName.trim(),
+          note: wrNote.trim() || undefined,
+        }),
       });
-      if (!res.ok) {
-        toast.error(await getResponseError(res, 'Disbursement failed'));
-        return;
-      }
       const data = await res.json();
       if (data.success) {
-        toast.success(data.message || 'Disbursement sent');
-        setDAmount(''); setDAccount(''); setDName(''); setDDesc('');
-        await fetchWalletData();
+        toast.success('Withdrawal request submitted for admin approval');
+        setWrAmount(''); setWrBank(''); setWrAccount(''); setWrName(''); setWrNote('');
+        await fetchData();
       } else {
-        toast.error(data.message || 'Disbursement failed');
-      }
-    } catch {
-      toast.error('Disbursement failed');
-    } finally { setDLoading(false); }
-  };
-
-  const handleCryptoTopup = async () => {
-    const amount = parseFloat(cryptoAmount);
-    if (!amount || amount <= 0) { toast.error('Enter a valid USDT amount'); return; }
-    if (!cryptoTxHash.trim()) { toast.error('Enter the transaction hash'); return; }
-    setCryptoLoading(true);
-    try {
-      const res = await fetch('/api/v1/wallet/crypto-topup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount_usdt: amount, tx_hash: cryptoTxHash.trim(), network: 'TRC20' }),
-      });
-      if (!res.ok) {
-        toast.error(await getResponseError(res, 'Submission failed'));
-        return;
-      }
-      const data = await res.json();
-      if (data.success) {
-        toast.success('Request submitted! An admin will review and credit your USD wallet shortly.');
-        setCryptoAmount('');
-        setCryptoTxHash('');
-        await fetchCryptoRequests();
-      } else {
-        toast.error(data.message || 'Submission failed');
+        toast.error(data.message || 'Failed to submit request');
       }
     } catch {
       toast.error('Network error. Please try again.');
-    } finally { setCryptoLoading(false); }
+    } finally { setWrLoading(false); }
   };
 
-  const handleSendUsdt = async () => {
-    const amount = parseFloat(sendUsdtAmount);
-    if (!amount || amount <= 0) { toast.error('Enter a valid USDT amount'); return; }
-    const addr = sendUsdtAddress.trim();
-    if (!addr) { toast.error('Enter the recipient TRC-20 address'); return; }
-    if (!addr.startsWith('T') || addr.length !== 34) {
-      toast.error('Invalid TRC-20 address — must start with T and be 34 characters');
-      return;
-    }
-    setSendUsdtLoading(true);
+  const handleUsdtSend = async () => {
+    const amount = parseFloat(usdtAmount);
+    if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
+    if (!usdtAddress.trim()) { toast.error('Enter recipient address'); return; }
+    if (usdBalance && amount > usdBalance.balance) { toast.error('Insufficient USDT balance'); return; }
+
+    setUsdtLoading(true);
     try {
       const res = await fetch('/api/v1/wallet/send-usdt', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to_address: addr, amount, note: sendUsdtNote }),
+        body: JSON.stringify({ amount, address: usdtAddress.trim(), network: usdtNetwork }),
       });
-      if (!res.ok) {
-        toast.error(await getResponseError(res, 'Failed to submit send request'));
-        return;
-      }
-      toast.success('Send request submitted! Awaiting super admin approval.');
-      setSendUsdtAddress('');
-      setSendUsdtAmount('');
-      setSendUsdtNote('');
-      await fetchSendUsdtRequests();
-    } catch {
-      toast.error('Network error. Please try again.');
-    } finally { setSendUsdtLoading(false); }
-  };
-
-  const handleSendUsd = async () => {
-    const amount = parseFloat(sendUsdAmount);
-    if (!amount || amount <= 0) { toast.error('Enter a valid USD amount'); return; }
-    const uname = sendUsdUsername.trim().replace(/^@/, '');
-    if (!uname) { toast.error('Enter the recipient Telegram username'); return; }
-    setSendUsdLoading(true);
-    try {
-      const res = await fetch('/api/v1/wallet/send-usd', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipient_username: uname, amount, note: sendUsdNote }),
-      });
-      if (!res.ok) {
-        toast.error(await getResponseError(res, 'Failed to send USD'));
-        return;
-      }
       const data = await res.json();
       if (data.success) {
-        toast.success(data.message || `Sent $${amount.toFixed(2)} USD to @${uname}`);
-        setSendUsdUsername('');
-        setSendUsdAmount('');
-        setSendUsdNote('');
-        await fetchWalletData();
+        toast.success('USDT sent successfully');
+        setUsdtAmount(''); setUsdtAddress('');
+        await fetchData();
       } else {
-        toast.error(data.message || 'Failed to send USD');
+        toast.error(data.message || 'Failed to send USDT');
       }
     } catch {
       toast.error('Network error. Please try again.');
-    } finally { setSendUsdLoading(false); }
-  };
-
-  const handleCopyAddress = () => {
-    if (cryptoDepositInfo?.address) {
-      navigator.clipboard.writeText(cryptoDepositInfo.address).then(() => {
-        setAddressCopied(true);
-        setTimeout(() => setAddressCopied(false), 2000);
-        toast.success('Address copied!');
-      });
-    }
+    } finally { setUsdtLoading(false); }
   };
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-600 dark:border-slate-400"></div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-6 max-w-md px-6">
-          <WalletIcon className="h-16 w-16 text-blue-400 mx-auto" />
-          <h1 className="text-3xl font-bold text-foreground">Wallet</h1>
-          <p className="text-muted-foreground">Sign in to access your wallet</p>
-          <Button onClick={() => login()} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-            Sign In
-          </Button>
-        </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
+        <p className="text-slate-500 dark:text-slate-400">Please log in to view your wallet.</p>
       </div>
     );
   }
 
-  const phpBal = phpBalance?.balance ?? 0;
-  const usdBal = usdBalance?.balance ?? 0;
-  const pendingCryptoCount = cryptoRequests.filter(r => r.status === 'pending').length;
-  const pendingSendCount = sendUsdtRequests.filter(r => r.status === 'pending').length;
+  const bankList = bankOptions.length > 0 ? bankOptions : BANKS.map(b => ({ code: b, name: b }));
 
   return (
-    <Layout connected={connected}>
-      <div className="max-w-3xl mx-auto">
+    <Layout>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Wallet className="h-6 w-6 text-slate-500 dark:text-slate-400" />
+            Wallet
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Manage your PHP and USDT balances, request withdrawals, and view transaction history.
+          </p>
+        </div>
 
-        {/* Dual Wallet Balance Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {/* Wallet Balance */}
-          <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 border-0 overflow-hidden relative transform-gpu transition-transform hover:-translate-y-1 hover:scale-[1.01]" style={{ boxShadow: '0 20px 40px rgba(8,30,60,0.12), inset 0 -6px 20px rgba(255,255,255,0.03)'}}>
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_20%,white,transparent)]" />
-            <CardContent className="p-5 sm:p-6 relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-200 text-xs font-medium mb-1">Wallet Balance</p>
-                  <p className="text-3xl font-bold text-white tracking-tight">
-                    {loading ? <Loader2 className="h-7 w-7 animate-spin" /> : `₱${phpBal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`}
-                  </p>
-                  <p className="text-blue-200 text-[10px] mt-1">Philippine Peso</p>
-                  <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
-                    <Button
-                      size="sm"
-                      onClick={() => setActiveTab('withdraw')}
-                      className="bg-amber-500 hover:bg-amber-600 text-white w-full sm:w-auto"
-                    >
-                      Withdraw
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => { setTopupDialogOpen(true); setTopupDialogMethod('ubp'); }}
-                      className="bg-blue-500 hover:bg-blue-600 text-white w-full sm:w-auto"
-                    >
-                      Top Up
-                    </Button>
-                  </div>
-                </div>
-                <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <WalletIcon className="h-6 w-6 text-white" />
+        {/* Balance Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {/* PHP Balance */}
+          <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">PHP Wallet</span>
+                <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+                  <Landmark className="h-4 w-4" />
                 </div>
               </div>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {loading ? (
+                  <span className="inline-block w-28 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+                ) : `₱${fmt(phpBalance?.balance || 0)}`}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Philippine Peso</p>
             </CardContent>
           </Card>
 
-          {/* USD Wallet */}
-          <Card className="bg-gradient-to-br from-teal-600 to-emerald-700 border-0 overflow-hidden relative transform-gpu transition-transform hover:-translate-y-1 hover:scale-[1.01]" style={{ boxShadow: '0 20px 40px rgba(6,60,50,0.12), inset 0 -6px 20px rgba(255,255,255,0.02)'}}>
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_20%,white,transparent)]" />
-            <CardContent className="p-5 sm:p-6 relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-teal-100 text-xs font-medium mb-1">USD Wallet</p>
-                  <p className="text-3xl font-bold text-white tracking-tight">
-                    {loading ? <Loader2 className="h-7 w-7 animate-spin" /> : `$${usdBal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-                  </p>
-                  <p className="text-teal-100 text-[10px] mt-1">US Dollar · via Crypto Topup</p>
-                  <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
-                    <Button
-                      size="sm"
-                      onClick={() => { setTopupDialogOpen(true); setTopupDialogMethod('ubp'); }}
-                      className="bg-blue-500 hover:bg-blue-600 text-white w-full sm:w-auto"
-                    >
-                      Top Up
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => setActiveTab('send-usdt')}
-                      className="bg-teal-500 hover:bg-teal-600 text-white w-full sm:w-auto"
-                    >
-                      Send USDT
-                    </Button>
-                  </div>
-                </div>
-                <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Bitcoin className="h-6 w-6 text-white" />
+          {/* USD Balance */}
+          <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">USD Wallet</span>
+                <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+                  <DollarSign className="h-4 w-4" />
                 </div>
               </div>
-              {pendingCryptoCount > 0 && (
-                <div className="mt-2 flex items-center gap-1.5">
-                  <Clock className="h-3 w-3 text-teal-200" />
-                  <span className="text-teal-200 text-[10px]">{pendingCryptoCount} pending crypto request{pendingCryptoCount > 1 ? 's' : ''}</span>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {loading ? (
+                  <span className="inline-block w-28 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+                ) : `$${fmtUsd(usdBalance?.balance || 0)}`}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">US Dollar · via Crypto Topup</p>
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats */}
+          <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pending Requests</span>
+                <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+                  <Clock className="h-4 w-4" />
                 </div>
-              )}
-              {pendingSendCount > 0 && (
-                <div className="mt-1 flex items-center gap-1.5">
-                  <Clock className="h-3 w-3 text-amber-200" />
-                  <span className="text-amber-200 text-[10px]">{pendingSendCount} pending send request{pendingSendCount > 1 ? 's' : ''}</span>
-                </div>
-              )}
+              </div>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {loading ? (
+                  <span className="inline-block w-12 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+                ) : withdrawRequests.filter(r => r.status === 'pending').length}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Awaiting admin approval
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Actions: Withdraw / Disburse / Top Up */}
-        <Card className="bg-card border-border mb-6">
-          <CardContent className="p-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="w-full rounded-none rounded-t-lg bg-muted/60 border-b border-border h-14 p-0 gap-0">
-                <TabsTrigger
-                  value="withdraw"
-                  className="flex-1 h-full rounded-none rounded-tl-lg data-[state=active]:bg-card data-[state=active]:text-amber-400 text-muted-foreground flex-col gap-0.5 py-2 text-xs sm:flex-row sm:gap-2 sm:text-sm sm:py-0"
-                >
-                  <ArrowUpFromLine className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Withdraw</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="disburse"
-                  className="flex-1 h-full rounded-none data-[state=active]:bg-card data-[state=active]:text-emerald-400 text-muted-foreground flex-col gap-0.5 py-2 text-xs sm:flex-row sm:gap-2 sm:text-sm sm:py-0"
-                >
-                  <Building2 className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Disburse</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="topup"
-                  className="flex-1 h-full rounded-none data-[state=active]:bg-card data-[state=active]:text-blue-400 text-muted-foreground flex-col gap-0.5 py-2 text-xs sm:flex-row sm:gap-2 sm:text-sm sm:py-0"
-                >
-                  <PlusCircle className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Top Up</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="send-usd"
-                  className="flex-1 h-full rounded-none data-[state=active]:bg-card data-[state=active]:text-emerald-400 text-muted-foreground flex-col gap-0.5 py-2 text-xs sm:flex-row sm:gap-2 sm:text-sm sm:py-0"
-                >
-                  <Send className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Send USD</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="send-usdt"
-                  className="flex-1 h-full rounded-none rounded-tr-lg data-[state=active]:bg-card data-[state=active]:text-teal-400 text-muted-foreground flex-col gap-0.5 py-2 text-xs sm:flex-row sm:gap-2 sm:text-sm sm:py-0"
-                >
-                  <Bitcoin className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Send USDT</span>
-                </TabsTrigger>
-              </TabsList>
+        {/* Main Tabs */}
+        <Tabs defaultValue="withdraw" className="space-y-6">
+          <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1">
+            <TabsTrigger value="withdraw" className="text-xs font-medium data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100">
+              <ArrowUpFromLine className="h-3.5 w-3.5 mr-1.5" />
+              Withdraw
+            </TabsTrigger>
+            <TabsTrigger value="usdt" className="text-xs font-medium data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100">
+              <Send className="h-3.5 w-3.5 mr-1.5" />
+              Send USDT
+            </TabsTrigger>
+            <TabsTrigger value="history" className="text-xs font-medium data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100">
+              <Receipt className="h-3.5 w-3.5 mr-1.5" />
+              History
+            </TabsTrigger>
+            <TabsTrigger value="requests" className="text-xs font-medium data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100">
+              <Clock className="h-3.5 w-3.5 mr-1.5" />
+              My Requests
+            </TabsTrigger>
+          </TabsList>
 
-              {/* Withdraw Tab */}
-              <TabsContent value="withdraw" className="p-4 sm:p-6 mt-0 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Amount (₱)</Label>
-                    <Input type="number" placeholder="0.00" value={withdrawAmount}
-                      onChange={e => setWithdrawAmount(e.target.value)} min="1"
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground" />
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Bank</Label>
-                    <Select value={withdrawBank} onValueChange={setWithdrawBank}>
-                      <SelectTrigger className="mt-1 bg-muted border-border text-foreground">
-                        <SelectValue placeholder="Select bank…" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-muted border-border max-h-64">
-                        {(bankOptions.length > 0 ? bankOptions : BANKS.map(b => ({ name: b, code: b }))).map(b => (
-                          <SelectItem key={b.code} value={b.code} className="text-foreground">{b.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Account Number</Label>
-                    <Input placeholder="Enter account number" value={withdrawAccount}
-                      onChange={e => setWithdrawAccount(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground" />
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Note (optional)</Label>
-                    <Input placeholder="Withdrawal note" value={withdrawNote}
-                      onChange={e => setWithdrawNote(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground" />
-                  </div>
-                </div>
-                <Button onClick={handleWithdraw} disabled={withdrawLoading}
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white">
-                  {withdrawLoading
-                    ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>
-                    : <><ArrowUpFromLine className="h-4 w-4 mr-2" />Withdraw</>}
-                </Button>
-              </TabsContent>
-
-              {/* Disburse Tab */}
-              <TabsContent value="disburse" className="p-4 sm:p-6 mt-0 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Amount (₱)</Label>
-                    <Input type="number" placeholder="0.00" value={dAmount}
-                      onChange={e => setDAmount(e.target.value)} min="1"
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground" />
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Bank</Label>
-                    <Select value={dBank} onValueChange={setDBank}>
-                      <SelectTrigger className="mt-1 bg-muted border-border text-foreground"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-muted border-border">
-                        {(bankOptions.length > 0 ? bankOptions : BANKS.map(b => ({ name: b, code: b }))).map(b => (
-                          <SelectItem key={b.code} value={b.code} className="text-foreground">{b.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Account Number</Label>
-                    <Input placeholder="1234567890" value={dAccount}
-                      onChange={e => setDAccount(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground" />
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Account Name</Label>
-                    <Input placeholder="Juan Dela Cruz" value={dName}
-                      onChange={e => setDName(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label className="text-muted-foreground text-sm">Description (optional)</Label>
-                    <Input placeholder="Salary payout, etc." value={dDesc}
-                      onChange={e => setDDesc(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground" />
-                  </div>
-                </div>
-                <Button onClick={handleDisburse} disabled={dLoading}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                  {dLoading
-                    ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending...</>
-                    : <><Send className="h-4 w-4 mr-2" />Send Disbursement</>}
-                </Button>
-              </TabsContent>
-
-              {/* Top Up Tab */}
-              <TabsContent value="topup" className="mt-0">
-                {/* PHP Top Up — informational button */}
-                <div className="border-b border-border/60">
-                  <button
-                    onClick={() => { setTopupDialogOpen(true); setTopupDialogMethod('ubp'); }}
-                    className="w-full py-3 text-sm font-medium flex items-center justify-center gap-2 text-blue-400 hover:bg-blue-500/5 transition-colors"
-                  >
-                    <PlusCircle className="h-4 w-4" />
-                    PHP Top Up — How to Top Up
-                  </button>
-                </div>
-
-                {/* Crypto (USDT TRC20) Top Up Panel */}
-                <div className="p-4 sm:p-6 space-y-5">
-                  {/* Deposit Address Card */}
-                  <div className="bg-muted/60 border border-teal-500/20 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Bitcoin className="h-4 w-4 text-teal-400" />
-                      <span className="text-teal-300 text-sm font-semibold">USDT Deposit Address</span>
-                      <Badge className="bg-teal-500/15 border border-teal-500/25 text-teal-400 text-[9px] px-1.5 py-0 h-4 ml-auto">TRC20</Badge>
-                    </div>
-
-                    {cryptoDepositInfo ? (
-                      <div className="flex flex-col sm:flex-row items-center gap-4">
-                        {/* QR Code */}
-                        <div className="shrink-0">
-                          <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${cryptoDepositInfo.address}&bgcolor=1e293b&color=ffffff&margin=8`}
-                            alt="USDT TRC20 QR Code"
-                            className="rounded-lg border border-border/50"
-                            width={130}
-                            height={130}
-                          />
-                        </div>
-                        {/* Address + Copy */}
-                        <div className="flex-1 min-w-0 w-full">
-                          <p className="text-muted-foreground text-xs mb-1.5">Send USDT (TRC20) to:</p>
-                          <div className="flex items-center gap-2 bg-background/60 border border-border/50 rounded-lg px-3 py-2">
-                            <code className="text-teal-300 text-xs font-mono break-all flex-1">
-                              {cryptoDepositInfo.address}
-                            </code>
-                            <button
-                              onClick={handleCopyAddress}
-                              className="shrink-0 text-muted-foreground hover:text-teal-400 transition-colors"
-                              title="Copy address"
-                            >
-                              {addressCopied ? <Check className="h-4 w-4 text-teal-400" /> : <Copy className="h-4 w-4" />}
-                            </button>
-                          </div>
-                          <div className="mt-2 flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-                            <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
-                            <p className="text-amber-300/80 text-[10px] leading-relaxed">
-                              Only send USDT on the TRON (TRC20) network. Other networks will result in permanent loss of funds.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center py-6">
-                        <Loader2 className="h-6 w-6 animate-spin text-teal-400" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Submit TX Hash Form */}
-                  <div>
-                    <p className="text-muted-foreground text-sm font-medium mb-3">Submit Transaction Proof</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-muted-foreground text-xs">Amount Sent (USDT)</Label>
-                        <Input
-                          type="number"
-                          placeholder="e.g. 50.00"
-                          value={cryptoAmount}
-                          onChange={e => setCryptoAmount(e.target.value)}
-                          min="0.01"
-                          step="0.01"
-                          className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-muted-foreground text-xs">Network</Label>
-                        <Input
-                          value="TRC20 (TRON)"
-                          readOnly
-                          className="mt-1 bg-muted/40 border-border/40 text-muted-foreground cursor-not-allowed"
-                        />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <Label className="text-muted-foreground text-xs">Transaction Hash (TxID)</Label>
-                        <Input
-                          placeholder="Paste your transaction hash here"
-                          value={cryptoTxHash}
-                          onChange={e => setCryptoTxHash(e.target.value)}
-                          className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground font-mono text-xs"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleCryptoTopup}
-                      disabled={cryptoLoading}
-                      className="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white"
-                    >
-                      {cryptoLoading
-                        ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting...</>
-                        : <><Bitcoin className="h-4 w-4 mr-2" />Submit Topup Request</>}
-                    </Button>
-                    <p className="text-muted-foreground text-xs text-center mt-2">
-                      An admin will verify your transaction and credit your USD wallet.
-                    </p>
-                  </div>
-
-                  {/* Crypto Request History */}
-                  {cryptoRequests.length > 0 && (
+          {/* ─── WITHDRAW TAB ─── */}
+          <TabsContent value="withdraw" className="mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Withdraw Form */}
+              <Card className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    Request Withdrawal to Bank
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Info Banner */}
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30">
+                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-muted-foreground text-xs font-medium mb-2 uppercase tracking-wider">Your Requests</p>
-                      <div className="space-y-2">
-                        {cryptoRequests.slice(0, 5).map(req => (
-                          <div key={req.id} className="flex items-center justify-between bg-muted/40 border border-border/30 rounded-lg px-3 py-2.5">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="text-foreground text-sm font-medium">${req.amount_usdt.toFixed(2)} USDT</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${
-                                  req.status === 'approved'
-                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                    : req.status === 'rejected'
-                                    ? 'bg-red-500/10 border-red-500/20 text-red-400'
-                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                }`}>
-                                  {req.status}
-                                </span>
-                              </div>
-                              <p className="text-muted-foreground text-[10px] font-mono truncate mt-0.5 max-w-[200px]">{req.tx_hash}</p>
-                            </div>
-                            <div className="text-right ml-2 shrink-0">
-                              {req.status === 'pending'
-                                ? <Clock className="h-4 w-4 text-amber-400" />
-                                : req.status === 'approved'
-                                ? <CheckCircle className="h-4 w-4 text-emerald-400" />
-                                : <XCircle className="h-4 w-4 text-red-400" />}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      <p className="text-xs font-medium text-amber-800 dark:text-amber-300">Admin Approval Required</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                        Your withdrawal request will be sent to the Super Admin for review and approval. 
+                        Processing typically takes 1-2 business days.
+                      </p>
                     </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              {/* PHP Top Up Info Dialog */}
-              <Dialog open={topupDialogOpen} onOpenChange={(open) => {
-                if (!open) {
-                  setTopupStep(0);
-                  setTopupAmount('');
-                  setTopupToBank('GoTyme Digital Bank');
-                  setTopupTransferMethod('');
-                  setTopupRefNumber('');
-                  setTopupProofFile(null);
-                }
-                setTopupDialogOpen(open);
-              }}>
-                <DialogContent className="bg-card border-border text-foreground max-w-md w-[calc(100vw-2rem)] sm:w-full max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-foreground text-base font-semibold">
-                      {topupStep === 0 ? 'Choose Top Up method' : topupStep === 1 ? 'Top Up Balance' : topupStep === 2 ? 'Confirm Transfer' : 'Submit Proof'}
-                    </DialogTitle>
-                  </DialogHeader>
-
-                  {topupStep === 0 ? (
-                    <>
-                      {/* Method selector */}
-                      <div className="flex gap-3 mt-1">
-                        <button
-                          onClick={() => setTopupDialogMethod('ubp')}
-                          className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${
-                            topupDialogMethod === 'ubp'
-                              ? 'border-blue-500 bg-blue-500/10'
-                              : 'border-border hover:border-slate-500 bg-muted/40'
-                          }`}
-                        >
-                          <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center text-white font-extrabold text-sm">UB</div>
-                          <span className="text-xs font-medium text-center leading-tight">UBP Bills<br />Payment</span>
-                        </button>
-                        <button
-                          onClick={() => setTopupDialogMethod('bank')}
-                          className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${
-                            topupDialogMethod === 'bank'
-                              ? 'border-blue-500 bg-blue-500/10'
-                              : 'border-border hover:border-slate-500 bg-muted/40'
-                          }`}
-                        >
-                          <Building2 className="w-9 h-9 text-blue-400" />
-                          <span className="text-xs font-medium text-center leading-tight">Bank<br />Transfer</span>
-                        </button>
-                      </div>
-
-                      {/* UBP Bills Payment instructions */}
-                      {topupDialogMethod === 'ubp' && (
-                        <div className="space-y-3 mt-1">
-                          <p className="text-muted-foreground text-sm">Please follow these steps:</p>
-                          <ol className="space-y-2.5 text-sm text-muted-foreground">
-                            <li className="flex gap-3">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">1.</span>
-                              <span>Log in to your <strong className="text-foreground">UnionBank (UBP)</strong> account</span>
-                            </li>
-                            <li className="flex gap-3">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">2.</span>
-                              <span>Go to <strong className="text-foreground">Pay Bills (UBP Online)</strong> or <strong className="text-foreground">Bills Payment (UBP The Portal)</strong> section</span>
-                            </li>
-                            <li className="flex gap-3">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">3.</span>
-                              <span>Click <strong className="text-foreground">Select Biller</strong> and go to the <strong className="text-foreground">Biller List</strong> section</span>
-                            </li>
-                            <li className="flex gap-3">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">4.</span>
-                              <span>Select biller name <strong className="text-foreground">"XENDIT BALANCE TOP-UP"</strong></span>
-                            </li>
-                            <li className="flex gap-3 items-start">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">5.</span>
-                              <span className="flex items-center gap-2 flex-wrap">
-                                Enter your payment code:
-                                {/* Payment code for the Xendit account associated with this platform */}
-                                <span className="text-blue-400 font-mono font-semibold">uso1h0</span>
-                                <button
-                                  onClick={() => {
-                                    navigator.clipboard.writeText('uso1h0').then(() => {
-                                      setPaymentCodeCopied(true);
-                                      setTimeout(() => setPaymentCodeCopied(false), 2000);
-                                    }).catch(() => {
-                                      toast.error('Could not copy to clipboard');
-                                    });
-                                  }}
-                                  className="text-muted-foreground hover:text-blue-400 transition-colors"
-                                  title="Copy payment code"
-                                >
-                                  {paymentCodeCopied ? <Check className="h-3.5 w-3.5 text-blue-400" /> : <Copy className="h-3.5 w-3.5" />}
-                                </button>
-                              </span>
-                            </li>
-                            <li className="flex gap-3">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">6.</span>
-                              <span>Enter the amount you want to top-up</span>
-                            </li>
-                            <li className="flex gap-3">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">7.</span>
-                              <span>Indicate the date you want to process the top-up. Note that you can either top-up right away or create a one-time or recurring schedule.</span>
-                            </li>
-                            <li className="flex gap-3">
-                              <span className="text-muted-foreground shrink-0 w-4 text-right">8.</span>
-                              <span>Review the details and click <strong className="text-foreground">Pay</strong> to continue</span>
-                            </li>
-                          </ol>
-                        </div>
-                      )}
-
-                      {/* Bank Transfer details */}
-                      {topupDialogMethod === 'bank' && (
-                        <div className="space-y-3 mt-1">
-                          <p className="text-muted-foreground text-sm leading-relaxed">
-                            To top-up your balance, transfer to one of the xend bank accounts below. Your top-up will be credited after admin verification.
-                          </p>
-                          <div className="overflow-x-auto rounded-lg border border-border/50">
-                            <table className="w-full text-sm border-collapse">
-                              <thead>
-                                <tr className="bg-muted/50">
-                                  <th className="px-3 py-2.5 text-left text-muted-foreground font-medium text-xs">Bank</th>
-                                  <th className="px-3 py-2.5 text-left text-muted-foreground font-medium text-xs">Account Name</th>
-                                  <th className="px-3 py-2.5 text-left text-muted-foreground font-medium text-xs">Account Number</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-600/30">
-                                {TOPUP_BANKS.map((b) => (
-                                  <tr key={b.bank}>
-                                    <td className="px-3 py-2.5 text-muted-foreground text-xs">
-                                      <div className="flex items-center gap-2">
-                                        <TopupBankLogo logo={b.logo} bank={b.bank} />
-                                        <span>{b.bank}</span>
-                                      </div>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-muted-foreground text-xs">{b.name}</td>
-                                    <td className="px-3 py-2.5 text-muted-foreground text-xs font-mono">{b.number}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between mt-2 flex-wrap gap-3">
-                        <a
-                          href="https://help.xendit.co/hc/en-us/articles/360034928492"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 text-xs flex items-center gap-1 hover:text-blue-300 transition-colors"
-                        >
-                          <LinkIcon className="h-3 w-3" />
-                          Learn more about Top up
-                        </a>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => setTopupDialogOpen(false)}
-                            className="border-border text-muted-foreground hover:bg-muted">
-                            Cancel
-                          </Button>
-                          {topupDialogMethod === 'bank' ? (
-                            <Button size="sm" onClick={() => setTopupStep(1)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white">
-                              Submit Details
-                            </Button>
-                          ) : (
-                            <Button size="sm" onClick={() => setTopupDialogOpen(false)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white">
-                              Okay
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  ) : topupStep === 1 ? (
-                    <>
-                      {/* Top Up Balance form */}
-                      <div className="space-y-4 mt-2">
-                        <div className="space-y-1.5">
-                          <Label className="text-muted-foreground text-sm font-medium">Top Up Amount</Label>
-                          <Input
-                            type="number"
-                            placeholder="e.g. 5000"
-                            value={topupAmount}
-                            onChange={(e) => setTopupAmount(e.target.value)}
-                            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-blue-500"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-blue-400 text-sm font-medium">Top Up to</Label>
-                          <Select value={topupToBank} onValueChange={setTopupToBank}>
-                            <SelectTrigger className="bg-muted/50 border-border text-foreground focus:ring-blue-500">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-card border-border text-foreground">
-                              {TOPUP_BANKS.map((b) => (
-                                <SelectItem key={b.bank} value={b.bank} className="text-foreground focus:bg-muted focus:text-foreground">{b.bank}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-blue-400 text-sm font-medium">Top Up Method</Label>
-                          <Select value={topupTransferMethod} onValueChange={setTopupTransferMethod}>
-                            <SelectTrigger className="bg-muted/50 border-border text-foreground focus:ring-blue-500">
-                              <SelectValue placeholder="Select..." />
-                            </SelectTrigger>
-                            <SelectContent className="bg-card border-border text-foreground">
-                              <SelectItem value="interbank" className="text-foreground focus:bg-muted focus:text-foreground">Interbank transfer</SelectItem>
-                              <SelectItem value="cash" className="text-foreground focus:bg-muted focus:text-foreground">Cash deposit</SelectItem>
-                              <SelectItem value="check" className="text-foreground focus:bg-muted focus:text-foreground">Check deposit</SelectItem>
-                              <SelectItem value="international" className="text-foreground focus:bg-muted focus:text-foreground">International transfer</SelectItem>
-                              <SelectItem value="other" className="text-foreground focus:bg-muted focus:text-foreground">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between mt-2 flex-wrap gap-3">
-                        <a
-                          href="https://help.xendit.co/hc/en-us/articles/360034928492"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 text-xs flex items-center gap-1 hover:text-blue-300 transition-colors"
-                        >
-                          <LinkIcon className="h-3 w-3" />
-                          Learn more about Top up
-                        </a>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => setTopupStep(0)}
-                            className="border-border text-muted-foreground hover:bg-muted">
-                            Back
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              if (!topupAmount || parseFloat(topupAmount) <= 0) {
-                                toast.error('Please enter a valid top-up amount');
-                                return;
-                              }
-                              if (!topupTransferMethod) {
-                                toast.error('Please select a top-up method');
-                                return;
-                              }
-                              setTopupStep(2);
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            Continue
-                          </Button>
-                        </div>
-                      </div>
-                    </>
-                  ) : topupStep === 2 ? (
-                    <>
-                      {/* Confirm Transfer */}
-                      <div className="space-y-4 mt-2">
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                          Please complete this bank transfer using the details below. Once done, proceed to upload your receipt.
-                        </p>
-                        <div className="rounded-lg border border-border/50 bg-muted/40 divide-y divide-slate-600/30 text-sm">
-                          <div className="flex items-center justify-between px-4 py-2.5">
-                            <span className="text-muted-foreground">Amount</span>
-                            <span className="text-foreground font-semibold">₱{parseFloat(topupAmount || '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
-                          </div>
-                          <div className="flex items-center justify-between px-4 py-2.5">
-                            <span className="text-muted-foreground">Bank</span>
-                            <div className="flex items-center gap-2">
-                              <TopupBankLogo logo={TOPUP_BANKS.find((b) => b.bank === topupToBank)?.logo} bank={topupToBank} />
-                              <span className="text-foreground">{topupToBank}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between px-4 py-2.5">
-                            <span className="text-muted-foreground">Account Name</span>
-                            <span className="text-foreground">{TOPUP_BANKS.find((b) => b.bank === topupToBank)?.name ?? 'xend'}</span>
-                          </div>
-                          <div className="flex items-center justify-between px-4 py-2.5">
-                            <span className="text-muted-foreground">Account Number</span>
-                            <span className="text-foreground font-mono">
-                              {TOPUP_BANKS.find((b) => b.bank === topupToBank)?.number ?? '—'}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between px-4 py-2.5">
-                            <span className="text-muted-foreground">Method</span>
-                            <span className="text-foreground capitalize">{topupTransferMethod.replace('_', ' ')}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2.5">
-                          <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                          <p className="text-amber-300 text-xs leading-relaxed">
-                            Make sure the transfer details match exactly. Your top-up will be credited once an admin verifies your receipt.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" size="sm" onClick={() => setTopupStep(1)}
-                          className="border-border text-muted-foreground hover:bg-muted">
-                          Back
-                        </Button>
-                        <Button size="sm" onClick={() => setTopupStep(3)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white">
-                          I've Transferred — Upload Receipt
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Submit Proof */}
-                      <div className="space-y-4 mt-2">
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                          Upload your transfer receipt so our team can verify and credit your balance.
-                        </p>
-                        <div className="space-y-1.5">
-                          <Label className="text-muted-foreground text-sm font-medium">Receipt / Screenshot <span className="text-muted-foreground font-normal">(required)</span></Label>
-                          <label className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-dashed border-border hover:border-blue-500/60 bg-muted/30 cursor-pointer transition-colors">
-                            <input
-                              type="file"
-                              accept="image/*,application/pdf"
-                              className="hidden"
-                              onChange={(e) => setTopupProofFile(e.target.files?.[0] ?? null)}
-                            />
-                            {topupProofFile ? (
-                              <span className="text-emerald-400 text-sm font-medium flex items-center gap-1.5">
-                                <CheckCircle className="h-4 w-4" />
-                                {topupProofFile.name}
-                              </span>
-                            ) : (
-                              <>
-                                <ArrowDownToLine className="h-6 w-6 text-muted-foreground" />
-                                <span className="text-muted-foreground text-xs text-center">Click to select image or PDF receipt</span>
-                              </>
-                            )}
-                          </label>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-muted-foreground text-sm font-medium">Reference / Trace Number <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                          <Input
-                            placeholder="e.g. 123456789"
-                            value={topupRefNumber}
-                            onChange={(e) => setTopupRefNumber(e.target.value)}
-                            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" size="sm" onClick={() => setTopupStep(2)}
-                          className="border-border text-muted-foreground hover:bg-muted"
-                          disabled={topupSubmitting}>
-                          Back
-                        </Button>
-                        <Button
-                          size="sm"
-                          disabled={topupSubmitting || !topupProofFile}
-                          onClick={async () => {
-                            if (!topupProofFile) {
-                              toast.error('Please upload your transfer receipt');
-                              return;
-                            }
-                            setTopupSubmitting(true);
-                            try {
-                              const form = new FormData();
-                              form.append('amount_php', topupAmount);
-                              form.append('channel', topupToBank);
-                              form.append('account_number',
-                                TOPUP_BANKS.find((b) => b.bank === topupToBank)?.number ?? '');
-                              form.append('transfer_method', topupTransferMethod);
-                              if (topupRefNumber) form.append('ref_number', topupRefNumber);
-                              form.append('receipt', topupProofFile);
-                              const res = await fetch('/api/v1/bank-deposits', {
-                                method: 'POST',
-                                credentials: 'include',
-                                body: form,
-                              });
-                              if (res.ok) {
-                                toast.success('Top-up request submitted! We\'ll credit your balance after verification.');
-                                setTopupDialogOpen(false);
-                                setTopupStep(0);
-                                setTopupAmount('');
-                                setTopupToBank('GoTyme Digital Bank');
-                                setTopupTransferMethod('');
-                                setTopupRefNumber('');
-                                setTopupProofFile(null);
-                              } else {
-                                const err = await getResponseError(res, 'Failed to submit top-up request');
-                                toast.error(err);
-                              }
-                            } catch (e: any) {
-                              toast.error(e.message || 'Failed to submit top-up request');
-                            } finally {
-                              setTopupSubmitting(false);
-                            }
-                          }}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          {topupSubmitting ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" />Submitting…</> : 'Submit Request'}
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </DialogContent>
-              </Dialog>
-
-              {/* Send USD Tab */}
-              <TabsContent value="send-usd" className="p-4 sm:p-6 mt-0 space-y-5">
-                {/* USD balance reminder */}
-                <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Send className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span className="text-emerald-300 text-sm font-medium">USD Wallet Balance</span>
                   </div>
-                  <span className="text-foreground font-bold text-sm">${usdBal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Recipient Telegram Username</Label>
-                    <div className="relative mt-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
-                      <Input
-                        placeholder="username"
-                        value={sendUsdUsername}
-                        onChange={e => setSendUsdUsername(e.target.value.replace(/^@/, ''))}
-                        className="pl-7 bg-muted border-border text-foreground placeholder:text-muted-foreground"
-                      />
-                    </div>
-                    <p className="text-muted-foreground text-xs mt-1">Enter the Telegram username of the recipient (without @)</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Amount (USD)</Label>
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      value={sendUsdAmount}
-                      onChange={e => setSendUsdAmount(e.target.value)}
-                      min="0.01"
-                      step="0.01"
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Note (optional)</Label>
-                    <Input
-                      placeholder="Payment for..."
-                      value={sendUsdNote}
-                      onChange={e => setSendUsdNote(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
-                  Funds are transferred instantly from your USD wallet to the recipient's USD wallet. The recipient must be a registered user.
-                </div>
-
-                <Button
-                  onClick={handleSendUsd}
-                  disabled={sendUsdLoading}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  {sendUsdLoading
-                    ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending...</>
-                    : <><Send className="h-4 w-4 mr-2" />Send USD</>}
-                </Button>
-              </TabsContent>
-
-              {/* Send USDT Tab */}
-              <TabsContent value="send-usdt" className="p-4 sm:p-6 mt-0 space-y-5">
-                {/* USD balance reminder */}
-                <div className="flex items-center justify-between bg-teal-500/10 border border-teal-500/20 rounded-xl px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Bitcoin className="h-4 w-4 text-teal-400 shrink-0" />
-                    <span className="text-teal-300 text-sm font-medium">USD Wallet Balance</span>
-                  </div>
-                  <span className="text-foreground font-bold text-sm">${usdBal.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT</span>
-                </div>
-
-                {/* Warning */}
-                <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
-                  <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div className="text-amber-300/90 text-xs leading-relaxed space-y-1">
-                    <p className="font-semibold">Requires Super Admin Approval</p>
-                    <p>Your send request will be reviewed before funds are transferred. Ensure the TRC-20 address is correct — crypto transfers are irreversible.</p>
-                  </div>
-                </div>
-
-                {/* Form */}
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Recipient TRC-20 Address</Label>
-                    <Input
-                      placeholder="e.g. TGGtSorAyDSUxVXxk5jmK4jM2xFUv9Bbfx"
-                      value={sendUsdtAddress}
-                      onChange={e => setSendUsdtAddress(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground font-mono text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-muted-foreground text-sm">Amount (USDT)</Label>
+                      <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Amount (₱)</Label>
                       <Input
                         type="number"
                         placeholder="0.00"
-                        value={sendUsdtAmount}
-                        onChange={e => setSendUsdtAmount(e.target.value)}
-                        min="0.01"
+                        value={wrAmount}
+                        onChange={e => setWrAmount(e.target.value)}
+                        min="1"
                         step="0.01"
-                        className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                        className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                      />
+                      {phpBalance && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          Available: ₱{fmt(phpBalance.balance)}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Bank</Label>
+                      <Select value={wrBank} onValueChange={setWrBank}>
+                        <SelectTrigger className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100">
+                          <SelectValue placeholder="Select bank…" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                          {bankList.map(b => (
+                            <SelectItem key={b.code} value={b.code} className="text-slate-900 dark:text-slate-100">
+                              {b.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Account Number</Label>
+                      <Input
+                        placeholder="1234567890"
+                        value={wrAccount}
+                        onChange={e => setWrAccount(e.target.value)}
+                        className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                     </div>
                     <div>
-                      <Label className="text-muted-foreground text-sm">Network</Label>
+                      <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Account Holder Name</Label>
                       <Input
-                        value="TRC20 (TRON)"
-                        readOnly
-                        className="mt-1 bg-muted/40 border-border/40 text-muted-foreground cursor-not-allowed"
+                        placeholder="Juan Dela Cruz"
+                        value={wrName}
+                        onChange={e => setWrName(e.target.value)}
+                        className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Note (optional)</Label>
+                      <Input
+                        placeholder="Additional instructions for admin..."
+                        value={wrNote}
+                        onChange={e => setWrNote(e.target.value)}
+                        className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                     </div>
                   </div>
+
+                  <Button
+                    onClick={handleWithdrawRequest}
+                    disabled={wrLoading}
+                    className="w-full bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 h-10 rounded-lg font-medium"
+                  >
+                    {wrLoading ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting Request...</>
+                    ) : (
+                      <><ArrowUpFromLine className="h-4 w-4 mr-2" />Submit Withdrawal Request</>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Supported Banks */}
+              <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    Supported Banks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    {BANKS.slice(0, 8).map(bank => (
+                      <div key={bank} className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <Building2 className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                        {bank}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    Including GCash and Maya e-wallets
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* ─── USDT TAB ─── */}
+          <TabsContent value="usdt" className="mt-0">
+            <Card className="max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Send className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  Send USDT
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground text-sm">Note (optional)</Label>
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Amount (USDT)</Label>
                     <Input
-                      placeholder="Purpose of transfer"
-                      value={sendUsdtNote}
-                      onChange={e => setSendUsdtNote(e.target.value)}
-                      className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                      type="number"
+                      placeholder="0.00"
+                      value={usdtAmount}
+                      onChange={e => setUsdtAmount(e.target.value)}
+                      min="1"
+                      step="0.01"
+                      className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    />
+                    {usdBalance && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Available: ${fmtUsd(usdBalance.balance)}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Network</Label>
+                    <Select value={usdtNetwork} onValueChange={setUsdtNetwork}>
+                      <SelectTrigger className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <SelectItem value="TRC20" className="text-slate-900 dark:text-slate-100">TRC20 (Tron)</SelectItem>
+                        <SelectItem value="ERC20" className="text-slate-900 dark:text-slate-100">ERC20 (Ethereum)</SelectItem>
+                        <SelectItem value="BEP20" className="text-slate-900 dark:text-slate-100">BEP20 (BSC)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Recipient Address</Label>
+                    <Input
+                      placeholder="TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                      value={usdtAddress}
+                      onChange={e => setUsdtAddress(e.target.value)}
+                      className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono text-sm"
                     />
                   </div>
                 </div>
-
                 <Button
-                  onClick={handleSendUsdt}
-                  disabled={sendUsdtLoading}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  onClick={handleUsdtSend}
+                  disabled={usdtLoading}
+                  className="w-full bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 h-10 rounded-lg font-medium"
                 >
-                  {sendUsdtLoading
-                    ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting...</>
-                    : <><Send className="h-4 w-4 mr-2" />Submit Send Request</>}
+                  {usdtLoading ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending...</>
+                  ) : (
+                    <><Send className="h-4 w-4 mr-2" />Send USDT</>
+                  )}
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                {/* Send Request History */}
-                {sendUsdtRequests.length > 0 && (
-                  <div>
-                    <p className="text-muted-foreground text-xs font-medium mb-2 uppercase tracking-wider">Your Send Requests</p>
-                    <div className="space-y-2">
-                      {sendUsdtRequests.slice(0, 5).map(req => (
-                        <div key={req.id} className={`rounded-xl border overflow-hidden ${
-                          req.status === 'denied' ? 'border-red-500/25' : 'border-border/30'
-                        }`}>
-                          <div className="flex items-center justify-between bg-muted/40 px-3 py-2.5">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-foreground text-sm font-medium">${req.amount.toFixed(2)} USDT</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${
-                                  req.status === 'approved'
-                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                    : req.status === 'denied'
-                                    ? 'bg-red-500/10 border-red-500/20 text-red-400'
-                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                }`}>
-                                  {req.status}
-                                </span>
-                              </div>
-                              <p className="text-muted-foreground text-[10px] font-mono truncate mt-0.5 max-w-[200px]">
-                                → {req.to_address}
+          {/* ─── HISTORY TAB ─── */}
+          <TabsContent value="history" className="mt-0">
+            <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  Transaction History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 animate-pulse">
+                        <div className="h-9 w-9 rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+                          <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-1/4" />
+                        </div>
+                        <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                ) : transactions.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Receipt className="h-10 w-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">No transactions yet</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Your transaction history will appear here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {transactions.map(txn => {
+                      const meta = txnMeta[txn.type] || txnMeta.deposit;
+                      const st = statusMeta[txn.status] || statusMeta.pending;
+                      return (
+                        <div key={txn.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className={`h-9 w-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${meta.color}`}>
+                              {meta.icon}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{meta.label}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {txn.description || txn.reference || `#${txn.id}`}
                               </p>
                             </div>
-                            <div className="shrink-0 ml-2">
-                              {req.status === 'pending'
-                                ? <Clock className="h-4 w-4 text-amber-400" />
-                                : req.status === 'approved'
-                                ? <CheckCircle className="h-4 w-4 text-emerald-400" />
-                                : <XCircle className="h-4 w-4 text-red-400" />}
-                            </div>
                           </div>
-                          {req.status === 'denied' && req.denial_reason && (
-                            <div className="flex items-start gap-2 bg-red-500/10 px-3 py-2 border-t border-red-500/20">
-                              <ShieldAlert className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
-                              <div>
-                                <p className="text-red-400 text-[10px] font-semibold uppercase tracking-wide mb-0.5">Denial Reason</p>
-                                <p className="text-red-300/80 text-xs">{req.denial_reason}</p>
-                              </div>
-                            </div>
-                          )}
+                          <div className="text-right">
+                            <p className={`text-sm font-semibold ${meta.color}`}>
+                              {meta.sign}{txn.currency === 'USD' ? '$' : '₱'}{fmt(Math.abs(txn.amount))}
+                            </p>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${st.bg} ${st.color} ${st.bg.replace('bg-', 'border-').replace('50', '200').replace('950/30', '800')}`}>
+                              {st.icon}
+                              {st.label}
+                            </span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-foreground flex items-center space-x-2 text-base">
-              <TrendingUp className="h-5 w-5 text-blue-400" />
-              <span>Wallet History</span>
-            </CardTitle>
-            <Badge className="bg-muted text-muted-foreground border-border border">
-              {transactions.length} txns
-            </Badge>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-              </div>
-            ) : transactions.length === 0 ? (
-              <div className="text-center py-10">
-                <WalletIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No wallet transactions yet</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {transactions.map((txn) => {
-                  const config = txnTypeConfig[txn.transaction_type] || {
-                    label: txn.transaction_type, color: 'text-muted-foreground',
-                    icon: <WalletIcon className="h-4 w-4 text-muted-foreground" />, sign: '',
-                  };
-                  const isCredit = txn.transaction_type === 'top_up' || txn.transaction_type === 'receive' || txn.transaction_type === 'crypto_topup';
-                  const isCrypto = txn.transaction_type === 'crypto_topup' || txn.transaction_type === 'usdt_send';
-                  const statusIcon = txn.status === 'completed'
-                    ? <CheckCircle className="h-3 w-3 text-emerald-400" />
-                    : txn.status === 'pending'
-                    ? <Clock className="h-3 w-3 text-amber-400" />
-                    : <XCircle className="h-3 w-3 text-red-400" />;
-                  return (
-                    <div key={txn.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <div className="flex items-center space-x-3 min-w-0">
-                        <div className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-                          {config.icon}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ─── MY REQUESTS TAB ─── */}
+          <TabsContent value="requests" className="mt-0">
+            <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  My Withdrawal Requests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 animate-pulse">
+                        <div className="h-9 w-9 rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+                          <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-1/4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center space-x-1.5">
-                            <p className="text-sm font-medium text-foreground">{config.label}</p>
-                            {statusIcon}
+                      </div>
+                    ))}
+                  </div>
+                ) : withdrawRequests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Clock className="h-10 w-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">No withdrawal requests</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Submit a withdrawal request from the Withdraw tab</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {withdrawRequests.map(req => {
+                      const st = statusMeta[req.status] || statusMeta.pending;
+                      return (
+                        <div key={req.id} className="p-4 rounded-lg border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-colors">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                              <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${st.bg} ${st.color}`}>
+                                {st.icon}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                    ₱{fmt(req.amount)}
+                                  </p>
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${st.bg} ${st.color} ${st.bg.replace('bg-', 'border-').replace('50', '200').replace('950/30', '800')}`}>
+                                    {st.label}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                  {req.bank_name} · {req.account_number}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {req.account_name}
+                                </p>
+                                {req.note && (
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 italic">
+                                    Note: {req.note}
+                                  </p>
+                                )}
+                                {req.rejection_reason && (
+                                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                    Reason: {req.rejection_reason}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {new Date(req.created_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </p>
+                              {req.processed_at && (
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                  Processed: {new Date(req.processed_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {txn.note || txn.recipient || txn.reference_id || `#${txn.id}`}
-                          </p>
                         </div>
-                      </div>
-                      <div className="text-right ml-2 shrink-0">
-                        <p className={`text-sm font-mono font-semibold ${isCredit ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {config.sign}{isCrypto ? '$' : '₱'}{txn.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                        </p>
-                        {txn.balance_after != null && (
-                          <p className="text-[10px] text-muted-foreground">
-                            Bal: {isCrypto ? '$' : '₱'}{txn.balance_after.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
